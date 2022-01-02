@@ -29,21 +29,24 @@ namespace OpenNANORGS
 
         private Random rnd;
 
+        private ushort r0 = 0;
+        private bool tmpSucc = false;
+
         [Flags]
         private enum BotFlags
         {
             None,
             Success = 1,
             Less = 1 << 1,
-            Equals = 1 << 2,
+            Equal = 1 << 2,
             Greater = 1 << 3,
         }
 
         private BotFlags flags;
 
-        public Bot(int seed, char id, byte x, byte y, Playfield pf)
+        public Bot(char id, byte x, byte y, Playfield pf)
         {
-            rnd = new Random(seed);
+            rnd = pf.rnd;
             botId = id;
             this.x = x;
             this.y = y;
@@ -163,7 +166,7 @@ namespace OpenNANORGS
         private void oper_EAT()
         {
             UseEnergy();
-            if (energy > 65535 - 2000)
+            if (energy > 0xFFFF - 2000)
             {
                 flags &= ~BotFlags.Success;
                 return;
@@ -270,15 +273,49 @@ namespace OpenNANORGS
             energy -= amt;
             playfield.Collect(this, amt);
         }
+        
+        public void oper_CMP(ushort op1, ushort op2)
+        {
+            UseEnergy();
+            if (op1 < op2) flags |= BotFlags.Less;
+            if (op1 == op2) flags |= BotFlags.Equal;
+            if (op1 > op2) flags |= BotFlags.Greater;
+        }
 
-        public void Tick()
+        public void Tick(uint tick)
         {
             if(energy < 1) return;
             // actually run instructions for 1 tick here.
 
-            oper_TRAVEL((ushort)rnd.Next(4));
-            oper_EAT();
-            if(playfield.GetElement(this.x, this.y) == 65535) oper_RELEASE(10000); // this is cheating
+            // instruction testing, will not be here in final version
+            switch(tick % 7)
+            {
+                case 0:
+                    oper_RAND(ref r0, 4);
+                    break;
+                case 1:
+                    oper_TRAVEL(r0);
+                    break;
+                case 2:
+                    oper_EAT();
+                    break;
+                case 3:
+                    oper_SENSE(ref r0);
+                    break;
+                case 4:
+                    oper_CMP(r0, 0xFFFF);
+                    break;
+                case 5:
+                    UseEnergy();
+                    tmpSucc = flags.HasFlag(BotFlags.Equal);
+                    break;
+                case 6:
+                    if(tmpSucc) oper_RELEASE(10000);
+                    break;
+            }
+            
+            
+            
         }
 
         public char Render()

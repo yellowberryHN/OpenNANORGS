@@ -24,11 +24,17 @@ namespace OpenNANORGS
 
         public static void Main(string[] args)
         {
-            int seed = (int)DateTimeOffset.Now.ToUnixTimeSeconds();
+            //int seed = (int)DateTimeOffset.Now.ToUnixTimeSeconds();
+            int seed = 100;
 
-            Console.SetWindowSize(1, 1);
-            Console.SetBufferSize(80, 50);
-            Console.SetWindowSize(80, 50);
+            // Only resize console on Windows, the only supported platform.
+            if (OperatingSystem.IsWindows())
+            {
+                Console.SetWindowSize(1, 1);
+                Console.SetBufferSize(70, 50);
+                Console.SetWindowSize(70, 50);
+            }
+
             Console.CursorVisible = false;
             Random rnd = new Random();
 
@@ -63,7 +69,8 @@ namespace OpenNANORGS
             {
                 Console.CursorVisible = false;
                 Console.Write(pf.Tick());
-                Thread.Sleep(1);
+                //Thread.Sleep(1);
+                //Console.ReadKey();
                 Console.SetCursorPosition(0, 0);
             }
         }
