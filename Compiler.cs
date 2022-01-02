@@ -16,7 +16,7 @@ namespace OpenNANORGS
 
         public Compiler()
         {
-            Load(@"D:\Downloads\nanorg-stuff-master\Bots\samplebot.asm");
+            Load(@"../../../bots/testbot.asm");
         }
 
         public void Load(string filename)

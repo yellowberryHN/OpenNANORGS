@@ -8,7 +8,7 @@ namespace OpenNANORGS
 {
     class Bot
     {
-        private char botId;
+        public readonly char botId;
 
         private Playfield playfield;
 
@@ -20,20 +20,18 @@ namespace OpenNANORGS
         public ushort energy = 10000;
 
         // instruction pointer
-        private ushort ip = 0;
+        public readonly ushort ip = 0;
 
         // stack pointer
-        private ushort sp = 3600;
+        public readonly ushort sp = 3600;
 
-        private ushort[] reg = new ushort[14];
+        public ushort[] reg = new ushort[14];
 
         private Random rnd;
-
-        private ushort r0 = 0;
         private bool tmpSucc = false;
 
         [Flags]
-        private enum BotFlags
+        public enum BotFlags
         {
             None,
             Success = 1,
@@ -42,7 +40,20 @@ namespace OpenNANORGS
             Greater = 1 << 3,
         }
 
-        private BotFlags flags;
+        public BotFlags flags;
+
+        public string FlagRender()
+        {
+            string a = string.Empty;
+
+            if (flags.HasFlag(BotFlags.Equal)) a += "e";
+            else if (flags.HasFlag(BotFlags.Less)) a += "l";
+            else if (flags.HasFlag(BotFlags.Greater)) a += "g";
+
+            if (flags.HasFlag(BotFlags.Success)) a += "s";
+            
+            return string.Format("{0,-2}", a);
+        }
 
         public Bot(char id, byte x, byte y, Playfield pf)
         {
@@ -277,6 +288,7 @@ namespace OpenNANORGS
         public void oper_CMP(ushort op1, ushort op2)
         {
             UseEnergy();
+            flags = BotFlags.None;
             if (op1 < op2) flags |= BotFlags.Less;
             if (op1 == op2) flags |= BotFlags.Equal;
             if (op1 > op2) flags |= BotFlags.Greater;
@@ -288,29 +300,32 @@ namespace OpenNANORGS
             // actually run instructions for 1 tick here.
 
             // instruction testing, will not be here in final version
-            switch(tick % 7)
+            switch(tick % 8)
             {
                 case 0:
-                    oper_RAND(ref r0, 4);
+                    oper_RAND(ref reg[0], 4);
                     break;
                 case 1:
-                    oper_TRAVEL(r0);
+                    oper_TRAVEL(reg[0]);
                     break;
                 case 2:
                     oper_EAT();
                     break;
                 case 3:
-                    oper_SENSE(ref r0);
+                    oper_SENSE(ref reg[0]);
                     break;
                 case 4:
-                    oper_CMP(r0, 0xFFFF);
+                    oper_CMP(reg[0], 0xFFFF);
                     break;
                 case 5:
-                    UseEnergy();
+                    UseEnergy(); // in place of JNE 0
                     tmpSucc = flags.HasFlag(BotFlags.Equal);
                     break;
                 case 6:
                     if(tmpSucc) oper_RELEASE(10000);
+                    break;
+                case 7:
+                    UseEnergy(); // in place of JMP 0
                     break;
             }
             

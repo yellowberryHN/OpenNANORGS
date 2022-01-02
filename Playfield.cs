@@ -23,14 +23,29 @@ namespace OpenNANORGS
         public Random rnd;
 
         private uint tick = 0;
+        private uint maxtick;
 
         private ulong score = 0;
 
         private List<Bot> bots;
 
-        public Playfield(int seed)
+        private bool debugBot = false;
+        private char debugBotID;
+        private Bot dBI;
+
+        private Compiler cmp;
+
+        public Playfield(int seed, uint maxtick, char dBot = (char)0)
         {
             this.seed = seed;
+            this.maxtick = maxtick;
+
+            if(dBot != 0) 
+            {
+                debugBot = true;
+                debugBotID = dBot;
+            }
+
             rnd = new Random(this.seed);
             numSludge = (byte)rnd.Next(5, 32);
 
@@ -45,7 +60,7 @@ namespace OpenNANORGS
 
             bots = new List<Bot>();
 
-            var cmp = new Compiler();
+            cmp = new Compiler();
 
             for (int i = 0; i < 26; i++)
             {
@@ -56,6 +71,11 @@ namespace OpenNANORGS
             {
                 var bot = new Bot((char)(97 + i), (byte)rnd.Next(70), (byte)rnd.Next(40), this);
                 bots.Add(bot);
+            }
+
+            if(debugBot)
+            {
+                dBI = bots.Find(x => x.botId == debugBotID);
             }
         }
 
@@ -193,16 +213,24 @@ namespace OpenNANORGS
                 sb.AppendLine(tmp);
             }
 
-            sb.AppendLine(string.Format("\r\nScore: {0}, Ticks: {1} of 1,000,000, Seed: <{2}>", score, tick, seed));
+            sb.AppendLine(string.Format("\r\nScore: {0:n0}, Ticks: {1:n0} of {2:n0}, Seed: <{3}>", score, tick, maxtick, seed));
 
             //sb.AppendLine(string.Format("\r\nX: {0:D2}, Y: {1:D2}, Energy: {2:D5}", testBot.x, testBot.y, testBot.energy));
 
-            byte li = 0;
-            foreach (var bot in bots)
+            if (debugBot)
             {
-                if (bot.energy > 1) li++;
+                sb.AppendLine(string.Format("\r\n({0} {1}) x={2}, y={3}, energy={4}, IP={5}, SP={6}, flags={7}    ", cmp.info.Substring(0, 5).ToUpper(), dBI.botId, dBI.x, dBI.y, dBI.energy, dBI.ip, dBI.sp, dBI.FlagRender()));
+                sb.AppendLine(string.Format("R00={0,5} R01={1,5} R02={2,5} R03={3,5} R04={4,5} R05={5,5} R06={6,5}     ", dBI.reg[0], dBI.reg[1], dBI.reg[2], dBI.reg[3], dBI.reg[4], dBI.reg[5], dBI.reg[6]));
+                sb.AppendLine(string.Format("R07={0,5} R08={1,5} R09={2,5} R10={3,5} R11={4,5} R12={5,5} R13={6,5}     ", dBI.reg[7], dBI.reg[8], dBI.reg[9], dBI.reg[10], dBI.reg[11], dBI.reg[12], dBI.reg[13]));
+                sb.AppendLine(string.Format("{0:D4}  <not implemented>                                                 ", dBI.ip));
+                sb.Append("(u)nasm,(g)o,(s)ilentGo,(d)mp,(e)dt,(r)eg,(i)p,(q)uit,##, or [Enter]: ");
             }
-            sb.AppendLine(string.Format("\r\nLive organisms: {0}", li));
+
+            /*
+            (%s %c) x=%d, y=%d, energy=%d, IP=%d, SP=%d, flags=%s                 
+            (u)nasm,(g)o,(s)ilentGo,(d)mp,(e)dt,(r)eg,(i)p,(q)uit,##, or [Enter]: 
+            Score: %.0lf, Ticks: %d of %d   (Seed=%u)                             
+            */
 
             /*
             Score: 0, Ticks: 0 of 1000000   (Seed=1641076912)
