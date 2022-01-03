@@ -15,9 +15,9 @@ namespace OpenNANORGS
 
         public string info;
 
-        public Compiler()
+        public Compiler(string filename)
         {
-            Load(@"../../../bots/samplebot.asm");
+            Load(filename);
         }
 
         public string FormatInstruction(string raw)

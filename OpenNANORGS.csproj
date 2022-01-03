@@ -5,4 +5,10 @@
     <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="NANORG_CPU\**" />
+    <EmbeddedResource Remove="NANORG_CPU\**" />
+    <None Remove="NANORG_CPU\**" />
+  </ItemGroup>
+
 </Project>

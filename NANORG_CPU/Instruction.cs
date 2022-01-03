@@ -10,7 +10,7 @@ namespace NANORG_CPU
     {
         private ushort[] raw = new ushort[3] { 0, 0, 0 };
 
-        public Instruction(CPUOpCode opcode, Operand op1, Operand op2)
+        public Instruction(CPUOpCode opcode, Operand op1, Operand op2, ushort ip = 0)
         {
             ushort tmp;
             tmp = (ushort)((ushort)opcode | (op1.GetBytesFromMode(op2) << 12));
@@ -20,13 +20,23 @@ namespace NANORG_CPU
             tmp = 0;
             switch (op1.type)
             {
-                case CPUOperType.Direct:
                 case CPUOperType.Immediate:
+                    if ((opcode >= CPUOpCode.JMP && opcode <= CPUOpCode.JNS) || opcode == CPUOpCode.CALL)
+                    {
+                        tmp = (ushort)(op1.value - ip);
+                    }
+                    else tmp = op1.value;
+                    break;
+
+                case CPUOperType.Direct:
                 case CPUOperType.Register:
                     tmp = op1.value;
                     break;
-                case CPUOperType.RegisterIndexed: // TODO: add support for subtraction
-                    tmp = (ushort)((ushort)op1.index | ((ushort)op1.value << 12));
+                case CPUOperType.RegisterIndexed: // TODO: add support for subtraction 
+                    if (op1.sub) raw[0] |= 2 << 10;
+                    ushort idx = op1.sub ? (ushort)(0x1000 - op1.index) : op1.index;
+                    tmp = (ushort)(idx | (op1.value << 12));
+                    
                     break;
             }
 
@@ -41,31 +51,36 @@ namespace NANORG_CPU
                     tmp = op2.value;
                     break;
                 case CPUOperType.RegisterIndexed:
-                    tmp = (ushort)((ushort)op2.index | ((ushort)op2.value << 12));
+                    if (op2.sub) raw[0] |= 1 << 10;
+                    ushort idx = op2.sub ? (ushort)(0x1000 - op2.index) : op2.index;
+                    tmp = (ushort)(idx | (op2.value << 12));
                     break;
             }
 
             raw[2] = tmp;
         }
 
-        public string ToAssembly()
+        public string ToAssembly(ushort ip = 0)
         {
             string tmp;
 
-            tmp = ((CPUOpCode)(this.raw[0] & 0xFF)).ToString();
+            tmp = ((CPUOpCode)(this.raw[0] & 0xFF)).ToString().ToLower();
 
             var modes = Operand.GetModesFromBytes(this.raw[0]);
 
             switch (modes[0])
             {
                 case CPUOperType.Register:
-                    tmp += " R" + this.raw[1];
+                    tmp += " r" + this.raw[1];
                     break;
                 case CPUOperType.Direct:
                     tmp += " [" + this.raw[1] + "]";
                     break;
                 case CPUOperType.Immediate:
                     tmp += " " + this.raw[1];
+                    break;
+                case CPUOperType.RegisterIndexed:
+                    tmp += " [r" + ((this.raw[1] & 0xf000) >> 12) + "+" + (this.raw[1] & 0xfff) + "]";
                     break;
                 default:
                     throw new NotImplementedException();
@@ -74,13 +89,16 @@ namespace NANORG_CPU
             switch (modes[1])
             {
                 case CPUOperType.Register:
-                    tmp += ", R" + this.raw[2];
+                    tmp += ", r" + this.raw[2];
                     break;
                 case CPUOperType.Direct:
                     tmp += ", [" + this.raw[2] + "]";
                     break;
                 case CPUOperType.Immediate:
                     tmp += ", " + this.raw[2];
+                    break;
+                case CPUOperType.RegisterIndexed:
+                    tmp += ", [r" + ((this.raw[1] & 0xf000) >> 12) + "+" + (this.raw[1] & 0xfff) + "]";
                     break;
                 default:
                     throw new NotImplementedException();
@@ -111,7 +129,7 @@ namespace NANORG_CPU
             this.sub = false;
         }
 
-        public Operand(CPUOperType type, ushort value, ushort index = 0, bool sub = true)
+        public Operand(CPUOperType type, ushort value, ushort index = 0, bool sub = false)
         {
             this.type = type;
             this.value = value;

@@ -20,13 +20,9 @@ namespace OpenNANORGS
             }
         }
 
-        
-
         public static void Main(string[] args)
         {
-            //int seed = (int)DateTimeOffset.Now.ToUnixTimeSeconds();
-            int seed = 100;
-            uint iterations = 1000000; // 1 million ticks is the default
+            
 
             // Only resize console on Windows, the only supported platform.
             if (OperatingSystem.IsWindows())
@@ -36,35 +32,9 @@ namespace OpenNANORGS
                 Console.SetWindowSize(80, 50);
             }
 
-            Console.CursorVisible = false;
-            Random rnd = new Random();
-
-            string RandomChar()
-            {
-                char r = (char)rnd.Next(32, 127);
-                return r.ToString();
-            }
-            // Clear the screen, then save the top and left coordinates.
             Console.Clear();
 
-            var pf = new Playfield(seed, iterations, 'A');
-
-            /*
-            while (true)
-            {
-                Console.Write(pf.Render());
-                char t = Console.ReadKey().KeyChar;
-                if (t == 'f')
-                {
-                    //pf.test_SetCollect();
-                }
-                else if (t == ' ')
-                {
-                    pf.Randomize();
-                }
-                
-            }
-            */
+            var pf = new Playfield(args);
 
             while (true)
             {

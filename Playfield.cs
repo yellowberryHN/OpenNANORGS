@@ -13,7 +13,7 @@ namespace OpenNANORGS
 
         private ushort[,] elements = new ushort[40, 70];
 
-
+        private string botSource = string.Empty;
 
         private byte numSludge;
         private List<byte> toxicSludge;
@@ -35,16 +35,20 @@ namespace OpenNANORGS
 
         private Compiler cmp;
 
-        public Playfield(int seed, uint maxtick, char dBot = (char)0)
+        public Playfield(string[] args)
         {
-            this.seed = seed;
-            this.maxtick = maxtick;
+            this.seed = (int)DateTimeOffset.Now.ToUnixTimeSeconds();
+            this.maxtick = 1000000;
 
+            ParseArgs(args);
+
+            /*
             if(dBot != 0) 
             {
                 debugBot = true;
                 debugBotID = dBot;
             }
+            */
 
             rnd = new Random(this.seed);
             numSludge = (byte)rnd.Next(5, 32);
@@ -60,7 +64,7 @@ namespace OpenNANORGS
 
             bots = new List<Bot>();
 
-            cmp = new Compiler();
+            cmp = new Compiler(botSource);
 
             for (int i = 0; i < 26; i++)
             {
@@ -76,6 +80,28 @@ namespace OpenNANORGS
             if(debugBot)
             {
                 dBI = bots.Find(x => x.botId == debugBotID);
+            }
+        }
+
+        private void ParseArgs(string[] args)
+        {
+            foreach (var item in args)
+            {
+                if(item.Length > 2 && item.StartsWith('-'))
+                {
+                    var flag = item.Substring(1, 1);
+                    switch (flag)
+                    {
+                        case "p":
+                            botSource = item.Substring(3);
+                            break;
+                        case "s":
+                            int.TryParse(item.Substring(3), out this.seed);
+                            break;
+                        default:
+                            break;
+                    }
+                }
             }
         }
 
