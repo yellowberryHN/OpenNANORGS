@@ -45,7 +45,7 @@ Lua, it was difficult to wrap my head around.
 
 ## Samples Bots
 
-There are some bot examples and samples in the "[bots/](../blob/master/bots)" folder of this repo.
+There are some bot examples and samples in the "[bots/](../../blob/master/bots)" folder of this repo.
 I have gathered all of the bot code I could from the internet and dumped it in here. 
 If I've put your bot here, and you don't want it to be included, reach out and I'll remove it.
 

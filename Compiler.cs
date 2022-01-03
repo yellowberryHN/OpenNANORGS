@@ -11,41 +11,69 @@ namespace OpenNANORGS
     class Compiler
     {
         public List<CompilerInstruction> instructions = new(1200);
+        public Dictionary<string, ushort> labels = new();
 
         public string info;
 
         public Compiler()
         {
-            Load(@"../../../bots/testbot.asm");
+            Load(@"../../../bots/samplebot.asm");
+        }
+
+        public string FormatInstruction(string raw)
+        {
+            var l = raw.Trim();
+
+            // trim comments, we don't need those
+            if (l.Contains("//")) l = l.Remove(l.IndexOf("//"));
+            if (l.Contains(";")) l = l.Remove(l.IndexOf(";"));
+
+            l = Regex.Replace(l, "\\s+", " ");
+            return l;
+        }
+
+        public ushort roundUpMultiple(ushort num, ushort div) { return (ushort)(num + ((div - (num % div)) % div)); }
+
+        private ushort TryOperand(string operand, bool dataMode = false)
+        {
+            ushort res;
+            if (ushort.TryParse((string)operand, out ushort result)) res = result;
+            else if (operand.StartsWith("0x")) res = Convert.ToUInt16(operand, 16);
+            else if (labels.ContainsKey(operand)) res = labels[operand];
+            else res = 0;
+            return res;
         }
 
         public void Load(string filename)
         {
             var lines = File.ReadLines(filename);
             ushort pointer = 0;
-            Dictionary<string, ushort> labels = new();
-            foreach (var line in lines)
+            if (lines.First().Trim().StartsWith("info: ")) info = lines.First().Trim()[6..];
+            foreach (var line in lines.Skip(1))
             {
-                var l = line.Trim();
+                var trim = FormatInstruction(line);
+                
+                if (string.IsNullOrWhiteSpace(trim)) continue;
 
-                if (l.StartsWith("info: ")) {
-                    info = l[6..]; // trim info tag
-                    continue;
-                }
-
-                // trim comments, we don't need those
-                if (l.Contains("//")) l = l.Remove(l.IndexOf("//"));
-                if (l.Contains(";"))  l = l.Remove(l.IndexOf(";"));
-
-                l = Regex.Replace(l, "\\s+", " ");
-                if (string.IsNullOrWhiteSpace(l)) continue;
-
-                var chop = l.Split(' ', 4);
+                var chop = trim.Split(' ', 3);
 
                 int op = ToOpcode(chop[0]);
                 if (op != 0xFFFF)
                 {
                     pointer += 3;
+                }
+                else if (chop[0] == "data" && chop[1] == "{")
+                {
+                    ushort data_amt = 0;
+                    // raw data
+                    var data = chop[2].Split(' ');
+                    foreach (var item in data)
+                    {
+                        if (item == "}") break;
+                        else data_amt++;
+                    }
+
+                    pointer += roundUpMultiple(data_amt, 3);
                 }
                 else if (chop[0].EndsWith(":"))
                 {
@@ -175,10 +203,10 @@ namespace OpenNANORGS
 
     class CompilerInstruction
     {
-        ushort opcode;
+        public ushort opcode;
 
-        ushort operand1;
-        ushort operand2;
+        public ushort operand1;
+        public ushort operand2;
 
         public CompilerInstruction(ushort opcode, ushort operand1, ushort operand2)
         {

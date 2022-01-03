@@ -30,6 +30,107 @@ namespace OpenNANORGS
         private Random rnd;
         private bool tmpSucc = false;
 
+        public enum BotOps
+        {
+            NOP = 0,
+            MOV = 1,
+            PUSH = 2,
+            POP = 3,
+            CALL = 4,
+            RET = 5,
+            JMP = 6,
+            JL = 7,
+            JLE = 8,
+            JG = 9,
+            JGE = 10,
+            JE = 11,
+            JNE = 12,
+            JS = 13,
+            JNS = 14,
+            ADD = 15,
+            SUB = 16,
+            MULT = 17,
+            DIV = 18,
+            MOD = 19,
+            AND = 20,
+            OR = 21,
+            XOR = 22,
+            CMP = 23,
+            TEST = 24,
+            GETXY = 25,
+            ENERGY = 26,
+            TRAVEL = 27,
+            SHL = 28,
+            SHR = 29,
+            SENSE = 30,
+            EAT = 31,
+            RAND = 32,
+            RELEASE = 33,
+            CHARGE = 34,
+            POKE = 35,
+            PEEK = 36,
+            CKSUM = 37
+        }
+
+        [Flags]
+        public enum BotOpTypes
+        {
+            Direct = 0,         // 0 0
+            Register = 1,       // 0 1
+            Immediate = 2,      // 1 0
+            RegisterIndexed = 3 // 1 1
+        }
+
+        private void ParseBytecode(CompilerInstruction instruction)
+        {
+            BotOps command = (BotOps)(instruction.opcode & 0xff);
+
+            BotOpTypes op1Type = (BotOpTypes)((instruction.opcode & 0xf000) >> 14);
+            BotOpTypes op2Type = (BotOpTypes)((instruction.opcode & 0x3000) >> 12);
+
+            // implement the CPU and then resume this after you know what the fuck you're doing
+
+            return;
+        }
+
+        public void Tick(uint tick)
+        {
+            if (energy < 1) return;
+            // actually run instructions for 1 tick here.
+
+            ParseBytecode(new CompilerInstruction(0x6001, 0x0005, 0xDEAD));
+
+            // instruction testing, will not be here in final version
+            switch (tick % 8)
+            {
+                case 0:
+                    oper_RAND(ref reg[0], 4);
+                    break;
+                case 1:
+                    oper_TRAVEL(reg[0]);
+                    break;
+                case 2:
+                    oper_EAT();
+                    break;
+                case 3:
+                    oper_SENSE(ref reg[0]);
+                    break;
+                case 4:
+                    oper_CMP(reg[0], 0xFFFF);
+                    break;
+                case 5:
+                    UseEnergy(); // in place of JNE 0
+                    tmpSucc = flags.HasFlag(BotFlags.Equal);
+                    break;
+                case 6:
+                    if (tmpSucc) oper_RELEASE(10000);
+                    break;
+                case 7:
+                    UseEnergy(); // in place of JMP 0
+                    break;
+            }
+        }
+
         [Flags]
         public enum BotFlags
         {
@@ -294,44 +395,7 @@ namespace OpenNANORGS
             if (op1 > op2) flags |= BotFlags.Greater;
         }
 
-        public void Tick(uint tick)
-        {
-            if(energy < 1) return;
-            // actually run instructions for 1 tick here.
-
-            // instruction testing, will not be here in final version
-            switch(tick % 8)
-            {
-                case 0:
-                    oper_RAND(ref reg[0], 4);
-                    break;
-                case 1:
-                    oper_TRAVEL(reg[0]);
-                    break;
-                case 2:
-                    oper_EAT();
-                    break;
-                case 3:
-                    oper_SENSE(ref reg[0]);
-                    break;
-                case 4:
-                    oper_CMP(reg[0], 0xFFFF);
-                    break;
-                case 5:
-                    UseEnergy(); // in place of JNE 0
-                    tmpSucc = flags.HasFlag(BotFlags.Equal);
-                    break;
-                case 6:
-                    if(tmpSucc) oper_RELEASE(10000);
-                    break;
-                case 7:
-                    UseEnergy(); // in place of JMP 0
-                    break;
-            }
-            
-            
-            
-        }
+        
 
         public char Render()
         {
