@@ -22,14 +22,15 @@ namespace OpenNANORGS
 
         public static void Main(string[] args)
         {
-            
-
-            // Only resize console on Windows, the only supported platform.
-            if (OperatingSystem.IsWindows())
+            if (OperatingSystem.IsWindows()) // Attempt native resize on Windows
             {
-                Console.SetWindowSize(1, 1);
-                Console.SetBufferSize(80, 50);
-                Console.SetWindowSize(80, 50);
+                Console.SetWindowSize(1, 1); // done to be able to set the buffer to the correct size
+                Console.SetBufferSize(70, 50);
+                Console.SetWindowSize(70, 50);
+            }
+            else // Attempt ANSI escape resize otherwise
+            {
+                Console.Write("\u001b[8;50;70t");
             }
 
             Console.Clear();
@@ -39,11 +40,17 @@ namespace OpenNANORGS
             while (true)
             {
                 Console.CursorVisible = false;
-                Console.Write(pf.Tick());
-                Thread.Sleep(10);
-                //Console.ReadKey();
+                var tick = pf.Tick();
+                if (!pf.quiet)
+                {
+                    Console.Write(pf.Render());
+                    Thread.Sleep(10);
+                }
+                if (pf.Finished()) break;
                 Console.SetCursorPosition(0, 0);
-            }
+            } 
+            
+            Console.WriteLine("done.");
         }
     }
 }

@@ -17,7 +17,7 @@ namespace OpenNANORGS
 
         private byte numSludge;
         private List<byte> toxicSludge;
-        private bool debugSludge = false;
+        private bool debugSludge = true;
 
         private int seed;
         public Random rnd;
@@ -34,6 +34,8 @@ namespace OpenNANORGS
         private Bot dBI;
 
         private Compiler cmp;
+
+        public bool quiet = false;
 
         public Playfield(string[] args)
         {
@@ -93,10 +95,16 @@ namespace OpenNANORGS
                     switch (flag)
                     {
                         case "p":
-                            botSource = item.Substring(3);
+                            botSource = item[3..];
                             break;
                         case "s":
-                            int.TryParse(item.Substring(3), out this.seed);
+                            if (!int.TryParse(item[3..], out this.seed))
+                            {
+                                throw new Exception("Invalid seed!");
+                            }
+                            break;
+                        case "q":
+                            quiet = true;
                             break;
                         default:
                             break;
@@ -105,15 +113,14 @@ namespace OpenNANORGS
             }
         }
 
-        public StringBuilder Tick()
+        public uint Tick()
         {
             foreach (var bot in bots)
             {
                 bot.Tick(tick);
             }
-            var sb = Render();
             tick++;
-            return sb;
+            return tick;
         }
 
         // check to see bot can move to specific tile
@@ -198,48 +205,43 @@ namespace OpenNANORGS
         {
             var sb = new StringBuilder();
 
-            for (int y = 0; y < 40; y++)
+            for (var y = 0; y < 40; y++)
             {
-                string tmp = string.Empty;
-                for (int x = 0; x < 70; x++)
+                for (var x = 0; x < 70; x++)
                 {
-                    bool occ = false; // block already drawn.
+                    var occ = false; // block already drawn.
                     foreach (var bot in bots)
                     {
-                        if(bot.x == x && bot.y == y)
-                        {
-                            tmp += bot.Render();
-                            occ = true;
-                        }
+                        if (bot.x != x || bot.y != y) continue;
+                        sb.Append(bot.Render());
+                        occ = true;
                     }
                     if (!occ)
                     {
                         switch (elements[y, x])
                         {
                             case 0: // empty tile
-                                tmp += " ";
+                                sb.Append(' ');
                                 break;
                             case 65535: // collection point
-                                tmp += "$";
+                                sb.Append('$');
                                 break;
                             default:
                                 if(toxicSludge.Contains((byte)elements[y, x]))
                                 {
-                                    tmp += debugSludge ? "%" : "*";
+                                    sb.Append(debugSludge ? '%' : '*');
                                 }
                                 else
                                 {
-                                    tmp += debugSludge ? elements[y, x].ToString() : "*";
+                                    sb.Append(debugSludge ? elements[y, x].ToString()[0]: '*');
                                 }
-                                
                                 break;
                         }
                     }
                 }
-                sb.AppendLine(tmp);
             }
 
-            sb.AppendLine(string.Format("\r\nScore: {0:n0}, Ticks: {1:n0} of {2:n0}, Seed: <{3}>", score, tick, maxtick, seed));
+            sb.AppendLine($"\r\nScore: {score:n0}, Ticks: {tick:n0} of {maxtick:n0}, Seed: <{seed}>");
 
             //sb.AppendLine(string.Format("\r\nX: {0:D2}, Y: {1:D2}, Energy: {2:D5}", testBot.x, testBot.y, testBot.energy));
 
@@ -270,6 +272,11 @@ namespace OpenNANORGS
 
 
             return sb;
+        }
+
+        public bool Finished()
+        {
+            return tick >= maxtick;
         }
     }
 }

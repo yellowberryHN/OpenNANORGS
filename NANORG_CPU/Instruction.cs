@@ -36,8 +36,9 @@ namespace NANORG_CPU
                     if (op1.sub) raw[0] |= 2 << 10;
                     ushort idx = op1.sub ? (ushort)(0x1000 - op1.index) : op1.index;
                     tmp = (ushort)(idx | (op1.value << 12));
-                    
                     break;
+                default:
+                    throw new Exception("Invalid operand type");
             }
 
             raw[1] = tmp;
@@ -55,6 +56,8 @@ namespace NANORG_CPU
                     ushort idx = op2.sub ? (ushort)(0x1000 - op2.index) : op2.index;
                     tmp = (ushort)(idx | (op2.value << 12));
                     break;
+                default:
+                    throw new Exception("Invalid operand type");
             }
 
             raw[2] = tmp;

@@ -399,8 +399,7 @@ namespace OpenNANORGS
 
         public char Render()
         {
-            if (energy < 1) return '.';
-            else return botId;
+            return energy < 1 ? '.' : botId;
         }
     }
 }
