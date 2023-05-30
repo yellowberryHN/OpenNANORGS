@@ -41,9 +41,10 @@ namespace OpenNANORGS
             {
                 Console.CursorVisible = false;
                 var tick = pf.Tick();
-                if (!pf.quiet)
+                if (!pf.quiet && (tick % 10) == 0)
                 {
-                    Console.Write(pf.Render());
+                    pf.Render();
+                    Console.Write(pf.builder);
                     Thread.Sleep(10);
                 }
                 if (pf.Finished()) break;

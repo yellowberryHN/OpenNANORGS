@@ -8,20 +8,33 @@ namespace NANORG_CPU
 {
     public class Instruction
     {
-        private ushort[] raw = new ushort[3] { 0, 0, 0 };
+        private ushort[] bytecode = new ushort[3] { 0, 0, 0 };
+        private readonly CPUOpCode opcode; // FIXME: These probably shouldn't be used in the object, get them from the bytecode
+        private readonly Operand op1;
+        private readonly Operand op2;
+        private readonly ushort ip;
+        
+
 
         public Instruction(CPUOpCode opcode, Operand op1, Operand op2, ushort ip = 0)
         {
-            ushort tmp;
-            tmp = (ushort)((ushort)opcode | (op1.GetBytesFromMode(op2) << 12));
+            this.opcode = opcode;
+            this.op1 = op1;
+            this.op2 = op2;
+            this.ip = ip;
+            
+            if (op1 == null) op1 = new Operand();
+            if (op2 == null) op2 = new Operand();
+            
+            ushort tmp = (ushort)((ushort)opcode | (op1.GetBytesFromMode(op2) << 12)); 
 
-            raw[0] = tmp;
+            bytecode[0] = tmp;
 
             tmp = 0;
             switch (op1.type)
             {
                 case CPUOperType.Immediate:
-                    if ((opcode >= CPUOpCode.JMP && opcode <= CPUOpCode.JNS) || opcode == CPUOpCode.CALL)
+                    if (opcode is >= CPUOpCode.JMP and <= CPUOpCode.JNS or CPUOpCode.CALL)
                     {
                         tmp = (ushort)(op1.value - ip);
                     }
@@ -33,7 +46,7 @@ namespace NANORG_CPU
                     tmp = op1.value;
                     break;
                 case CPUOperType.RegisterIndexed: // TODO: add support for subtraction 
-                    if (op1.sub) raw[0] |= 2 << 10;
+                    if (op1.sub) bytecode[0] |= 2 << 10;
                     ushort idx = op1.sub ? (ushort)(0x1000 - op1.index) : op1.index;
                     tmp = (ushort)(idx | (op1.value << 12));
                     break;
@@ -41,7 +54,7 @@ namespace NANORG_CPU
                     throw new Exception("Invalid operand type");
             }
 
-            raw[1] = tmp;
+            bytecode[1] = tmp;
 
             tmp = 0;
             switch (op2.type)
@@ -52,7 +65,7 @@ namespace NANORG_CPU
                     tmp = op2.value;
                     break;
                 case CPUOperType.RegisterIndexed:
-                    if (op2.sub) raw[0] |= 1 << 10;
+                    if (op2.sub) bytecode[0] |= 1 << 10;
                     ushort idx = op2.sub ? (ushort)(0x1000 - op2.index) : op2.index;
                     tmp = (ushort)(idx | (op2.value << 12));
                     break;
@@ -60,30 +73,36 @@ namespace NANORG_CPU
                     throw new Exception("Invalid operand type");
             }
 
-            raw[2] = tmp;
+            bytecode[2] = tmp;
         }
 
-        public string ToAssembly(ushort ip = 0)
+        public string ToAssembly()
         {
             string tmp;
 
-            tmp = ((CPUOpCode)(this.raw[0] & 0xFF)).ToString().ToLower();
+            tmp = ((CPUOpCode)(this.bytecode[0] & 0xFF)).ToString().ToLower();
 
-            var modes = Operand.GetModesFromBytes(this.raw[0]);
+            var modes = Operand.GetModesFromBytes(this.bytecode[0]);
 
             switch (modes[0])
             {
                 case CPUOperType.Register:
-                    tmp += " r" + this.raw[1];
+                    tmp += " r" + this.bytecode[1];
                     break;
                 case CPUOperType.Direct:
-                    tmp += " [" + this.raw[1] + "]";
+                    tmp += " [" + this.bytecode[1] + "]";
                     break;
                 case CPUOperType.Immediate:
-                    tmp += " " + this.raw[1];
+                    if (opcode is >= CPUOpCode.JMP and <= CPUOpCode.JNS or CPUOpCode.CALL)
+                        tmp += " " + (ushort)(this.bytecode[1] + this.ip);
+                    else
+                        tmp += " " + this.bytecode[1];
                     break;
                 case CPUOperType.RegisterIndexed:
-                    tmp += " [r" + ((this.raw[1] & 0xf000) >> 12) + "+" + (this.raw[1] & 0xfff) + "]";
+                    if ((this.bytecode[0] & 0x800) == 0x800) // subtract
+                        tmp += " [r" + ((this.bytecode[1] & 0xf000) >> 12) + "-" + (0x1000 - (this.bytecode[1] & 0xfff)) + "]";
+                    else
+                        tmp += " [r" + ((this.bytecode[1] & 0xf000) >> 12) + "+" + (this.bytecode[1] & 0xfff) + "]";
                     break;
                 default:
                     throw new NotImplementedException();
@@ -92,16 +111,19 @@ namespace NANORG_CPU
             switch (modes[1])
             {
                 case CPUOperType.Register:
-                    tmp += ", r" + this.raw[2];
+                    tmp += ", r" + this.bytecode[2];
                     break;
                 case CPUOperType.Direct:
-                    tmp += ", [" + this.raw[2] + "]";
+                    tmp += ", [" + this.bytecode[2] + "]";
                     break;
                 case CPUOperType.Immediate:
-                    tmp += ", " + this.raw[2];
+                    tmp += ", " + this.bytecode[2];
                     break;
                 case CPUOperType.RegisterIndexed:
-                    tmp += ", [r" + ((this.raw[1] & 0xf000) >> 12) + "+" + (this.raw[1] & 0xfff) + "]";
+                    if ((this.bytecode[0] & 0x800) == 0x800) // subtract
+                        tmp += ", [r" + ((this.bytecode[1] & 0xf000) >> 12) + "-" + (0x1000 - (this.bytecode[1] & 0xfff)) + "]";
+                    else
+                        tmp += ", [r" + ((this.bytecode[1] & 0xf000) >> 12) + "+" + (this.bytecode[1] & 0xfff) + "]";
                     break;
                 default:
                     throw new NotImplementedException();
@@ -111,10 +133,7 @@ namespace NANORG_CPU
             //throw new NotImplementedException();
         }
 
-        public override string ToString()
-        {
-            return string.Format("{0} {1} {2}", raw.Select(x => x.ToString("X4")).ToArray()); 
-        }
+        public override string ToString() => string.Format("{0} {1}", ToAssembly().PadRight(30), string.Format("{0} {1} {2}", bytecode.Select(x => x.ToString("X4")).ToArray()));
     }
 
     public class Operand

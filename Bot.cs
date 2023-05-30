@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OpenNANORGS
 {
@@ -98,7 +94,7 @@ namespace OpenNANORGS
             if (energy < 1) return;
             // actually run instructions for 1 tick here.
 
-            ParseBytecode(new CompilerInstruction(0x6001, 0x0005, 0xDEAD));
+            //ParseBytecode(new CompilerInstruction(0x6001, 0x0005, 0xDEAD));
 
             // instruction testing, will not be here in final version
             switch (tick % 8)

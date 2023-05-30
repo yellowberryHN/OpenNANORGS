@@ -1,6 +1,6 @@
 ﻿# OpenNANORGS
 
-A (very poor) .NET 5.0 reimplementation of Symantec's 2006
+A (very poor) .NET 7.0 reimplementation of Symantec's 2006
 University Programming Competition virtual nano-organism simulator.
 
 *A project born out of intrigue, minor obsession, frustration and inspriration.* 
