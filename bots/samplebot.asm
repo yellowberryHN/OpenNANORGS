@@ -1,4 +1,4 @@
-info: AJOSampleBot, John Doe 
+info: AJOSampleBot, John Doe
   
 main:
 	// select a random direction and distance to move

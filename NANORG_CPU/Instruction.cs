@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NANORG_CPU
 {
     public class Instruction
     {
-        private ushort[] bytecode = new ushort[3] { 0, 0, 0 };
+        public ushort[] bytecode = new ushort[3] { 0, 0, 0 };
         private readonly CPUOpCode opcode; // FIXME: These probably shouldn't be used in the object, get them from the bytecode
         private readonly Operand op1;
         private readonly Operand op2;
@@ -23,10 +20,10 @@ namespace NANORG_CPU
             this.op2 = op2;
             this.ip = ip;
             
-            if (op1 == null) op1 = new Operand();
-            if (op2 == null) op2 = new Operand();
+            op1 ??= new Operand();
+            op2 ??= new Operand();
             
-            ushort tmp = (ushort)((ushort)opcode | (op1.GetBytesFromMode(op2) << 12)); 
+            var tmp = (ushort)((ushort)opcode | (op1.GetBytesFromMode(op2) << 12)); 
 
             bytecode[0] = tmp;
 
@@ -45,9 +42,9 @@ namespace NANORG_CPU
                 case CPUOperType.Register:
                     tmp = op1.value;
                     break;
-                case CPUOperType.RegisterIndexed: // TODO: add support for subtraction 
+                case CPUOperType.RegisterIndexed:
                     if (op1.sub) bytecode[0] |= 2 << 10;
-                    ushort idx = op1.sub ? (ushort)(0x1000 - op1.index) : op1.index;
+                    ushort idx = op1.sub ? (ushort)(0x1000 - op1.offset) : op1.offset;
                     tmp = (ushort)(idx | (op1.value << 12));
                     break;
                 default:
@@ -66,7 +63,7 @@ namespace NANORG_CPU
                     break;
                 case CPUOperType.RegisterIndexed:
                     if (op2.sub) bytecode[0] |= 1 << 10;
-                    ushort idx = op2.sub ? (ushort)(0x1000 - op2.index) : op2.index;
+                    ushort idx = op2.sub ? (ushort)(0x1000 - op2.offset) : op2.offset;
                     tmp = (ushort)(idx | (op2.value << 12));
                     break;
                 default:
@@ -78,31 +75,38 @@ namespace NANORG_CPU
 
         public string ToAssembly()
         {
-            string tmp;
+            // TODO: assign all instructions their amount of operands so it doesn't generate garbage code
+            string buffer;
 
-            tmp = ((CPUOpCode)(this.bytecode[0] & 0xFF)).ToString().ToLower();
+            buffer = ((CPUOpCode)(this.bytecode[0] & 0xFF)).ToString().ToLower();
 
             var modes = Operand.GetModesFromBytes(this.bytecode[0]);
 
             switch (modes[0])
             {
                 case CPUOperType.Register:
-                    tmp += " r" + this.bytecode[1];
+                    buffer += " r" + this.bytecode[1];
                     break;
                 case CPUOperType.Direct:
-                    tmp += " [" + this.bytecode[1] + "]";
+                    buffer += " [" + this.bytecode[1] + "]";
                     break;
                 case CPUOperType.Immediate:
                     if (opcode is >= CPUOpCode.JMP and <= CPUOpCode.JNS or CPUOpCode.CALL)
-                        tmp += " " + (ushort)(this.bytecode[1] + this.ip);
+                        buffer += " " + (ushort)(this.bytecode[1] + this.ip);
                     else
-                        tmp += " " + this.bytecode[1];
+                        buffer += " " + this.bytecode[1];
                     break;
                 case CPUOperType.RegisterIndexed:
-                    if ((this.bytecode[0] & 0x800) == 0x800) // subtract
-                        tmp += " [r" + ((this.bytecode[1] & 0xf000) >> 12) + "-" + (0x1000 - (this.bytecode[1] & 0xfff)) + "]";
+                    var register = (this.bytecode[1] & 0xf000) >> 12;
+                    var offset = this.bytecode[1] & 0xfff;
+                    var sub = (this.bytecode[0] & 0x800) == 0x800;
+                    
+                    if (offset == 0) buffer += ", [r" + register + "]";
                     else
-                        tmp += " [r" + ((this.bytecode[1] & 0xf000) >> 12) + "+" + (this.bytecode[1] & 0xfff) + "]";
+                    {
+                        if (sub) /* subtract */ buffer += ", [r" + register + "-" + (0x1000 - offset) + "]";
+                        else buffer += ", [r" + register + "+" + offset + "]";
+                    }
                     break;
                 default:
                     throw new NotImplementedException();
@@ -111,51 +115,57 @@ namespace NANORG_CPU
             switch (modes[1])
             {
                 case CPUOperType.Register:
-                    tmp += ", r" + this.bytecode[2];
+                    buffer += ", r" + this.bytecode[2];
                     break;
                 case CPUOperType.Direct:
-                    tmp += ", [" + this.bytecode[2] + "]";
+                    buffer += ", [" + this.bytecode[2] + "]";
                     break;
                 case CPUOperType.Immediate:
-                    tmp += ", " + this.bytecode[2];
+                    buffer += ", " + this.bytecode[2];
                     break;
                 case CPUOperType.RegisterIndexed:
-                    if ((this.bytecode[0] & 0x800) == 0x800) // subtract
-                        tmp += ", [r" + ((this.bytecode[1] & 0xf000) >> 12) + "-" + (0x1000 - (this.bytecode[1] & 0xfff)) + "]";
+                    var register = (this.bytecode[2] & 0xf000) >> 12;
+                    var offset = this.bytecode[2] & 0xfff;
+                    var sub = (this.bytecode[0] & 0x400) == 0x400;
+                    
+                    if (offset == 0) buffer += ", [r" + register + "]";
                     else
-                        tmp += ", [r" + ((this.bytecode[1] & 0xf000) >> 12) + "+" + (this.bytecode[1] & 0xfff) + "]";
+                    {
+                        if (sub) /* subtract */ buffer += ", [r" + register + "-" + (0x1000 - offset) + "]";
+                        else buffer += ", [r" + register + "+" + offset + "]";
+                    }
                     break;
                 default:
                     throw new NotImplementedException();
             }
 
-            return tmp;
+            return buffer;
             //throw new NotImplementedException();
         }
 
-        public override string ToString() => string.Format("{0} {1}", ToAssembly().PadRight(30), string.Format("{0} {1} {2}", bytecode.Select(x => x.ToString("X4")).ToArray()));
+        public override string ToString() => string.Format("{0} ({1})", ToAssembly().PadRight(30), string.Format("{0} {1} {2}", bytecode.Select(x => x.ToString("X4")).ToArray()));
     }
 
     public class Operand
     {
         public readonly CPUOperType type;
         public readonly ushort value;
-        public readonly ushort index;
+        public readonly ushort offset;
         public readonly bool sub;
 
         public Operand()
         {
             this.type = CPUOperType.Direct;
             this.value = 0;
-            this.index = 0;
+            this.offset = 0;
             this.sub = false;
         }
 
-        public Operand(CPUOperType type, ushort value, ushort index = 0, bool sub = false)
+        public Operand(CPUOperType type, ushort value, ushort offset = 0, bool sub = false)
         {
             this.type = type;
             this.value = value;
-            this.index = index;
+            this.offset = offset;
             this.sub = sub;
         }
 

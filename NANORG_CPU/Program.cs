@@ -35,6 +35,9 @@ namespace NANORG_CPU
             Console.WriteLine(new Instruction(CPUOpCode.RELEASE, new Operand(CPUOperType.Immediate, 10000), null));
             Console.WriteLine(new Instruction(CPUOpCode.JMP, new Operand(CPUOperType.Immediate, 0), null, 21));
             */
+            
+            //Console.WriteLine(new Instruction(CPUOpCode.MOV, new Operand(CPUOperType.Register, 0), new Operand(CPUOperType.RegisterIndexed, 1)));
+            //Console.WriteLine(new Instruction(CPUOpCode.MOV, new Operand(CPUOperType.RegisterIndexed, 0, 0xFFF, false), new Operand(CPUOperType.RegisterIndexed, 1, 1)));
 
             /*
             var inst = new Instruction(CPUOpCode.MOV, new Operand(CPUOperType.Register, 5), new Operand(CPUOperType.Immediate, 0xDEAD));
@@ -47,7 +50,7 @@ namespace NANORG_CPU
             Console.WriteLine(inst.ToAssembly());
             */
 
-            var parser = new Parser("testbot.asm");
+            var parser = new Parser("samplebot.asm");
             var insts = parser.instructionList;
 
         }
