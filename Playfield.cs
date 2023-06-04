@@ -67,17 +67,22 @@ namespace OpenNANORGS
 
             bots = new List<Bot>();
 
-            cmp = new Compiler(botSource);
+            var botMemory = new CPU.Parser(botSource);
 
             for (int i = 0; i < 26; i++)
             {
-                var bot = new Bot((char)(65 + i), (byte)rnd.Next(70), (byte)rnd.Next(40), this);
+                var bot = new Bot((char)(65 + i), (byte)rnd.Next(70), (byte)rnd.Next(40), this, botMemory.bytecode);
                 bots.Add(bot);
             }
             for (int i = 0; i < 24; i++) // only 50 bots, poor 'y' and 'z' :(
             {
-                var bot = new Bot((char)(97 + i), (byte)rnd.Next(70), (byte)rnd.Next(40), this);
+                var bot = new Bot((char)(97 + i), (byte)rnd.Next(70), (byte)rnd.Next(40), this, botMemory.bytecode);
                 bots.Add(bot);
+            }
+            for (int i = 0; i < 20; i++)
+            {
+                var drone = new Drone((byte)rnd.Next(70), (byte)rnd.Next(40), this);
+                bots.Add(drone);
             }
 
             if(debugBot)
@@ -185,12 +190,12 @@ namespace OpenNANORGS
             return sludge;
         }
 
-        public void Collect(Bot bot, ushort amt)
+        public bool Collect(Bot bot, ushort amt)
         {
-            if(elements[bot.y, bot.x] == 0xFFFF)
-            {
-                score += amt;
-            }
+            if (elements[bot.y, bot.x] != 0xFFFF) return false;
+            bot.energy -= amt;
+            score += amt;
+            return true;
         }
 
         private bool SetElement(byte x, byte y, ushort id)

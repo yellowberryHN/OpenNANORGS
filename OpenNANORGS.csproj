@@ -11,4 +11,8 @@
     <None Remove="NANORG_CPU\**" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="NANORG_CPU\NANORG_CPU.csproj" />
+  </ItemGroup>
+
 </Project>

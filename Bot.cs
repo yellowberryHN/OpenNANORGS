@@ -1,4 +1,5 @@
 ﻿using System;
+using OpenNANORGS.CPU;
 
 namespace OpenNANORGS
 {
@@ -11,7 +12,7 @@ namespace OpenNANORGS
         public byte x;
         public byte y;
 
-        private int toxic = 0;
+        //private int toxic = 0;
 
         public ushort energy = 10000;
 
@@ -23,71 +24,10 @@ namespace OpenNANORGS
 
         public ushort[] reg = new ushort[14];
 
+        public ushort[] memory = new ushort[3600];
+
         private Random rnd;
-        private bool tmpSucc = false;
-
-        public enum BotOps
-        {
-            NOP = 0,
-            MOV = 1,
-            PUSH = 2,
-            POP = 3,
-            CALL = 4,
-            RET = 5,
-            JMP = 6,
-            JL = 7,
-            JLE = 8,
-            JG = 9,
-            JGE = 10,
-            JE = 11,
-            JNE = 12,
-            JS = 13,
-            JNS = 14,
-            ADD = 15,
-            SUB = 16,
-            MULT = 17,
-            DIV = 18,
-            MOD = 19,
-            AND = 20,
-            OR = 21,
-            XOR = 22,
-            CMP = 23,
-            TEST = 24,
-            GETXY = 25,
-            ENERGY = 26,
-            TRAVEL = 27,
-            SHL = 28,
-            SHR = 29,
-            SENSE = 30,
-            EAT = 31,
-            RAND = 32,
-            RELEASE = 33,
-            CHARGE = 34,
-            POKE = 35,
-            PEEK = 36,
-            CKSUM = 37
-        }
-
-        [Flags]
-        public enum BotOpTypes
-        {
-            Direct = 0,         // 0 0
-            Register = 1,       // 0 1
-            Immediate = 2,      // 1 0
-            RegisterIndexed = 3 // 1 1
-        }
-
-        private void ParseBytecode(CompilerInstruction instruction)
-        {
-            BotOps command = (BotOps)(instruction.opcode & 0xff);
-
-            BotOpTypes op1Type = (BotOpTypes)((instruction.opcode & 0xf000) >> 14);
-            BotOpTypes op2Type = (BotOpTypes)((instruction.opcode & 0x3000) >> 12);
-
-            // implement the CPU and then resume this after you know what the fuck you're doing
-
-            return;
-        }
+        //private bool tmpSucc = false;
 
         public void Tick(uint tick)
         {
@@ -116,10 +56,10 @@ namespace OpenNANORGS
                     break;
                 case 5:
                     UseEnergy(); // in place of JNE 0
-                    tmpSucc = flags.HasFlag(BotFlags.Equal);
+                    if (flags.HasFlag(BotFlags.Equal)) tick += 2;
                     break;
                 case 6:
-                    if (tmpSucc) oper_RELEASE(10000);
+                    oper_RELEASE(10000);
                     break;
                 case 7:
                     UseEnergy(); // in place of JMP 0
@@ -127,6 +67,7 @@ namespace OpenNANORGS
             }
         }
 
+        
         [Flags]
         public enum BotFlags
         {
@@ -149,16 +90,17 @@ namespace OpenNANORGS
 
             if (flags.HasFlag(BotFlags.Success)) a += "s";
             
-            return string.Format("{0,-2}", a);
+            return $"{a,-2}";
         }
 
-        public Bot(char id, byte x, byte y, Playfield pf)
+        public Bot(char id, byte x, byte y, Playfield pf, ushort[] memory = null)
         {
             rnd = pf.rnd;
             botId = id;
             this.x = x;
             this.y = y;
             playfield = pf;
+            if (memory != null) this.memory = memory;
         }
 
         private void UseEnergy(byte energy = 1)
@@ -290,11 +232,15 @@ namespace OpenNANORGS
 
             if(playfield.IsToxic(id))
             {
-                toxic++; // just for debugging
-                // mutate or some shit, idk
+                Mutate();
             }
 
             flags |= BotFlags.Success;
+        }
+
+        protected virtual void Mutate()
+        {
+            memory[rnd.Next(3599)] = (ushort)rnd.Next(0xFFFF);
         }
 
         private void oper_ENERGY(ref ushort dest)
@@ -364,7 +310,7 @@ namespace OpenNANORGS
             }
             else
             {
-                flags &= BotFlags.Success;
+                flags |= BotFlags.Success;
                 UseEnergy(10);
                 return;
             }
@@ -378,8 +324,8 @@ namespace OpenNANORGS
                 flags &= ~BotFlags.Success;
                 return;
             }
-            energy -= amt;
-            playfield.Collect(this, amt);
+            if(playfield.Collect(this, amt))
+                flags |= BotFlags.Success;
         }
         
         public void oper_CMP(ushort op1, ushort op2)
@@ -387,15 +333,33 @@ namespace OpenNANORGS
             UseEnergy();
             flags = BotFlags.None;
             if (op1 < op2) flags |= BotFlags.Less;
-            if (op1 == op2) flags |= BotFlags.Equal;
-            if (op1 > op2) flags |= BotFlags.Greater;
+            else if (op1 == op2) flags |= BotFlags.Equal;
+            else if (op1 > op2) flags |= BotFlags.Greater;
         }
 
         
 
-        public char Render()
+        public virtual char Render()
         {
             return energy < 1 ? '.' : botId;
+        }
+    }
+
+    internal class Drone : Bot
+    {
+        public override char Render()
+        {
+            return energy < 1 ? ',' : '@';
+        }
+
+        protected override void Mutate()
+        {
+            // drones are immune to mutation from toxic sludge, do nothing
+        }
+
+        public Drone(byte x, byte y, Playfield pf) : base('@', x, y, pf)
+        {
+            // load malicious code here
         }
     }
 }

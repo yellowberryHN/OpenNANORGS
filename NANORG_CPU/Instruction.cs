@@ -1,23 +1,15 @@
 ﻿using System;
 using System.Linq;
 
-namespace NANORG_CPU
+namespace OpenNANORGS.CPU
 {
     public class Instruction
     {
         public ushort[] bytecode = new ushort[3] { 0, 0, 0 };
-        private readonly CPUOpCode opcode; // FIXME: These probably shouldn't be used in the object, get them from the bytecode
-        private readonly Operand op1;
-        private readonly Operand op2;
         private readonly ushort ip;
-        
-
 
         public Instruction(CPUOpCode opcode, Operand op1, Operand op2, ushort ip = 0)
         {
-            this.opcode = opcode;
-            this.op1 = op1;
-            this.op2 = op2;
             this.ip = ip;
             
             op1 ??= new Operand();
@@ -43,8 +35,8 @@ namespace NANORG_CPU
                     tmp = op1.value;
                     break;
                 case CPUOperType.RegisterIndexed:
-                    if (op1.sub) bytecode[0] |= 2 << 10;
-                    ushort idx = op1.sub ? (ushort)(0x1000 - op1.offset) : op1.offset;
+                    if (op1.sub && op1.offset != 0) bytecode[0] |= 2 << 10;
+                    ushort idx = op1.sub && op1.offset != 0 ? (ushort)(0x1000 - op1.offset) : op1.offset;
                     tmp = (ushort)(idx | (op1.value << 12));
                     break;
                 default:
@@ -62,8 +54,8 @@ namespace NANORG_CPU
                     tmp = op2.value;
                     break;
                 case CPUOperType.RegisterIndexed:
-                    if (op2.sub) bytecode[0] |= 1 << 10;
-                    ushort idx = op2.sub ? (ushort)(0x1000 - op2.offset) : op2.offset;
+                    if (op2.sub && op2.offset != 0) bytecode[0] |= 1 << 10;
+                    ushort idx = op2.sub && op2.offset != 0 ? (ushort)(0x1000 - op2.offset) : op2.offset;
                     tmp = (ushort)(idx | (op2.value << 12));
                     break;
                 default:
@@ -75,72 +67,76 @@ namespace NANORG_CPU
 
         public string ToAssembly()
         {
-            // TODO: assign all instructions their amount of operands so it doesn't generate garbage code
-            string buffer;
-
-            buffer = ((CPUOpCode)(this.bytecode[0] & 0xFF)).ToString().ToLower();
+            var opcode = (CPUOpCode)(this.bytecode[0] & 0xFF);
+            var operands = (int)Enum.Parse<CPUOpCodeOperands>(opcode.ToString());
+            var buffer = (opcode).ToString().ToLower();
 
             var modes = Operand.GetModesFromBytes(this.bytecode[0]);
 
-            switch (modes[0])
+            if (operands >= 1)
             {
-                case CPUOperType.Register:
-                    buffer += " r" + this.bytecode[1];
-                    break;
-                case CPUOperType.Direct:
-                    buffer += " [" + this.bytecode[1] + "]";
-                    break;
-                case CPUOperType.Immediate:
-                    if (opcode is >= CPUOpCode.JMP and <= CPUOpCode.JNS or CPUOpCode.CALL)
-                        buffer += " " + (ushort)(this.bytecode[1] + this.ip);
-                    else
-                        buffer += " " + this.bytecode[1];
-                    break;
-                case CPUOperType.RegisterIndexed:
-                    var register = (this.bytecode[1] & 0xf000) >> 12;
-                    var offset = this.bytecode[1] & 0xfff;
-                    var sub = (this.bytecode[0] & 0x800) == 0x800;
+                switch (modes[0])
+                {
+                    case CPUOperType.Register:
+                        buffer += " r" + this.bytecode[1];
+                        break;
+                    case CPUOperType.Direct:
+                        buffer += " [" + this.bytecode[1] + "]";
+                        break;
+                    case CPUOperType.Immediate:
+                        if (opcode is >= CPUOpCode.JMP and <= CPUOpCode.JNS or CPUOpCode.CALL)
+                            buffer += " " + (ushort)(this.bytecode[1] + this.ip);
+                        else
+                            buffer += " " + this.bytecode[1];
+                        break;
+                    case CPUOperType.RegisterIndexed:
+                        var register = (this.bytecode[1] & 0xf000) >> 12;
+                        var offset = this.bytecode[1] & 0xfff;
+                        var sub = (this.bytecode[0] & 0x800) == 0x800;
                     
-                    if (offset == 0) buffer += ", [r" + register + "]";
-                    else
-                    {
-                        if (sub) /* subtract */ buffer += ", [r" + register + "-" + (0x1000 - offset) + "]";
-                        else buffer += ", [r" + register + "+" + offset + "]";
-                    }
-                    break;
-                default:
-                    throw new NotImplementedException();
+                        if (offset == 0) buffer += " [r" + register + "]";
+                        else
+                        {
+                            if (sub) /* subtract */ buffer += " [r" + register + "-" + (0x1000 - offset) + "]";
+                            else buffer += " [r" + register + "+" + offset + "]";
+                        }
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
             }
 
-            switch (modes[1])
+            if (operands == 2)
             {
-                case CPUOperType.Register:
-                    buffer += ", r" + this.bytecode[2];
-                    break;
-                case CPUOperType.Direct:
-                    buffer += ", [" + this.bytecode[2] + "]";
-                    break;
-                case CPUOperType.Immediate:
-                    buffer += ", " + this.bytecode[2];
-                    break;
-                case CPUOperType.RegisterIndexed:
-                    var register = (this.bytecode[2] & 0xf000) >> 12;
-                    var offset = this.bytecode[2] & 0xfff;
-                    var sub = (this.bytecode[0] & 0x400) == 0x400;
+                switch (modes[1])
+                {
+                    case CPUOperType.Register:
+                        buffer += ", r" + this.bytecode[2];
+                        break;
+                    case CPUOperType.Direct:
+                        buffer += ", [" + this.bytecode[2] + "]";
+                        break;
+                    case CPUOperType.Immediate:
+                        buffer += ", " + this.bytecode[2];
+                        break;
+                    case CPUOperType.RegisterIndexed:
+                        var register = (this.bytecode[2] & 0xf000) >> 12;
+                        var offset = this.bytecode[2] & 0xfff;
+                        var sub = (this.bytecode[0] & 0x400) == 0x400;
                     
-                    if (offset == 0) buffer += ", [r" + register + "]";
-                    else
-                    {
-                        if (sub) /* subtract */ buffer += ", [r" + register + "-" + (0x1000 - offset) + "]";
-                        else buffer += ", [r" + register + "+" + offset + "]";
-                    }
-                    break;
-                default:
-                    throw new NotImplementedException();
+                        if (offset == 0) buffer += ", [r" + register + "]";
+                        else
+                        {
+                            if (sub) /* subtract */ buffer += ", [r" + register + "-" + (0x1000 - offset) + "]";
+                            else buffer += ", [r" + register + "+" + offset + "]";
+                        }
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
             }
-
+            
             return buffer;
-            //throw new NotImplementedException();
         }
 
         public override string ToString() => string.Format("{0} ({1})", ToAssembly().PadRight(30), string.Format("{0} {1} {2}", bytecode.Select(x => x.ToString("X4")).ToArray()));
@@ -238,5 +234,47 @@ namespace NANORG_CPU
         POKE = 35,
         PEEK = 36,
         CKSUM = 37
+    }
+
+    public enum CPUOpCodeOperands
+    {
+        NOP = 0,
+        MOV = 2,
+        PUSH = 1,
+        POP = 1,
+        CALL = 1,
+        RET = 0,
+        JMP = 1,
+        JL = 1,
+        JLE = 1,
+        JG = 1,
+        JGE = 1,
+        JE = 1,
+        JNE = 1,
+        JS = 1,
+        JNS = 1,
+        ADD = 2,
+        SUB = 2,
+        MULT = 2,
+        DIV = 2,
+        MOD = 2,
+        AND = 2,
+        OR = 2,
+        XOR = 2,
+        CMP = 2,
+        TEST = 2,
+        GETXY = 2,
+        ENERGY = 1,
+        TRAVEL = 1,
+        SHL = 2,
+        SHR = 2,
+        SENSE = 1,
+        EAT = 0,
+        RAND = 2,
+        RELEASE = 1,
+        CHARGE = 2,
+        POKE = 2,
+        PEEK = 2,
+        CKSUM = 2
     }
 }

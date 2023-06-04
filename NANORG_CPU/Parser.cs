@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace NANORG_CPU
+namespace OpenNANORGS.CPU
 {
-    class Parser
+    public class Parser
     {
         public List<Instruction> instructionList;
         public ushort[] bytecode = new ushort[3600];
@@ -27,18 +27,29 @@ namespace NANORG_CPU
             if (lines[0].StartsWith("info:"))
             {
                 var botInfo = lines[0].Split(':')[1].Split(',', 2);
+                if (botInfo.Length < 2) throw new ArgumentException("Bot info header not formatted correctly");
                 botName = botInfo[0].Trim();
                 authorName = botInfo[1].Trim();
                 lines.RemoveAt(0);
                 Console.WriteLine($"name: {botName}\r\nauthor: {authorName}");
             }
 
+            var lines_tmp = lines.ToArray();
+
+            foreach (var line in lines_tmp)
+            {
+                if (line.Trim() == string.Empty || line.StartsWith("//") || line.StartsWith(";"))
+                    lines.Remove(line);
+            }
+
             ushort ip = 0; // instruction pointer
             ushort dp = 0; // data pointer (temporary)
             var labels = new Dictionary<string, ushort>();
 
-            foreach (var line in lines)
+
+            for (int j = 0; j < lines.Count; j++)
             {
+                var line = lines[j];
                 var l = line.Split("//")[0].Split(';')[0].Trim();
                 if (l == string.Empty || l.StartsWith("//") || l.StartsWith(";")) continue;
                 var op = l.Split(null, 2);
@@ -52,11 +63,15 @@ namespace NANORG_CPU
                     
                     var bufferedSize = (ushort)(Math.Ceiling(_values.Length / 3.0) * 3.0);
                     dp += (ushort)_values.Length;
-                    if(dp >= ip) ip += bufferedSize;
+                    if (dp % 3 == 0) ip = dp;
+                    else if(dp > ip) ip += bufferedSize;
                 }
                 else if (l.EndsWith(":")) // label
                 {
-                    labels.Add(line.Split(":")[0], dp == ip ? ip : dp);
+                    if (lines[j + 1].Split("//")[0].Split(';')[0].Trim().Split(null, 2)[0] == "data")
+                        labels.Add(l.Split(":")[0].ToLower(), dp);
+                    else
+                        labels.Add(l.Split(":")[0].ToLower(), ip);
                 }
                 else
                 {
@@ -68,9 +83,9 @@ namespace NANORG_CPU
             ip = 0;
             dp = 0;
 
-            foreach (var line in lines)
+            for (var j = 0; j < lines.Count; j++)
             {
-                
+                var line = lines[j];
                 var l = line.Split("//")[0].Split(';')[0].Trim();
                 if (l == string.Empty || l.StartsWith("//") || l.StartsWith(";") || l.EndsWith(":")) continue;
 
@@ -89,16 +104,26 @@ namespace NANORG_CPU
 
                     for (int i = 0; i < _values.Length; i++)
                     {
-                        // TODO: this will break for labels
                         if (!ushort.TryParse(_values[i], out dataArray[i]))
-                            dataArray[i] = Convert.ToUInt16(_values[i], 16);
+                        {
+                            try
+                            {
+                                dataArray[i] = Convert.ToUInt16(_values[i], 16);
+                            }
+                            catch(FormatException)
+                            {
+                                if (labels.ContainsKey(_values[i].ToLower()))
+                                    dataArray[i] = labels[_values[i].ToLower()];
+                            }
+                        }
                     }
                     
                     Buffer.BlockCopy(dataArray, 0, bytecode, (ip == dp ? ip * 2 : dp * 2), dataArray.Length * 2);
                     
                     var bufferedSize = (ushort)(Math.Ceiling(dataArray.Length / 3.0) * 3.0);
                     dp += (ushort)dataArray.Length;
-                    if(dp >= ip) ip += bufferedSize;
+                    if (dp % 3 == 0) ip = dp;
+                    else if(dp >= ip) ip += bufferedSize;
                 }
                 else
                 {
@@ -123,37 +148,101 @@ namespace NANORG_CPU
 
                         if (labels.ContainsKey(op1s))
                         {
-                            // TODO: compensate for jumps and calls
                             op1type = CPUOperType.Immediate;
-                            op1value = labels[op1s];
+                            op1value = labels[op1s.ToLower()];
                         }
-                        else if (op1s.StartsWith("r"))
+                        else if (op1s.StartsWith('r') && char.IsDigit(op1s[1]))
                         {
                             op1type = CPUOperType.Register;
                             op1value = ushort.Parse(op1s[1..]);
                         }
-                        else if (op1s.StartsWith("["))
+                        else if (op1s.StartsWith('['))
                         {
-                            if (op1s.StartsWith("[r"))
+                            if (!char.IsDigit(op1s[2]) && op1s.Contains('+'))
                             {
-                                // TODO: Compensate for offset
+                                // probably a label+register
                                 op1type = CPUOperType.RegisterIndexed;
-                                op1value = ushort.Parse(op1s.TrimEnd(']')[2..]);
+                                var tmp = op1s[1..^1].Split('+');
+                                if (labels.ContainsKey(tmp[0].ToLower()) && tmp[1].StartsWith('r'))
+                                {
+                                    op1offset = labels[tmp[0].ToLower()];
+                                    op1value = ushort.Parse(tmp[1][1..]);
+                                }
+                            }
+                            else if (op1s.StartsWith("[r") && char.IsDigit(op1s[2]))
+                            {
+                                op1type = CPUOperType.RegisterIndexed;
+                                if (!ushort.TryParse(op1s[2..^1], out op1value))
+                                {
+                                    if (op1s[2..^1].Contains('+'))
+                                    {
+                                        var tmp = op1s[2..^1].Split('+');
+                                        op1value = ushort.Parse(tmp[0]);
+                                        if (!ushort.TryParse(tmp[1], out op1offset))
+                                        {
+                                            try
+                                            {
+                                                op1offset = Convert.ToUInt16(tmp[1], 16);
+                                            }
+                                            catch (FormatException)
+                                            {
+                                                if (labels.ContainsKey(tmp[1].ToLower()))
+                                                    op1offset = labels[tmp[1].ToLower()];
+                                            }
+                                        }
+                                    }
+                                    else if (op1s[2..^1].Contains('-'))
+                                    {
+                                        var tmp = op1s[2..^1].Split('-');
+                                        op1sub = true;
+                                        op1value = ushort.Parse(tmp[0]);
+                                        if (!ushort.TryParse(tmp[1], out op1offset))
+                                        {
+                                            try
+                                            {
+                                                op1offset = Convert.ToUInt16(tmp[1], 16);
+                                            }
+                                            catch (FormatException)
+                                            {
+                                                if (labels.ContainsKey(tmp[1].ToLower()))
+                                                    op1offset = labels[tmp[1].ToLower()];
+                                            }
+                                        }
+                                    }
+                                }
                             }
                             else
                             {
-                                // TODO: compensate for jumps and calls
                                 op1type = CPUOperType.Direct;
-                                if (!ushort.TryParse(op1s.TrimEnd(']')[1..], out op1value) &&
-                                    labels.ContainsKey(op1s.TrimEnd(']')[1..]))
-                                    op1value = labels[op1s.TrimEnd(']')[1..]];
+                                if (!ushort.TryParse(op1s[1..^1], out op1value))
+                                {
+                                    try
+                                    {
+                                        op1value = Convert.ToUInt16(op1s.TrimEnd(']')[1..], 16);
+                                    }
+                                    catch(FormatException)
+                                    {
+                                        if (labels.ContainsKey(op1s[1..^1].ToLower()))
+                                            op1value = labels[op1s[1..^1].ToLower()];
+                                    }
+                                }
                             }
                         }
                         else
                         {
                             op1type = CPUOperType.Immediate;
                             if (!ushort.TryParse(op1s, out op1value))
-                                op1value = Convert.ToUInt16(op1s, 16);
+                            {
+                                try
+                                {
+                                    op1value = Convert.ToUInt16(op1s, 16);
+                                }
+                                catch(FormatException)
+                                {
+                                    if (labels.ContainsKey(op1s.ToLower()))
+                                        op1value = labels[op1s.ToLower()];
+                                }
+                            }
                         }
                         op1 = new Operand(op1type, op1value, op1offset, op1sub);
                         
@@ -167,30 +256,103 @@ namespace NANORG_CPU
                             
                             //Console.Write($", op2: {op2s}");
                             
-                            if (op2s.StartsWith("r"))
+                            if (labels.ContainsKey(op2s))
+                            {
+                                op2type = CPUOperType.Immediate;
+                                op2value = labels[op2s.ToLower()];
+                            }
+                            else if (op2s.StartsWith('r') && char.IsDigit(op2s[1]))
                             {
                                 op2type = CPUOperType.Register;
                                 op2value = ushort.Parse(op2s[1..]);
                             }
-                            else if (op2s.StartsWith("["))
+                            else if (op2s.StartsWith('['))
                             {
-                                if (op2s.StartsWith("[r"))
+                                if (!char.IsDigit(op2s[2]) && op2s.Contains('+'))
                                 {
-                                    // TODO: Compensate for offset
+                                    // probably a label+register
                                     op2type = CPUOperType.RegisterIndexed;
-                                    op2value = ushort.Parse(op2s.TrimEnd(']')[2..]);
+                                    var tmp = op2s[1..^1].Split('+');
+                                    if (labels.ContainsKey(tmp[0].ToLower()) && tmp[1].StartsWith('r'))
+                                    {
+                                        op2offset = labels[tmp[0].ToLower()];
+                                        op2value = ushort.Parse(tmp[1][1..]);
+                                    }
+                                }
+                                else if (op2s.StartsWith("[r") && char.IsDigit(op2s[2]))
+                                {
+                                    op2type = CPUOperType.RegisterIndexed;
+                                    if (!ushort.TryParse(op2s[2..^1], out op2value))
+                                    {
+                                        if (op2s[2..^1].Contains('+'))
+                                        {
+                                            var tmp = op2s[2..^1].Split('+');
+                                            op2value = ushort.Parse(tmp[0]);
+                                            if (!ushort.TryParse(tmp[1], out op2offset))
+                                            {
+                                                try
+                                                {
+                                                    op2offset = Convert.ToUInt16(tmp[1], 16);
+                                                }
+                                                catch (FormatException)
+                                                {
+                                                    if (labels.ContainsKey(tmp[1].ToLower()))
+                                                        op2offset = labels[tmp[1].ToLower()];
+                                                }
+                                            }
+                                        }
+                                        else if (op2s[2..^1].Contains('-'))
+                                        {
+                                            var tmp = op2s[2..^1].Split('-');
+                                            op2sub = true;
+                                            op2value = ushort.Parse(tmp[0]);
+                                            if (!ushort.TryParse(tmp[1], out op2offset))
+                                            {
+                                                try
+                                                {
+                                                    op2offset = Convert.ToUInt16(tmp[1], 16);
+                                                }
+                                                catch (FormatException)
+                                                {
+                                                    if (labels.ContainsKey(tmp[1].ToLower()))
+                                                        op2offset = labels[tmp[1].ToLower()];
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                                 else
                                 {
                                     op2type = CPUOperType.Direct;
-                                    op2value = ushort.Parse(op2s.TrimEnd(']')[1..]);
+                                    if (!ushort.TryParse(op2s[1..^1], out op2value))
+                                    {
+                                        try
+                                        {
+                                            op2value = Convert.ToUInt16(op2s[1..^1], 16);
+                                        }
+                                        catch(FormatException)
+                                        {
+                                            if (labels.ContainsKey(op2s[1..^1].ToLower()))
+                                                op2value = labels[op2s[1..^1].ToLower()];
+                                        }
+                                    }
                                 }
                             }
                             else
                             {
                                 op2type = CPUOperType.Immediate;
                                 if (!ushort.TryParse(op2s, out op2value))
-                                    op2value = Convert.ToUInt16(op2s, 16);
+                                {
+                                    try
+                                    {
+                                        op2value = Convert.ToUInt16(op2s, 16);
+                                    }
+                                    catch(FormatException)
+                                    {
+                                        if (labels.ContainsKey(op2s.ToLower()))
+                                            op2value = labels[op2s.ToLower()];
+                                    }
+                                }
                             }
                             op2 = new Operand(op2type, op2value, op2offset, op2sub);
                         }
@@ -199,7 +361,7 @@ namespace NANORG_CPU
                     
                     //Console.Write("\n");
 
-                    var inst = new Instruction(opcode, op1, op2);
+                    var inst = new Instruction(opcode, op1, op2, ip);
                     Console.WriteLine($"{ip:D4} {inst}");
                     
                     Buffer.BlockCopy(inst.bytecode, 0, bytecode, ip * 2, inst.bytecode.Length * 2);

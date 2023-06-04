@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NANORG_CPU
+namespace OpenNANORGS.CPU
 {
     class Program
     {
@@ -50,7 +50,7 @@ namespace NANORG_CPU
             Console.WriteLine(inst.ToAssembly());
             */
 
-            var parser = new Parser("samplebot.asm");
+            var parser = new Parser("datatest.asm");
             var insts = parser.instructionList;
 
         }

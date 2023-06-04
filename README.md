@@ -5,7 +5,7 @@ University Programming Competition virtual nano-organism simulator.
 
 *A project born out of intrigue, minor obsession, frustration and inspriration.* 
 
-### Seeds will never produce an identical result to the original version!
+### Seeds will never produce an identical result to the original version! (unless I decide to reverse engineer the game (which I might do, someday))
 
 ## Story
 

@@ -3,6 +3,8 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net7.0</TargetFramework>
+    <AssemblyName>OpenNANORG_CPU</AssemblyName>
+    <RootNamespace>OpenNANORGS.CPU</RootNamespace>
   </PropertyGroup>
 
 </Project>
