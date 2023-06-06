@@ -6,12 +6,70 @@ namespace OpenNANORGS.CPU
     public class Instruction
     {
         public ushort[] bytecode = new ushort[3] { 0, 0, 0 };
+        public CPUOpCode opCode;
+        public Operand op1;
+        public Operand op2;
         private readonly ushort ip;
+
+        public Instruction(ushort[] bytecode, ushort ip)
+        {
+            if (bytecode.Length != 3) throw new Exception("Invalid instruction length");
+            this.bytecode = bytecode;
+            
+            opCode = (CPUOpCode)(this.bytecode[0] & 0xFF);
+            var operands = (int)Enum.Parse<CPUOpCodeOperands>(opCode.ToString());
+            var modes = Operand.GetModesFromBytes(this.bytecode[0]);
+
+            this.ip = ip;
+            
+            if (operands >= 1)
+            {
+                op1 = new Operand();
+                op1.type = modes[0];
+                switch (modes[0])
+                {
+                    case CPUOperType.Immediate:
+                        if (opCode is >= CPUOpCode.JMP and <= CPUOpCode.JNS or CPUOpCode.CALL)
+                        {
+                            op1.value = (ushort)(bytecode[1] + ip);
+                        }
+                        else op1.value = bytecode[1];
+                        break;
+
+                    case CPUOperType.Direct:
+                    case CPUOperType.Register:
+                        op1.value = bytecode[1];
+                        break;
+                    case CPUOperType.RegisterIndexed:
+                        op1.value = (ushort)((bytecode[1] & 0xf000) >> 12);
+                        op1.offset = (ushort)(bytecode[1] & 0xfff);
+                        op1.sub = (bytecode[0] & 0x800) == 0x800;
+                        break;
+                }
+            }
+
+            if (operands == 2)
+            {
+                op2 = new Operand();
+                op2.type = modes[1];
+                switch (modes[1])
+                {
+                    case CPUOperType.Direct:
+                    case CPUOperType.Immediate:
+                    case CPUOperType.Register:
+                        op2.value = bytecode[2];
+                        break;
+                    case CPUOperType.RegisterIndexed:
+                        op2.value = (ushort)((bytecode[2] & 0xf000) >> 12);
+                        op2.offset = (ushort)(bytecode[2] & 0xfff);
+                        op2.sub = (bytecode[0] & 0x400) == 0x400;
+                        break;
+                }
+            }
+        }
 
         public Instruction(CPUOpCode opcode, Operand op1, Operand op2, ushort ip = 0)
         {
-            this.ip = ip;
-            
             op1 ??= new Operand();
             op2 ??= new Operand();
             
@@ -63,12 +121,6 @@ namespace OpenNANORGS.CPU
             }
 
             bytecode[2] = tmp;
-        }
-
-        public Instruction(ushort[] bytecode)
-        {
-            if (bytecode.Length != 3) throw new Exception("Invalid instruction length");
-            this.bytecode = bytecode;
         }
 
         public string ToAssembly()
@@ -150,10 +202,10 @@ namespace OpenNANORGS.CPU
 
     public class Operand
     {
-        public readonly CPUOperType type;
-        public readonly ushort value;
-        public readonly ushort offset;
-        public readonly bool sub;
+        public CPUOperType type;
+        public ushort value;
+        public ushort offset;
+        public bool sub;
 
         public Operand()
         {
@@ -188,6 +240,31 @@ namespace OpenNANORGS.CPU
             modes[1] = (CPUOperType)((bytes & 0x3000) >> 12);
 
             return modes;
+        }
+
+        public override string ToString()
+        {
+            var buffer = string.Empty;
+
+            switch (type)
+            {
+                case CPUOperType.Register: 
+                    buffer = $"r{value}";
+                    break;
+                case CPUOperType.Direct:
+                    buffer = $"[{value}]";
+                    break;
+                case CPUOperType.Immediate:
+                    buffer = value.ToString();
+                    break;
+                case CPUOperType.RegisterIndexed:
+                    if (offset == 0) buffer = $"[r{value}]";
+                    else if (sub) buffer = $"[r{value}-{offset}]";
+                    else buffer = $"[r{value}+{offset}]";
+                    break;
+            }
+            
+            return buffer;
         }
     }
 

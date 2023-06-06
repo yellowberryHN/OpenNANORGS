@@ -1,6 +1,8 @@
-info: yeah
+info: yeah, Yellow
 
 main:
+	rand r5, 10
+	rand r6, 7
 	mov r1, 0xDEAD
 	mov [r1-0], 0xDEAD
 	mov [r1-1], 0xDEAD

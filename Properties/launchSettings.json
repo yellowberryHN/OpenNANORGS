@@ -2,7 +2,7 @@
   "profiles": {
     "OpenNANORGS": {
       "commandName": "Project",
-      "commandLineArgs": "-p:\"../../../bots/samplebot.asm\" -s:1234 -g:h"
+      "commandLineArgs": "-p:\"../../../bots/samplebot.asm\" -s:1234"
     }
   }
 }

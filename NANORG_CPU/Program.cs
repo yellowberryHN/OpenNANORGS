@@ -39,7 +39,7 @@ namespace OpenNANORGS.CPU
             //Console.WriteLine(new Instruction(CPUOpCode.MOV, new Operand(CPUOperType.Register, 0), new Operand(CPUOperType.RegisterIndexed, 1)));
             //Console.WriteLine(new Instruction(CPUOpCode.MOV, new Operand(CPUOperType.RegisterIndexed, 0, 0xFFF, false), new Operand(CPUOperType.RegisterIndexed, 1, 1)));
 
-            /*
+            
             var inst = new Instruction(CPUOpCode.MOV, new Operand(CPUOperType.Register, 5), new Operand(CPUOperType.Immediate, 0xDEAD));
             //inst = new Instruction(CPUOpCode.MOV, new Operand(CPUOperType.RegisterIndexed, 5, 9), new Operand(CPUOperType.Immediate, 0xDEAD));
             //inst = new Instruction(CPUOpCode.MOV, new Operand(CPUOperType.RegisterIndexed, 4, 7), new Operand(CPUOperType.RegisterIndexed, 4, 7));
@@ -48,7 +48,10 @@ namespace OpenNANORGS.CPU
                 new Operand(CPUOperType.Immediate, 4));
             
             Console.WriteLine(inst.ToString());
-            */
+            
+
+            inst = new Instruction(new ushort[3] { 0x2001, 0x0207, 0x0084 }, 0);
+            Console.WriteLine(inst.ToString());
 
             var parser = new Parser("datatest.asm");
 

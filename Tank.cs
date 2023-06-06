@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace OpenNANORGS
 {
-    class Playfield
+    class Tank
     {
         // hold data about how many sludge types, which are toxic, where collection points are located,
         // where to spawn nanorgs and drones, where all items are on the map.
@@ -19,7 +19,7 @@ namespace OpenNANORGS
         private List<byte> toxicSludge;
         private bool debugSludge = false;
 
-        private int seed;
+        public int seed;
         public Random rnd;
 
         private uint tick = 0;
@@ -29,30 +29,22 @@ namespace OpenNANORGS
 
         private List<Bot> bots;
 
-        public bool debugBot = false;
+        public bool debugBot;
         private char debugBotID;
         // debug bot instance
         private Bot dBI;
 
-        private CPU.Parser botMemory;
+        private CPU.Parser botAssembly;
 
-        public bool quiet = false;
+        public bool quiet;
 
         public StringBuilder builder = new();
 
-        public Playfield(string[] args)
+        public Tank(string[] args)
         {
             this.seed = (int)DateTimeOffset.Now.ToUnixTimeSeconds();
 
             ParseArgs(args);
-
-            /*
-            if(dBot != 0) 
-            {
-                debugBot = true;
-                debugBotID = dBot;
-            }
-            */
 
             rnd = new Random(this.seed);
             numSludge = (byte)rnd.Next(5, 32);
@@ -68,16 +60,16 @@ namespace OpenNANORGS
 
             bots = new List<Bot>();
 
-            botMemory = new CPU.Parser(botSource);
+            botAssembly = new CPU.Parser(botSource);
 
             for (int i = 0; i < 26; i++)
             {
-                var bot = new Bot((char)(65 + i), (byte)rnd.Next(70), (byte)rnd.Next(40), this, botMemory.bytecode);
+                var bot = new Bot((char)(65 + i), (byte)rnd.Next(70), (byte)rnd.Next(40), this, new CPU.Parser(botSource).bytecode);
                 bots.Add(bot);
             }
             for (int i = 0; i < 24; i++) // only 50 bots, poor 'y' and 'z' :(
             {
-                var bot = new Bot((char)(97 + i), (byte)rnd.Next(70), (byte)rnd.Next(40), this, botMemory.bytecode);
+                var bot = new Bot((char)(97 + i), (byte)rnd.Next(70), (byte)rnd.Next(40), this, new CPU.Parser(botSource).bytecode);
                 bots.Add(bot);
             }
             for (int i = 0; i < 20; i++)
@@ -242,8 +234,6 @@ namespace OpenNANORGS
             return true;
         }
 
-        private string oldField;
-
         public void Render()
         {
             builder.Clear();
@@ -291,7 +281,8 @@ namespace OpenNANORGS
 
             if (debugBot)
             {
-                builder.AppendLine(string.Format("\r\n({0} {1}) x={2}, y={3}, energy={4}, IP={5}, SP={6}, flags={7}", botMemory.botName.ToUpper()[..5] , dBI.botId, dBI.x, dBI.y, dBI.energy, dBI.ip, dBI.sp, dBI.FlagRender()));
+                var botName = botAssembly.botName.ToUpper();
+                builder.AppendLine(string.Format("\r\n({0} {1}) x={2}, y={3}, energy={4}, IP={5}, SP={6}, flags={7}", (botName.Length < 5 ? botName : botName.Substring(0 ,5)), dBI.botId, dBI.x, dBI.y, dBI.energy, dBI.ip, dBI.sp, dBI.FlagRender()));
                 builder.AppendLine(string.Format("R00={0,5} R01={1,5} R02={2,5} R03={3,5} R04={4,5} R05={5,5} R06={6,5}", dBI.reg[0], dBI.reg[1], dBI.reg[2], dBI.reg[3], dBI.reg[4], dBI.reg[5], dBI.reg[6]));
                 builder.AppendLine(string.Format("R07={0,5} R08={1,5} R09={2,5} R10={3,5} R11={4,5} R12={5,5} R13={6,5}", dBI.reg[7], dBI.reg[8], dBI.reg[9], dBI.reg[10], dBI.reg[11], dBI.reg[12], dBI.reg[13]));
                 builder.AppendLine(dBI.Disassemble());

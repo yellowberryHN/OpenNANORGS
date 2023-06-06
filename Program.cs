@@ -36,7 +36,7 @@ namespace OpenNANORGS
 
             Console.Clear();
 
-            var pf = new Playfield(args);
+            var pf = new Tank(args);
             uint tick = 0;
 
             for (int i = 0; i < 1_000_000; i++)

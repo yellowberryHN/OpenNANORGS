@@ -6,7 +6,7 @@ main:
     EAT
     SENSE r0
     CMP r0, 0xFFFF
-    JNE 0
+    JNE 6
     RELEASE 10000
-    JMP 0
+    JMP 18
 
