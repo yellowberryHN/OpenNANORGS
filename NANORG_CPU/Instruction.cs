@@ -65,6 +65,12 @@ namespace OpenNANORGS.CPU
             bytecode[2] = tmp;
         }
 
+        public Instruction(ushort[] bytecode)
+        {
+            if (bytecode.Length != 3) throw new Exception("Invalid instruction length");
+            this.bytecode = bytecode;
+        }
+
         public string ToAssembly()
         {
             var opcode = (CPUOpCode)(this.bytecode[0] & 0xFF);

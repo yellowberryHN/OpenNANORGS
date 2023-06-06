@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 
 namespace OpenNANORGS
@@ -25,28 +26,35 @@ namespace OpenNANORGS
             if (OperatingSystem.IsWindows()) // Attempt native resize on Windows
             {
                 Console.SetWindowSize(1, 1); // done to be able to set the buffer to the correct size
-                Console.SetBufferSize(70, 50);
-                Console.SetWindowSize(70, 50);
+                Console.SetBufferSize(80, 50);
+                Console.SetWindowSize(80, 50);
             }
             else // Attempt ANSI escape resize otherwise
             {
-                Console.Write("\u001b[8;50;70t");
+                Console.Write("\x1b[8;50;70t");
             }
 
             Console.Clear();
 
             var pf = new Playfield(args);
+            uint tick = 0;
 
-            while (true)
+            for (int i = 0; i < 1_000_000; i++)
             {
-                Console.CursorVisible = false;
-                var tick = pf.Tick();
-                if (!pf.quiet && (tick % 10) == 0)
+                if (!pf.debugBot) Console.CursorVisible = false;
+                
+                if (!pf.quiet && ((tick % 10) == 0 || pf.debugBot))
                 {
                     pf.Render();
                     Console.Write(pf.builder);
-                    Thread.Sleep(10);
+                    if (pf.debugBot)
+                    {
+                        pf.DebugHighlight();
+                        pf.DebugControl(Console.ReadLine());
+                    }
+                    else Thread.Sleep(10);
                 }
+                tick = pf.Tick();
                 if (pf.Finished()) break;
                 Console.SetCursorPosition(0, 0);
             } 

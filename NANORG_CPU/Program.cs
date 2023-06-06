@@ -44,14 +44,13 @@ namespace OpenNANORGS.CPU
             //inst = new Instruction(CPUOpCode.MOV, new Operand(CPUOperType.RegisterIndexed, 5, 9), new Operand(CPUOperType.Immediate, 0xDEAD));
             //inst = new Instruction(CPUOpCode.MOV, new Operand(CPUOperType.RegisterIndexed, 4, 7), new Operand(CPUOperType.RegisterIndexed, 4, 7));
             inst = new Instruction(CPUOpCode.TRAVEL, new Operand(CPUOperType.Register, 0), null);
-            inst = new Instruction(CPUOpCode.RAND, new Operand(CPUOperType.Register, 0),
+            inst = new Instruction(CPUOpCode.RAND, new Operand(CPUOperType.Immediate, 1),
                 new Operand(CPUOperType.Immediate, 4));
             
-            Console.WriteLine(inst.ToAssembly());
+            Console.WriteLine(inst.ToString());
             */
 
             var parser = new Parser("datatest.asm");
-            var insts = parser.instructionList;
 
         }
     }

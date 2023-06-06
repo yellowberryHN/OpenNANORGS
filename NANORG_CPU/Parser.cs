@@ -7,7 +7,6 @@ namespace OpenNANORGS.CPU
 {
     public class Parser
     {
-        public List<Instruction> instructionList;
         public ushort[] bytecode = new ushort[3600];
 
         public string botName;
@@ -15,13 +14,11 @@ namespace OpenNANORGS.CPU
 
         public Parser(string filename)
         {
-            instructionList = Load(filename);
+            Load(filename); 
         }
 
-        private List<Instruction> Load(string filename)
+        private void Load(string filename)
         {
-            var tmpList = new List<Instruction>();
-
             var lines = File.ReadLines(filename).ToList();
 
             if (lines[0].StartsWith("info:"))
@@ -31,7 +28,7 @@ namespace OpenNANORGS.CPU
                 botName = botInfo[0].Trim();
                 authorName = botInfo[1].Trim();
                 lines.RemoveAt(0);
-                Console.WriteLine($"name: {botName}\r\nauthor: {authorName}");
+                //Console.WriteLine($"name: {botName}\r\nauthor: {authorName}");
             }
 
             var lines_tmp = lines.ToArray();
@@ -362,18 +359,15 @@ namespace OpenNANORGS.CPU
                     //Console.Write("\n");
 
                     var inst = new Instruction(opcode, op1, op2, ip);
-                    Console.WriteLine($"{ip:D4} {inst}");
+                    //Console.WriteLine($"{ip:D4} {inst}");
                     
                     Buffer.BlockCopy(inst.bytecode, 0, bytecode, ip * 2, inst.bytecode.Length * 2);
                     
-                    tmpList.Add(inst);
                     ip += 3; // for labels and jumps
                     dp = ip;
                 }
                 //Console.WriteLine($"new ip: {ip}, new dp: {dp}");
             }
-            
-            return tmpList;
         }
     }
 }
