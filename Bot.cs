@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
 using OpenNANORGS.CPU;
 
 namespace OpenNANORGS
@@ -19,8 +16,18 @@ namespace OpenNANORGS
 
         //private int toxic = 0;
 
+        private const ushort MemorySize = 3600;
+
         public ushort energy = 10000;
 
+        public ushort[] reg = new ushort[14];
+
+        public ushort[] memory = new ushort[MemorySize];
+        
+        // stack pointer
+        // TODO: support the SP operand type
+        public ushort sp { get; private set; } = MemorySize;
+        
         // instruction pointer
         public ushort ip { get; private set; } = 0;
 
@@ -29,13 +36,7 @@ namespace OpenNANORGS
             ip = (ushort)((ip + amount) % 3600);
         }
 
-        // stack pointer
-        // TODO: support the SP operand type
-        public ushort sp { get; private set; } = 3600;
-
-        public ushort[] reg = new ushort[14];
-
-        public ushort[] memory = new ushort[3600];
+        public Dictionary<ushort, ushort> mutations = new();
 
         public Bot(char id, byte x, byte y, Tank tank, ushort[] memory = null)
         {
@@ -50,138 +51,141 @@ namespace OpenNANORGS
         public void Tick(uint tick)
         {
             if (energy < 1) return;
-            RunBytecode(CPU_NextInstruction());
+            var inst = CPU_NextInstruction();
+            RunBytecode(inst);
         }
 
         private void RunBytecode(ushort[] bytecode)
         {
-            var inst = new Instruction(bytecode, ip);
-
-            switch (inst.opCode)
+            using (Instruction inst = new Instruction(bytecode, ip))
             {
-                case CPUOpCode.NOP:
-                    Oper_NOP();
-                    break;
-                case CPUOpCode.MOV:
-                    Oper_MOV(inst.op1, inst.op2);
-                    break;
-                case CPUOpCode.PUSH:
-                    Oper_PUSH(inst.op1);
-                    break;
-                case CPUOpCode.POP:
-                    Oper_POP(inst.op1);
-                    break;
-                case CPUOpCode.CALL:
-                    Oper_CALL(inst.op1);
-                    break;
-                case CPUOpCode.RET:
-                    Oper_RET();
-                    break;
-                case CPUOpCode.JMP:
-                    Oper_JMP(inst.op1);
-                    break;
-                case CPUOpCode.JL:
-                    Oper_JL(inst.op1);
-                    break;
-                case CPUOpCode.JLE:
-                    Oper_JLE(inst.op1);
-                    break;
-                case CPUOpCode.JG:
-                    Oper_JG(inst.op1);
-                    break;
-                case CPUOpCode.JGE:
-                    Oper_JGE(inst.op1);
-                    break;
-                case CPUOpCode.JE:
-                    Oper_JE(inst.op1);
-                    break;
-                case CPUOpCode.JNE:
-                    Oper_JNE(inst.op1);
-                    break;
-                case CPUOpCode.JS:
-                    Oper_JS(inst.op1);
-                    break;
-                case CPUOpCode.JNS:
-                    Oper_JNS(inst.op1);
-                    break;
-                case CPUOpCode.ADD:
-                    Oper_ADD(inst.op1, inst.op2);
-                    break;
-                case CPUOpCode.SUB:
-                    Oper_SUB(inst.op1, inst.op2);
-                    break;
-                case CPUOpCode.MULT:
-                    Oper_MULT(inst.op1, inst.op2);
-                    break;
-                case CPUOpCode.DIV:
-                    Oper_DIV(inst.op1, inst.op2);
-                    break;
-                case CPUOpCode.MOD:
-                    Oper_MOD(inst.op1, inst.op2);
-                    break;
-                case CPUOpCode.AND:
-                    Oper_AND(inst.op1, inst.op2);
-                    break;
-                case CPUOpCode.OR:
-                    Oper_OR(inst.op1, inst.op2);
-                    break;
-                case CPUOpCode.XOR:
-                    Oper_XOR(inst.op1, inst.op2);
-                    break;
-                case CPUOpCode.CMP:
-                    Oper_CMP(inst.op1, inst.op2);
-                    break;
-                case CPUOpCode.TEST:
-                    Oper_TEST(inst.op1, inst.op2);
-                    break;
-                case CPUOpCode.GETXY:
-                    Oper_GETXY(inst.op1, inst.op2);
-                    break;
-                case CPUOpCode.ENERGY:
-                    Oper_ENERGY(inst.op1);
-                    break;
-                case CPUOpCode.TRAVEL:
-                    Oper_TRAVEL(inst.op1);
-                    break;
-                case CPUOpCode.SHL:
-                    Oper_SHL(inst.op1, inst.op2);
-                    break;
-                case CPUOpCode.SHR:
-                    Oper_SHR(inst.op1, inst.op2);
-                    break;
-                case CPUOpCode.SENSE:
-                    Oper_SENSE(inst.op1);
-                    break;
-                case CPUOpCode.EAT:
-                    Oper_EAT();
-                    break;
-                case CPUOpCode.RAND:
-                    Oper_RAND(inst.op1, inst.op2);
-                    break;
-                case CPUOpCode.RELEASE:
-                    Oper_RELEASE(inst.op1);
-                    break;
-                case CPUOpCode.CHARGE:
-                    Oper_CHARGE(inst.op1, inst.op2);
-                    break;
-                case CPUOpCode.POKE:
-                    Oper_POKE(inst.op1, inst.op2);
-                    break;
-                case CPUOpCode.PEEK:
-                    Oper_PEEK(inst.op1, inst.op2);
-                    break;
-                case CPUOpCode.CKSUM:
-                    Oper_CKSUM(inst.op1, inst.op2);
-                    break;
-                default:
-                    Oper_NOP();
-                    break;
+                switch (inst.opCode)
+                {
+                    case CPUOpCode.NOP:
+                        Oper_NOP();
+                        break;
+                    case CPUOpCode.MOV:
+                        Oper_MOV(inst.op1, inst.op2);
+                        break;
+                    case CPUOpCode.PUSH:
+                        Oper_PUSH(inst.op1);
+                        break;
+                    case CPUOpCode.POP:
+                        Oper_POP(inst.op1);
+                        break;
+                    case CPUOpCode.CALL:
+                        Oper_CALL(inst.op1);
+                        break;
+                    case CPUOpCode.RET:
+                        Oper_RET();
+                        break;
+                    case CPUOpCode.JMP:
+                        Oper_JMP(inst.op1);
+                        break;
+                    case CPUOpCode.JL:
+                        Oper_JL(inst.op1);
+                        break;
+                    case CPUOpCode.JLE:
+                        Oper_JLE(inst.op1);
+                        break;
+                    case CPUOpCode.JG:
+                        Oper_JG(inst.op1);
+                        break;
+                    case CPUOpCode.JGE:
+                        Oper_JGE(inst.op1);
+                        break;
+                    case CPUOpCode.JE:
+                        Oper_JE(inst.op1);
+                        break;
+                    case CPUOpCode.JNE:
+                        Oper_JNE(inst.op1);
+                        break;
+                    case CPUOpCode.JS:
+                        Oper_JS(inst.op1);
+                        break;
+                    case CPUOpCode.JNS:
+                        Oper_JNS(inst.op1);
+                        break;
+                    case CPUOpCode.ADD:
+                        Oper_ADD(inst.op1, inst.op2);
+                        break;
+                    case CPUOpCode.SUB:
+                        Oper_SUB(inst.op1, inst.op2);
+                        break;
+                    case CPUOpCode.MULT:
+                        Oper_MULT(inst.op1, inst.op2);
+                        break;
+                    case CPUOpCode.DIV:
+                        Oper_DIV(inst.op1, inst.op2);
+                        break;
+                    case CPUOpCode.MOD:
+                        Oper_MOD(inst.op1, inst.op2);
+                        break;
+                    case CPUOpCode.AND:
+                        Oper_AND(inst.op1, inst.op2);
+                        break;
+                    case CPUOpCode.OR:
+                        Oper_OR(inst.op1, inst.op2);
+                        break;
+                    case CPUOpCode.XOR:
+                        Oper_XOR(inst.op1, inst.op2);
+                        break;
+                    case CPUOpCode.CMP:
+                        Oper_CMP(inst.op1, inst.op2);
+                        break;
+                    case CPUOpCode.TEST:
+                        Oper_TEST(inst.op1, inst.op2);
+                        break;
+                    case CPUOpCode.GETXY:
+                        Oper_GETXY(inst.op1, inst.op2);
+                        break;
+                    case CPUOpCode.ENERGY:
+                        Oper_ENERGY(inst.op1);
+                        break;
+                    case CPUOpCode.TRAVEL:
+                        Oper_TRAVEL(inst.op1);
+                        break;
+                    case CPUOpCode.SHL:
+                        Oper_SHL(inst.op1, inst.op2);
+                        break;
+                    case CPUOpCode.SHR:
+                        Oper_SHR(inst.op1, inst.op2);
+                        break;
+                    case CPUOpCode.SENSE:
+                        Oper_SENSE(inst.op1);
+                        break;
+                    case CPUOpCode.EAT:
+                        Oper_EAT();
+                        break;
+                    case CPUOpCode.RAND:
+                        Oper_RAND(inst.op1, inst.op2);
+                        break;
+                    case CPUOpCode.RELEASE:
+                        Oper_RELEASE(inst.op1);
+                        break;
+                    case CPUOpCode.CHARGE:
+                        Oper_CHARGE(inst.op1, inst.op2);
+                        break;
+                    case CPUOpCode.POKE:
+                        Oper_POKE(inst.op1, inst.op2);
+                        break;
+                    case CPUOpCode.PEEK:
+                        Oper_PEEK(inst.op1, inst.op2);
+                        break;
+                    case CPUOpCode.CKSUM:
+                        Oper_CKSUM(inst.op1, inst.op2);
+                        break;
+                    default:
+                        Oper_NOP();
+                        break;
+                }
             }
         }
 
         private ushort[] CPU_NextInstruction()
         {
             ushort[] inst;
+            if (ip % 3 != 0) throw new Exception($"IP is not multiple of 3. IP = {ip}");
             try
             {
                 inst = new ushort[3] { memory[ip], memory[ip + 1], memory[ip + 2] };
@@ -313,16 +317,37 @@ namespace OpenNANORGS
 
         private void Oper_PUSH(Operand src) // OpCode 2
         {
-            sp--;
-            memory[sp] = GetValue(src);
+            try
+            {
+                sp--;
+                memory[sp] = GetValue(src);
+            }
+            catch (IndexOutOfRangeException)
+            {
+                sp = MemorySize;
+                sp--;
+                memory[sp] = GetValue(src);
+            }
+            
+            //Console.WriteLine($"     stack {sp}");
             UseEnergy();
             AdvanceIP();
         }
         
         private void Oper_POP(Operand dest) // OpCode 3
         {
-            SetValue(dest, memory[sp]);
+            try
+            {
+                SetValue(dest, memory[sp]);
+            }
+            catch (IndexOutOfRangeException)
+            {
+                sp = MemorySize;
+                SetValue(dest, memory[sp]);
+            }
             sp++;
+            
+            //Console.WriteLine($"     stack {sp}");
             UseEnergy();
             AdvanceIP();
         }
@@ -689,7 +714,10 @@ namespace OpenNANORGS
         
         protected virtual void Mutate()
         {
-            memory[rnd.Next(3599)] = (ushort)rnd.Next(0xFFFF);
+            var offset = (ushort)rnd.Next(3599);
+            var value = (ushort)rnd.Next(0xFFFF);
+            memory[offset] = value;
+            mutations.TryAdd(offset, value); // used for debugging mutations
         }
     }
 

@@ -1,4 +1,4 @@
-info: TestBot, YellowberryHN
+info: TestBot, Yellowberry
 
 main:
     RAND r0, 4

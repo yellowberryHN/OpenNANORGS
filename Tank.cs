@@ -23,7 +23,7 @@ namespace OpenNANORGS
         public Random rnd;
 
         private uint tick = 0;
-        private const uint MaxTicks = 1000000;
+        private uint maxTicks = 1000000;
 
         private ulong score = 0;
 
@@ -37,6 +37,10 @@ namespace OpenNANORGS
         private CPU.Parser botAssembly;
 
         public bool quiet;
+
+        // does the tank loop...
+        private bool loopV; // vertically?
+        private bool loopH; // horizontally?
 
         public StringBuilder builder = new();
 
@@ -108,52 +112,99 @@ namespace OpenNANORGS
                 Console.Write($"\x1b[{tmpLeft};{tmpTop}H");
             }
         }
+
+        private int debugSteps = 0;
         
         public void DebugControl(string input)
         {
             // TODO: implement this
             if (input == string.Empty) return;
+            if (debugSteps > 0)
+            {
+                debugSteps--;
+                return;
+            }
+            if (int.TryParse(input, out debugSteps)) return;
+            switch (input)
+            {
+                case "q":
+                    Environment.Exit(0);
+                    break;
+            }
         }
 
         private void ParseArgs(string[] args)
         {
-            foreach (var item in args)
+            try
             {
-                if(item.Length > 2 && item.StartsWith('-'))
+                foreach (var item in args)
                 {
-                    var flag = item.Substring(1, 1);
-                    var param = item[3..];
-                    switch (flag)
+                    if (item.Length >= 2 && item.StartsWith('-'))
                     {
-                        case "p":
-                            botSource = param;
-                            break;
-                        case "s":
-                            if (!int.TryParse(param, out this.seed))
-                            {
-                                throw new Exception("Invalid seed!");
-                            }
-                            break;
-                        case "q":
-                            quiet = true;
-                            break;
-                        case "g":
-                            debugBot = true;
-                            debugBotID = param.ToCharArray()[0];
-                            break;
-                        default:
-                            break;
+                        var flag = item.Substring(1, 1);
+                        var param = item.Contains(':') ? item[3..] : string.Empty;
+                        switch (flag)
+                        {
+                            case "p":
+                                botSource = param;
+                                break;
+                            case "s":
+                                if (!int.TryParse(param, out seed))
+                                {
+                                    throw new ArgumentException("Invalid seed!");
+                                }
+
+                                break;
+                            case "q":
+                                quiet = true;
+                                break;
+                            case "g":
+                                debugBot = true;
+                                debugBotID = param.ToCharArray()[0];
+                                if (debugBotID == 'y' || debugBotID == 'z' || !Char.IsAsciiLetter(debugBotID))
+                                    throw new ArgumentException("invalid debug ID specified");
+                                break;
+                            case "i":
+                                if (!uint.TryParse(param, out maxTicks))
+                                {
+                                    throw new ArgumentException("invalid iteration count");
+                                }
+                                break;
+                            default:
+                                throw new ArgumentException($"invalid parameter (-{flag})");
+                        }
                     }
+                    else throw new ArgumentException($"invalid parameter ({item})");
+                }
+
+                if (args.Length == 0)
+                {
+
                 }
             }
+            catch (ArgumentException e)
+            {
+                Console.WriteLine("Error loading game:");
+                Console.WriteLine($" {e.Message}");
+                Environment.Exit(1);
+            }
+            
         }
 
         public uint Tick()
         {
-            foreach (var bot in bots)
-            {
-                bot.Tick(tick);
-            }
+            //if (debugBot) // FIXME: Temporary! for debugging.
+            //{
+            //    dBI.Tick(tick);
+            //}
+            //else
+            //{
+                foreach (var bot in bots)
+                {
+                    bot.Tick(tick);
+                }
+            //}
+            
             tick++;
             return tick;
         }
@@ -161,7 +212,7 @@ namespace OpenNANORGS
         // check to see bot can move to specific tile
         public bool Occupied(int x, int y)
         {
-            if (x > 69 || y > 39 || x < 0 || y < 0) return true;
+            if ((x > 69 || x < 0) && !loopH || (y > 39 || y < 0 ) && !loopV) return true;
 
             foreach (var bot in bots)
             {
@@ -275,7 +326,7 @@ namespace OpenNANORGS
                 builder.Append(Environment.NewLine);
             }
 
-            builder.AppendLine($"{Environment.NewLine}Score: {score:n0}, Ticks: {tick:n0} of {MaxTicks:n0}, Seed: <{seed}>");
+            builder.AppendLine($"{Environment.NewLine}Score: {score:n0}, Ticks: {tick:n0} of {maxTicks:n0}, Seed: <{seed}>");
 
             //sb.AppendLine(string.Format("\r\nX: {0:D2}, Y: {1:D2}, Energy: {2:D5}", testBot.x, testBot.y, testBot.energy));
 
@@ -286,6 +337,7 @@ namespace OpenNANORGS
                 builder.AppendLine(string.Format("R00={0,5} R01={1,5} R02={2,5} R03={3,5} R04={4,5} R05={5,5} R06={6,5}", dBI.reg[0], dBI.reg[1], dBI.reg[2], dBI.reg[3], dBI.reg[4], dBI.reg[5], dBI.reg[6]));
                 builder.AppendLine(string.Format("R07={0,5} R08={1,5} R09={2,5} R10={3,5} R11={4,5} R12={5,5} R13={6,5}", dBI.reg[7], dBI.reg[8], dBI.reg[9], dBI.reg[10], dBI.reg[11], dBI.reg[12], dBI.reg[13]));
                 builder.AppendLine(dBI.Disassemble());
+                //builder.AppendLine($"mutate={dBI.mutations.Count}");
                 builder.Append("(u)nasm,(g)o,(s)ilentGo,(d)mp,(e)dt,(r)eg,(i)p,(q)uit,##,or [Enter]: ");
             }
 
@@ -314,7 +366,7 @@ namespace OpenNANORGS
 
         public bool Finished()
         {
-            return tick >= MaxTicks;
+            return tick >= maxTicks;
         }
     }
 }

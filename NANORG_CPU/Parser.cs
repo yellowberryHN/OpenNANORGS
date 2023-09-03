@@ -65,7 +65,9 @@ namespace OpenNANORGS.CPU
                 }
                 else if (l.EndsWith(":")) // label
                 {
-                    if (lines[j + 1].Split("//")[0].Split(';')[0].Trim().Split(null, 2)[0] == "data")
+                    if (j + 1 >= lines.Count)
+                        labels.Add(l.Split(":")[0].ToLower(), ip);
+                    else if (lines[j + 1].Split("//")[0].Split(';')[0].Trim().Split(null, 2)[0] == "data")
                         labels.Add(l.Split(":")[0].ToLower(), dp);
                     else
                         labels.Add(l.Split(":")[0].ToLower(), ip);

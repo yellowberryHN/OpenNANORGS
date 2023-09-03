@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace OpenNANORGS.CPU
 {
-    public class Instruction
+    public class Instruction : IDisposable
     {
         public ushort[] bytecode = new ushort[3] { 0, 0, 0 };
         public CPUOpCode opCode;
@@ -31,11 +31,11 @@ namespace OpenNANORGS.CPU
                     case CPUOperType.Immediate:
                         if (opCode is >= CPUOpCode.JMP and <= CPUOpCode.JNS or CPUOpCode.CALL)
                         {
-                            op1.value = (ushort)(bytecode[1] + ip);
+                            op1.value = (ushort)(bytecode[1] + ip); // TODO: jumps need to be rewritten with signed shorts, this breaks on backwards jumps
                         }
                         else op1.value = bytecode[1];
                         break;
-
+                    
                     case CPUOperType.Direct:
                     case CPUOperType.Register:
                         op1.value = bytecode[1];
@@ -198,6 +198,11 @@ namespace OpenNANORGS.CPU
         }
 
         public override string ToString() => string.Format("{0} ({1})", ToAssembly().PadRight(30), string.Format("{0} {1} {2}", bytecode.Select(x => x.ToString("X4")).ToArray()));
+
+        public void Dispose()
+        {
+            // TODO: idk
+        }
     }
 
     public class Operand

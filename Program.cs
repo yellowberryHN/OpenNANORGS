@@ -39,7 +39,7 @@ namespace OpenNANORGS
             var pf = new Tank(args);
             uint tick = 0;
 
-            for (int i = 0; i < 1_000_000; i++)
+            while (!pf.Finished())
             {
                 if (!pf.debugBot) Console.CursorVisible = false;
                 
@@ -55,10 +55,13 @@ namespace OpenNANORGS
                     else Thread.Sleep(10);
                 }
                 tick = pf.Tick();
-                if (pf.Finished()) break;
+                if(tick % 1000 == 0) Console.Write(tick / 1000); 
                 Console.SetCursorPosition(0, 0);
-            } 
+            }
+
+            Console.Clear();
             
+            //Console.Write(pf.);
             Console.WriteLine("done.");
         }
     }
