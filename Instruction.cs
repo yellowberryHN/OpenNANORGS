@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
 
-namespace OpenNANORGS.CPU
+namespace OpenNANORGS
 {
-    public class Instruction : IDisposable
+    public class Instruction
     {
         public ushort[] bytecode = new ushort[3] { 0, 0, 0 };
         public CPUOpCode opCode;
@@ -68,7 +68,7 @@ namespace OpenNANORGS.CPU
             }
         }
 
-        public Instruction(CPUOpCode opcode, Operand op1, Operand op2, ushort ip = 0)
+        public Instruction(CPUOpCode opcode = CPUOpCode.NOP, Operand op1 = null, Operand op2 = null, ushort ip = 0)
         {
             op1 ??= new Operand();
             op2 ??= new Operand();
@@ -198,11 +198,6 @@ namespace OpenNANORGS.CPU
         }
 
         public override string ToString() => string.Format("{0} ({1})", ToAssembly().PadRight(30), string.Format("{0} {1} {2}", bytecode.Select(x => x.ToString("X4")).ToArray()));
-
-        public void Dispose()
-        {
-            // TODO: idk
-        }
     }
 
     public class Operand

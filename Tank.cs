@@ -34,14 +34,14 @@ namespace OpenNANORGS
         // debug bot instance
         private Bot dBI;
 
-        private CPU.Parser botAssembly;
+        private Parser botAssembly;
 
         public bool quiet;
 
         // does the tank loop...
-        private bool loopV; // vertically?
         private bool loopH; // horizontally?
-
+        private bool loopV; // vertically?
+        
         public StringBuilder builder = new();
 
         public Tank(string[] args)
@@ -64,16 +64,16 @@ namespace OpenNANORGS
 
             bots = new List<Bot>();
 
-            botAssembly = new CPU.Parser(botSource);
+            botAssembly = new Parser(botSource);
 
             for (int i = 0; i < 26; i++)
             {
-                var bot = new Bot((char)(65 + i), (byte)rnd.Next(70), (byte)rnd.Next(40), this, new CPU.Parser(botSource).bytecode);
+                var bot = new Bot((char)(65 + i), (byte)rnd.Next(70), (byte)rnd.Next(40), this, botAssembly.bytecode);
                 bots.Add(bot);
             }
             for (int i = 0; i < 24; i++) // only 50 bots, poor 'y' and 'z' :(
             {
-                var bot = new Bot((char)(97 + i), (byte)rnd.Next(70), (byte)rnd.Next(40), this, new CPU.Parser(botSource).bytecode);
+                var bot = new Bot((char)(97 + i), (byte)rnd.Next(70), (byte)rnd.Next(40), this, botAssembly.bytecode);
                 bots.Add(bot);
             }
             for (int i = 0; i < 20; i++)
@@ -208,20 +208,7 @@ namespace OpenNANORGS
             tick++;
             return tick;
         }
-
-        // check to see bot can move to specific tile
-        public bool Occupied(int x, int y)
-        {
-            if ((x > 69 || x < 0) && !loopH || (y > 39 || y < 0 ) && !loopV) return true;
-
-            foreach (var bot in bots)
-            {
-                if (bot.x == x && bot.y == y) return true;
-            }
-
-            return false;
-        }
-
+        
         public bool IsToxic(ushort id)
         {
             return toxicSludge.Contains((byte)id);
@@ -267,6 +254,8 @@ namespace OpenNANORGS
                 }
             }
             else if (sludge == 0xFFFF) sludge = 0; // on a collection point, report back that nothing was consumed
+
+            if (IsToxic(sludge)) bot.Mutate();
             return sludge;
         }
 
@@ -282,6 +271,40 @@ namespace OpenNANORGS
         {
             if (elements[y, x] != 0) return false;
             elements[y, x] = id;
+            return true;
+        }
+        
+        // check to see bot can move in a specific direction
+        public bool ValidMove(Bot bot, int dir)
+        {
+            int x = bot.x;
+            int y = bot.y;
+            
+            switch (dir % 4)
+            {
+                case 0:
+                    y--;
+                    break;
+                case 1:
+                    y++;
+                    break;
+                case 2:
+                    x++;
+                    break;
+                case 3: 
+                    x--;
+                    break;
+            }
+            
+            if ((x > 69 || x < 0) && !loopH || (y > 39 || y < 0 ) && !loopV) return false;
+            if (loopH) x = (byte)(x % 70);
+            if (loopV) y = (byte)(y % 40);
+
+            foreach (Bot b in bots)
+            {
+                if (b.x == x && b.y == y) return false;
+            }
+
             return true;
         }
 
@@ -330,13 +353,13 @@ namespace OpenNANORGS
 
             //sb.AppendLine(string.Format("\r\nX: {0:D2}, Y: {1:D2}, Energy: {2:D5}", testBot.x, testBot.y, testBot.energy));
 
-            if (debugBot)
+            if (debugBot) // TODO: the tank shouldn't be in charge of this, what the fuck
             {
                 var botName = botAssembly.botName.ToUpper();
-                builder.AppendLine(string.Format("\r\n({0} {1}) x={2}, y={3}, energy={4}, IP={5}, SP={6}, flags={7}", (botName.Length < 5 ? botName : botName.Substring(0 ,5)), dBI.botId, dBI.x, dBI.y, dBI.energy, dBI.ip, dBI.sp, dBI.FlagRender()));
+                builder.AppendLine(string.Format("\r\n({0} {1}) x={2}, y={3}, energy={4}, IP={5}, SP={6}, flags={7}", (botName.Length < 5 ? botName : botName.Substring(0 ,5)), dBI.botId, dBI.x, dBI.y, dBI.energy, dBI.ip, dBI.sp, dBI.cpu.FlagRender()));
                 builder.AppendLine(string.Format("R00={0,5} R01={1,5} R02={2,5} R03={3,5} R04={4,5} R05={5,5} R06={6,5}", dBI.reg[0], dBI.reg[1], dBI.reg[2], dBI.reg[3], dBI.reg[4], dBI.reg[5], dBI.reg[6]));
                 builder.AppendLine(string.Format("R07={0,5} R08={1,5} R09={2,5} R10={3,5} R11={4,5} R12={5,5} R13={6,5}", dBI.reg[7], dBI.reg[8], dBI.reg[9], dBI.reg[10], dBI.reg[11], dBI.reg[12], dBI.reg[13]));
-                builder.AppendLine(dBI.Disassemble());
+                builder.AppendLine(dBI.cpu.Disassemble());
                 //builder.AppendLine($"mutate={dBI.mutations.Count}");
                 builder.Append("(u)nasm,(g)o,(s)ilentGo,(d)mp,(e)dt,(r)eg,(i)p,(q)uit,##,or [Enter]: ");
             }

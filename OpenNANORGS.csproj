@@ -3,6 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,8 +12,5 @@
     <None Remove="NANORG_CPU\**" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="NANORG_CPU\NANORG_CPU.csproj" />
-  </ItemGroup>
 
 </Project>
