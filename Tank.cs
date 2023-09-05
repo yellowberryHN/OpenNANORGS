@@ -11,7 +11,10 @@ namespace OpenNANORGS
         // hold data about how many sludge types, which are toxic, where collection points are located,
         // where to spawn nanorgs and drones, where all items are on the map.
 
-        private ushort[,] elements = new ushort[40, 70];
+        public ushort height = 40;
+        public ushort width = 70;
+
+        private ushort[,] elements;
 
         private string botSource = string.Empty;
 
@@ -47,11 +50,12 @@ namespace OpenNANORGS
         public Tank(string[] args)
         {
             this.seed = (int)DateTimeOffset.Now.ToUnixTimeSeconds();
-
+            
             ParseArgs(args);
 
+            elements = new ushort[height, width];
             rnd = new Random(this.seed);
-            numSludge = (byte)rnd.Next(5, 32);
+            numSludge = Byte.Max((byte)(rnd.Next(0, 255)/8), 0x5);
 
             toxicSludge = new List<byte>();
 
@@ -68,23 +72,24 @@ namespace OpenNANORGS
 
             for (int i = 0; i < 26; i++)
             {
-                var bot = new Bot((char)(65 + i), (byte)rnd.Next(70), (byte)rnd.Next(40), this, botAssembly.bytecode);
+                var bot = new Bot((char)(65 + i), (byte)rnd.Next(width), (byte)rnd.Next(height), this, botAssembly.bytecode);
                 bots.Add(bot);
             }
             for (int i = 0; i < 24; i++) // only 50 bots, poor 'y' and 'z' :(
             {
-                var bot = new Bot((char)(97 + i), (byte)rnd.Next(70), (byte)rnd.Next(40), this, botAssembly.bytecode);
+                var bot = new Bot((char)(97 + i), (byte)rnd.Next(width), (byte)rnd.Next(height), this, botAssembly.bytecode);
                 bots.Add(bot);
             }
             for (int i = 0; i < 20; i++)
             {
-                var drone = new Drone((byte)rnd.Next(70), (byte)rnd.Next(40), this);
+                var drone = new Drone((byte)rnd.Next(width), (byte)rnd.Next(height), this);
                 bots.Add(drone);
             }
 
             if(debugBot)
             {
                 dBI = bots.Find(x => x.botId == debugBotID);
+                //dBI = bots.Find(x => x.GetType() == typeof(Drone));
             }
         }
 
@@ -170,6 +175,18 @@ namespace OpenNANORGS
                                     throw new ArgumentException("invalid iteration count");
                                 }
                                 break;
+                            case "w":
+                                if (!ushort.TryParse(param, out width))
+                                {
+                                    throw new ArgumentException("invalid width");
+                                }
+                                break;
+                            case "h":
+                                if (!ushort.TryParse(param, out height))
+                                {
+                                    throw new ArgumentException("invalid height");
+                                }
+                                break;
                             default:
                                 throw new ArgumentException($"invalid parameter (-{flag})");
                         }
@@ -193,18 +210,11 @@ namespace OpenNANORGS
 
         public uint Tick()
         {
-            //if (debugBot) // FIXME: Temporary! for debugging.
-            //{
-            //    dBI.Tick(tick);
-            //}
-            //else
-            //{
-                foreach (var bot in bots)
-                {
-                    bot.Tick(tick);
-                }
-            //}
-            
+            foreach (var bot in bots)
+            {
+                bot.Tick(tick);
+            }
+
             tick++;
             return tick;
         }
@@ -216,13 +226,12 @@ namespace OpenNANORGS
 
         public void Randomize()
         {
-            elements = new ushort[40, 70];
-            for (int i = 0; i < 200; i++)
+            for (int i = 0; i < rnd.Next(100, 200); i++)
             {
                 bool suc = false;
                 while (suc == false)
                 {
-                    suc = SetElement((byte)rnd.Next(70), (byte)rnd.Next(40), (ushort)rnd.Next(1, numSludge));
+                    suc = SetElement((byte)rnd.Next(width), (byte)rnd.Next(height), (ushort)rnd.Next(1, numSludge));
                 }
             }
 
@@ -231,7 +240,7 @@ namespace OpenNANORGS
                 bool suc = false;
                 while (suc == false)
                 {
-                    suc = SetElement((byte)rnd.Next(70), (byte)rnd.Next(40), 0xFFFF);
+                    suc = SetElement((byte)rnd.Next(width), (byte)rnd.Next(height), 0xFFFF);
                 }
             }
         }
@@ -250,7 +259,7 @@ namespace OpenNANORGS
                 bool suc = false;
                 while (suc == false)
                 {
-                    suc = SetElement((byte)rnd.Next(70), (byte)rnd.Next(40), sludge);
+                    suc = SetElement((byte)rnd.Next(width), (byte)rnd.Next(height), sludge);
                 }
             }
             else if (sludge == 0xFFFF) sludge = 0; // on a collection point, report back that nothing was consumed
@@ -264,6 +273,95 @@ namespace OpenNANORGS
             if (elements[bot.y, bot.x] != 0xFFFF) return false;
             bot.energy -= amt;
             score += amt;
+            return true;
+        }
+
+        public bool PokeBot(Bot bot, ushort dir, ushort offset)
+        {
+            int x = bot.x;
+            int y = bot.y;
+            
+            switch (dir % 4)
+            {
+                case 0:
+                    y--;
+                    break;
+                case 1:
+                    y++;
+                    break;
+                case 2:
+                    x++;
+                    break;
+                case 3: 
+                    x--;
+                    break;
+            }
+            
+            var poked = bots.Find(b => b.x == x && b.y == y);
+            if (poked == null) return false;
+
+            poked.cpu.PMemory[offset] = bot.cpu.Registers[0];
+            return true;
+        }
+        
+        public int PeekBot(Bot bot, ushort dir, ushort offset)
+        {
+            int x = bot.x;
+            int y = bot.y;
+            
+            switch (dir % 4)
+            {
+                case 0:
+                    y--;
+                    break;
+                case 1:
+                    y++;
+                    break;
+                case 2:
+                    x++;
+                    break;
+                case 3: 
+                    x--;
+                    break;
+            }
+
+            var poked = bots.Find(b => b.x == x && b.y == y);
+            if (poked == null) return -1;
+
+            var peeked = poked.cpu.PMemory[offset];
+            return peeked;
+        }
+        
+        public bool ChargeBot(Bot bot, ushort dir, ushort amount)
+        {
+            int x = bot.x;
+            int y = bot.y;
+            
+            switch (dir % 4)
+            {
+                case 0:
+                    y--;
+                    break;
+                case 1:
+                    y++;
+                    break;
+                case 2:
+                    x++;
+                    break;
+                case 3: 
+                    x--;
+                    break;
+            }
+
+            if (bot.energy < amount + 1) return false;
+
+            var poked = bots.Find(b => b.x == x && b.y == y);
+            if (poked == null) return false;
+            if (poked.energy + amount > 0xFFFF) return false;
+
+            bot.energy -= amount;
+            poked.energy += amount;
+
             return true;
         }
 
@@ -296,24 +394,19 @@ namespace OpenNANORGS
                     break;
             }
             
-            if ((x > 69 || x < 0) && !loopH || (y > 39 || y < 0 ) && !loopV) return false;
-            if (loopH) x = (byte)(x % 70);
-            if (loopV) y = (byte)(y % 40);
-
-            foreach (Bot b in bots)
-            {
-                if (b.x == x && b.y == y) return false;
-            }
-
-            return true;
+            if ((x > width - 1 || x < 0) && !loopH || (y > height - 1 || y < 0 ) && !loopV) return false;
+            if (loopH) x = (byte)(x % width);
+            if (loopV) y = (byte)(y % height);
+            
+            return bots.Find(b => b.x == x && b.y == y) == null;
         }
 
         public void Render()
         {
             builder.Clear();
-            for (var y = 0; y < 40; y++)
+            for (var y = 0; y < height; y++)
             {
-                for (var x = 0; x < 70; x++)
+                for (var x = 0; x < width; x++)
                 {
                     var occ = false; // block already drawn.
                     foreach (var bot in bots)
@@ -360,7 +453,7 @@ namespace OpenNANORGS
                 builder.AppendLine(string.Format("R00={0,5} R01={1,5} R02={2,5} R03={3,5} R04={4,5} R05={5,5} R06={6,5}", dBI.reg[0], dBI.reg[1], dBI.reg[2], dBI.reg[3], dBI.reg[4], dBI.reg[5], dBI.reg[6]));
                 builder.AppendLine(string.Format("R07={0,5} R08={1,5} R09={2,5} R10={3,5} R11={4,5} R12={5,5} R13={6,5}", dBI.reg[7], dBI.reg[8], dBI.reg[9], dBI.reg[10], dBI.reg[11], dBI.reg[12], dBI.reg[13]));
                 builder.AppendLine(dBI.cpu.Disassemble());
-                //builder.AppendLine($"mutate={dBI.mutations.Count}");
+                builder.AppendLine($"mutate={dBI.cpu.mutations.Count}");
                 builder.Append("(u)nasm,(g)o,(s)ilentGo,(d)mp,(e)dt,(r)eg,(i)p,(q)uit,##,or [Enter]: ");
             }
 

@@ -37,7 +37,7 @@ namespace OpenNANORGS
 
         public Dictionary<ushort, ushort> mutations = new();
 
-        public Bot(char id, byte x, byte y, Tank tank, ushort[]? memory = null)
+        public Bot(char id, byte x, byte y, Tank tank, ushort[] memory)
         {
             cpu = new CPU(this, memory, tank.rnd);
             botId = id;
@@ -95,6 +95,21 @@ namespace OpenNANORGS
             return tank.GetElement(x, y);
         }
 
+        public bool PokeBot(ushort dir, ushort offset)
+        {
+            return tank.PokeBot(this, dir, offset);
+        }
+        
+        public int PeekBot(ushort dir, ushort offset)
+        {
+            return tank.PeekBot(this, dir, offset);
+        }
+
+        public bool ChargeBot(ushort dir, ushort amount)
+        {
+            return tank.ChargeBot(this, dir, amount);
+        }
+        
         public bool AttemptTravel(ushort dir)
         {
             if (!tank.ValidMove(this, dir)) return false;

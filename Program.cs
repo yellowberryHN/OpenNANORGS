@@ -10,7 +10,6 @@ namespace OpenNANORGS
         {
             try
             {
-                //if (x > 69 || y > 39) { throw new ArgumentOutOfRangeException(); }
                 Console.SetCursorPosition(x, y);
                 Console.Write(s);
             }
