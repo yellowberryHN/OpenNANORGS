@@ -1,8 +1,18 @@
 info: yeah, Yellow
 
 main:
-	rand r5, 10
-	rand r6, 7
+	mov r0, [r1]
+testing:
+	mov r0, [r1+1]
+	mov [r0], [r1]
+	mov [r0], [r1+1]
+	mov [r0+1], [r1]
+	mov [r0-1], [r1+1]
+	mov [r0-0], [r1-0]
+	mov [r0+1], [r1+1]
+	mov [r0+1], [r1-1]
+	mov r0, [r1+0xFFF]
+	mov r0, [r1-0xFFF]
 	mov r1, 0xDEAD
 	mov [r1-0], 0xDEAD
 	mov [r1-1], 0xDEAD
@@ -34,11 +44,12 @@ main:
 	mov [r4-2], 0xDEAD
 	mov [r4-3], 0xDEAD
 	mov [r4-4], 0xDEAD
-	mov [r4+5], 0xDEAD
-	mov [r4+6], 0xDEAD
+	mov [r4-5], 0xDEAD
+	mov [r4-6], 0xDEAD
 	mov [r4-7], 0xDEAD
 	mov [r4-8], 0xDEAD
 	mov [r4-9], 0xDEAD
 	mov [r4-10], 0xDEAD
 	mov [r4-255], 0xDEAD
-	mov [r4-4095], 0xBEEF
+	mov [r4-4097], 0xBEEF
+	mov [testing+r1], 0xFEED

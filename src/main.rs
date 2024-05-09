@@ -228,7 +228,7 @@ fn yellow_test() {
 }
 
 fn coal_test() {
-    let input: String = fs::read_to_string("bots/samplebot.asm")
+    let input: String = fs::read_to_string("bots/datatest.asm")
         .unwrap()
         .parse()
         .unwrap();
@@ -264,6 +264,7 @@ fn coal_test() {
 
     let symbol_table = SymbolTable::new(&parser_tokens);
     println!("{:#?}", symbol_table.label_to_address);
+
     let mut compiler = Compiler::new(parser_tokens, symbol_table.label_to_address);
     compiler.compile();
 
@@ -278,6 +279,7 @@ fn coal_test() {
             print!("\n");
         }
     }
+
     /*
     for entry in compiler.output {
         for word in entry {

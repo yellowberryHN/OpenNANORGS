@@ -84,13 +84,13 @@ impl Compiler {
                         Operand::Register(register) => {
                             op1_value = register.to_owned() as u16;
                         }
-                        // TODO: WIP, not even implemented in the tokenizer yet
+                        // TODO: WIP
                         Operand::RegisterIndexedDirect(base, operator, offset) => {
                             match base.as_ref() {
                                 Operand::ImmediateValue(value) => {
                                     match value {
                                         Value::Label(label) => {
-                                            op1_value = *self.symbol_table.get(label).unwrap();
+                                            op1_offset = *self.symbol_table.get(label).unwrap();
                                         }
                                         _ => {}
                                     }
@@ -100,13 +100,29 @@ impl Compiler {
                                 }
                                 _ => {}
                             }
-                            match operator {
-                                PlusMinus::Plus => {}
-                                PlusMinus::Minus => {}
-                            }
                             match offset.as_ref() {
-                                Operand::Direct(value) => {}
-                                Operand::Register(register) => {}
+                                Operand::ImmediateValue(value) => {
+                                    op1_offset = match value {
+                                        Value::Number(num) => *num,
+                                        Value::Label(label) => todo!() // invalid
+                                    };
+                                }
+                                Operand::Register(register) => {
+                                    match base.as_ref() {
+                                        Operand::Register(_) => todo!(), // invalid
+                                        Operand::ImmediateValue(value) => {
+                                            match value {
+                                                Value::Label(_) => op1_value = register.to_owned() as u16,
+                                                _ => {}
+                                            }
+                                        }
+                                        _ => {}
+                                    }
+                                }
+                                _ => {}
+                            }
+                            match operator {
+                                PlusMinus::Minus => op1_offset = 0u16.wrapping_sub(op1_offset),
                                 _ => {}
                             }
                         }

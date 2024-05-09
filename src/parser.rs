@@ -12,10 +12,11 @@ pub struct Parser {
 pub enum ParserToken {
     EOF,
     Invalid,
+    BotInfo(Vec<String>),
     Instruction(Instruction),
     Data(Vec<Value>),
     Label(String),
-    Comment,
+    Comment
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -168,29 +169,54 @@ impl Parser {
         }
     }
 
+    fn token_to_sign(&mut self) -> PlusMinus {
+        match self.token.clone() {
+            Token::Plus => return PlusMinus::Plus,
+            Token::Minus => return PlusMinus::Minus,
+            _ => todo!(),
+        }
+    }
+
     fn read_operand(&mut self, instruction: InstructionType) -> Operand {
         match self.token.clone() {
             Token::Ident(_) | Token::Number(_) | Token::Register(_) | Token::StackPointer => {
                 return self.token_to_operand()
             }
             Token::OpenBracket => {
-                self.read_token();
+                self.read_token(); // first operand
 
                 let one = self.token_to_operand();
 
-                self.read_token();
+                self.read_token(); // second value (could be bracket or plus/minus)
 
-                if self.token == Token::CloseBracket {
+                if self.token == Token::CloseBracket { // not indexed memory access
                     match one {
-                        Operand::None => return Operand::None,
-                        Operand::Direct(_) => todo!(),
-                        Operand::Register(_) => todo!(),
-                        Operand::ImmediateValue(val) => return Operand::Direct(val),
-                        Operand::RegisterIndexedDirect(_, _, _) => todo!(),
+                        Operand::Register(_) => { // what is this, fucking lisp?
+                            return Operand::RegisterIndexedDirect(Box::new(one),
+                                                                  PlusMinus::Plus,
+                                                                  Box::new(
+                                                                      Operand::ImmediateValue(
+                                                                          Value::Number(0))))
+                        }
+                        Operand::ImmediateValue(value) => return Operand::Direct(value),
+                        _ => return one
+                    }
+                } else {
+                    match self.token {
+                        Token::Plus | Token::Minus => {
+                            let sign = self.token_to_sign();
+
+                            self.read_token(); // second operand
+
+                            let two = self.token_to_operand();
+
+                            self.read_token(); // read closing bracket
+
+                            return Operand::RegisterIndexedDirect(Box::new(one), sign, Box::new(two));
+                        }
+                        _ => todo!() // this should never happen
                     }
                 }
-
-                Operand::None
             }
             _ => return Operand::None,
         }
@@ -288,12 +314,12 @@ impl Parser {
                 | InstructionType::POKE
                 | InstructionType::PEEK
                 | InstructionType::CKSUM => self.read_instruction_double(instruction),
-                _ => ParserToken::Invalid,
             },
             Token::Ident(ident) => match ident.to_lowercase().as_str() {
                 "data" => self.read_data(),
                 _ => self.read_label(),
             },
+            Token::BotInfo(info) => ParserToken::BotInfo(info),
             Token::Comment => ParserToken::Comment,
             _ => ParserToken::Invalid,
         };

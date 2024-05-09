@@ -5,6 +5,7 @@ pub enum Token {
     EOF,
     Invalid,
     Comment,
+    BotInfo(Vec<String>),
     Ident(String),
     Number(u16),
     Register(u16),
@@ -68,6 +69,7 @@ pub struct Tokenizer {
     read_position: usize,
     char: u8,
     input: Vec<u8>,
+    preread: bool
 }
 
 impl Tokenizer {
@@ -77,6 +79,7 @@ impl Tokenizer {
             read_position: 0,
             char: 0,
             input: input.into_bytes(),
+            preread: false
         };
 
         tokenizer.read_char();
@@ -87,12 +90,35 @@ impl Tokenizer {
     pub fn read_char(&mut self) {
         if self.read_position >= self.input.len() {
             self.char = 0;
+            //todo!();
         } else {
             self.char = self.input[self.read_position];
         }
 
+        //print!("{}",self.char.escape_ascii().to_string());
+        if(self.char.escape_ascii().to_string() == "]") {
+            println!("found the fucker")
+        }
+
         self.position = self.read_position;
         self.read_position += 1;
+    }
+
+    fn read_bot_info(&mut self) -> Token {
+        let mut bot_info = Vec::new();
+
+        while !self.char.is_ascii_alphanumeric() {
+            self.read_char();
+        }
+        while !self.char.is_ascii_control() {
+            bot_info.push(self.char);
+            self.read_char();
+        }
+
+        let info = String::from_utf8_lossy(&bot_info).to_string()
+            .split(", ").map(String::from).collect::<Vec<String>>();
+
+        Token::BotInfo(info)
     }
 
     fn read_comment(&mut self) -> Token {
@@ -109,12 +135,17 @@ impl Tokenizer {
         }
     }
 
+
     fn read_int(&mut self) -> Token {
         let pos = self.position;
 
-        while !self.char.is_ascii_whitespace() && !(self.char == b',') {
-            self.read_char();
+        while self.char.is_ascii_hexdigit() || (self.char.to_ascii_lowercase() == 'x' as u8)  {
+           self.read_char();
         }
+
+        self.preread = true;
+
+        println!("FORTNITE BALLS: {:#?}", self.char as char);
 
         let num = String::from_utf8_lossy(&self.input[pos..self.position]).to_string();
 
@@ -149,7 +180,9 @@ impl Tokenizer {
 
     pub fn next_token(&mut self) -> Token {
         self.skip_whitespace();
+        self.preread = false;
 
+        print!("{}", self.char.escape_ascii().to_string());
         let token = match self.char {
             b'/' => self.read_comment(),
             b';' => self.read_comment(),
@@ -166,12 +199,12 @@ impl Tokenizer {
                 let ident = self.read_ident();
 
                 match ident.as_str() {
-                    "r" => {
+                    "r" | "R" => {
                         if let Token::Number(num) = self.read_int() {
                             return Token::Register(num);
                         }
                     }
-                    "info" => return self.read_comment(),
+                    "info" => return self.read_bot_info(),
                     "SP" => return Token::StackPointer,
                     _ => {}
                 }
@@ -224,7 +257,10 @@ impl Tokenizer {
             _ => Token::Invalid,
         };
 
-        self.read_char();
+        if self.preread == false {
+            self.read_char();
+        }
+
         token
     }
 
