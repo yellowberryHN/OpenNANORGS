@@ -1,9 +1,18 @@
 #![allow(dead_code)]
 
 mod rng;
+mod tokenizer;
+mod parser;
+mod compiler;
+mod symbol_table;
 
+use std::{env, fs};
 use crate::rng::{LegacyRNG, ModernRNG};
 use crate::rng::RNGSystem;
+use crate::parser::{Parser, ParserToken};
+use crate::compiler::Compiler;
+use crate::symbol_table::SymbolTable;
+use crate::tokenizer::Tokenizer;
 
 #[derive(Debug)]
 enum EntityType {
@@ -200,9 +209,13 @@ struct Position {
     z: u8, // depth
 }
 
+impl Position {
+    fn new(x: u8, y: u8, z: u8) {
+        Position { x, y, z };
+    }
+}
 
-
-fn main() {
+fn yellow_test() {
     let mut test = Bot::new("hhh".to_string(), 'h', Position { x: 0, y: 4, z: 0 });
     println!("{test:?}");
     let mut test2 = Tank::new(Position { x: 70, y: 40, z: 1 }, 69420, false);
@@ -212,4 +225,79 @@ fn main() {
     test2.print(0);
     //test2.test_random(30);
     //println!("Hello, world!");
+}
+
+fn coal_test() {
+    let input: String = fs::read_to_string("bots/samplebot.asm")
+        .unwrap()
+        .parse()
+        .unwrap();
+
+    let mut tokenizer = Tokenizer::new(input.clone());
+
+    println!("{}", input);
+
+    let tokens = tokenizer.tokenize();
+
+    for token in tokens.clone() {
+        println!("{:?}", token);
+    }
+
+    println!("-------------------------------------------");
+
+    let mut parser = Parser::new(tokens);
+    let mut parser_tokens = Vec::new();
+
+    loop {
+        let token = parser.next_token();
+
+        parser_tokens.push(token.clone());
+
+        if token == ParserToken::EOF {
+            break;
+        }
+    }
+
+    for token in parser_tokens.clone() {
+        println!("{:#?}", token);
+    }
+
+    let symbol_table = SymbolTable::new(&parser_tokens);
+    println!("{:#?}", symbol_table.label_to_address);
+    let mut compiler = Compiler::new(parser_tokens, symbol_table.label_to_address);
+    compiler.compile();
+
+    println!("{:?}", compiler.output);
+
+    let mut bruh = 0;
+    for word in compiler.output {
+        print!("{:04x} ", word);
+        bruh += 1;
+        if bruh == 3 {
+            bruh = 0;
+            print!("\n");
+        }
+    }
+    /*
+    for entry in compiler.output {
+        for word in entry {
+            print!("{:04x} ", word);
+        }
+        print!("\n");
+    }
+    */
+}
+
+fn main() {
+    let args: Vec<String> = env::args().collect();
+
+    if args.len() > 1 {
+        match args[1].as_str() {
+            "yellow" => yellow_test(),
+            "coal" => coal_test(),
+            _ => {}
+        }
+    } else {
+        coal_test();
+    }
 }
