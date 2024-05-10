@@ -1,6 +1,6 @@
-use std::collections::HashMap;
-use crate::tokenizer::{Tokenizer, InstructionType};
 use crate::parser::{Instruction, Operand, ParserToken, PlusMinus, Register, Value};
+use crate::tokenizer::{InstructionType, Tokenizer};
+use std::collections::HashMap;
 
 pub struct Compiler {
     position: usize,
@@ -25,7 +25,7 @@ impl Compiler {
             label_index: Vec::new(),
             input: input.clone(),
             labels: Vec::new(),
-            symbol_table
+            symbol_table,
         };
 
         compiler.read_instruction();
@@ -72,33 +72,30 @@ impl Compiler {
 
                     match op1 {
                         Operand::None => {}
-                        Operand::Direct(value)
-                        | Operand::ImmediateValue(value) => {
-                            match value {
-                                Value::Number(num) => op1_value = *num,
-                                Value::Label(label) => {
-                                    println!("{:#?}", label.to_lowercase());
-                                    op1_value = *self.symbol_table.get(&label.to_lowercase()).unwrap();
-                                    if positional {
-                                        op1_value = op1_value.wrapping_sub(instruction_pointer);
-                                    }
+                        Operand::Direct(value) | Operand::ImmediateValue(value) => match value {
+                            Value::Number(num) => op1_value = *num,
+                            Value::Label(label) => {
+                                println!("{:#?}", label.to_lowercase());
+                                op1_value = *self.symbol_table.get(&label.to_lowercase()).unwrap();
+
+                                if positional {
+                                    op1_value = op1_value.wrapping_sub(instruction_pointer);
                                 }
                             }
-                        }
+                        },
                         Operand::Register(register) => {
                             op1_value = register.to_owned() as u16;
                         }
                         // TODO: WIP
                         Operand::RegisterIndexedDirect(base, operator, offset) => {
                             match base.as_ref() {
-                                Operand::ImmediateValue(value) => {
-                                    match value {
-                                        Value::Label(label) => {
-                                            op1_offset = *self.symbol_table.get(label).unwrap();
-                                        }
-                                        _ => {}
+                                Operand::ImmediateValue(value) => match value {
+                                    Value::Label(label) => {
+                                        op1_offset =
+                                            *self.symbol_table.get(&label.to_lowercase()).unwrap();
                                     }
-                                }
+                                    _ => {}
+                                },
                                 Operand::Register(register) => {
                                     op1_value = (register.to_owned() as u16) << 12;
                                 }
@@ -108,18 +105,18 @@ impl Compiler {
                                 Operand::ImmediateValue(value) => {
                                     op1_offset = match value {
                                         Value::Number(num) => *num,
-                                        Value::Label(label) => todo!() // invalid
+                                        Value::Label(label) => todo!(), // invalid
                                     };
                                 }
                                 Operand::Register(register) => {
                                     match base.as_ref() {
                                         Operand::Register(_) => todo!(), // invalid
-                                        Operand::ImmediateValue(value) => {
-                                            match value {
-                                                Value::Label(_) => op1_value = (register.to_owned() as u16) << 12,
-                                                _ => {}
+                                        Operand::ImmediateValue(value) => match value {
+                                            Value::Label(_) => {
+                                                op1_value = (register.to_owned() as u16) << 12
                                             }
-                                        }
+                                            _ => {}
+                                        },
                                         _ => {}
                                     }
                                 }
@@ -131,7 +128,7 @@ impl Compiler {
                                         op1_offset = 0u16.wrapping_sub(op1_offset);
                                         op1_carry = true;
                                     }
-                                },
+                                }
                                 _ => {}
                             }
                         }
@@ -139,32 +136,29 @@ impl Compiler {
 
                     match op2 {
                         Operand::None => {}
-                        Operand::Direct(value)
-                        | Operand::ImmediateValue(value) => {
-                            match value {
-                                Value::Number(num) => op2_value = *num,
-                                Value::Label(label) => {
-                                    op2_value = *self.symbol_table.get(&label.to_lowercase()).unwrap();
-                                    if positional {
-                                        op2_value = op2_value.wrapping_sub(instruction_pointer);
-                                    }
+                        Operand::Direct(value) | Operand::ImmediateValue(value) => match value {
+                            Value::Number(num) => op2_value = *num,
+                            Value::Label(label) => {
+                                op2_value = *self.symbol_table.get(&label.to_lowercase()).unwrap();
+                                if positional {
+                                    op2_value = op2_value.wrapping_sub(instruction_pointer);
                                 }
                             }
-                        }
+                        },
                         Operand::Register(register) => {
                             op2_value = register.to_owned() as u16;
                         }
                         // TODO: WIP above
                         Operand::RegisterIndexedDirect(base, operator, offset) => {
                             match base.as_ref() {
-                                Operand::ImmediateValue(value) => {
-                                    match value {
-                                        Value::Label(label) => {
-                                            op2_offset = *self.symbol_table.get(label).unwrap();
-                                        }
-                                        _ => {}
+                                Operand::ImmediateValue(value) => match value {
+                                    Value::Label(label) => {
+                                        println!("{:#?}", label);
+                                        op2_offset =
+                                            *self.symbol_table.get(&label.to_lowercase()).unwrap();
                                     }
-                                }
+                                    _ => {}
+                                },
                                 Operand::Register(register) => {
                                     op2_value = (register.to_owned() as u16) << 12;
                                 }
@@ -174,18 +168,18 @@ impl Compiler {
                                 Operand::ImmediateValue(value) => {
                                     op2_offset = match value {
                                         Value::Number(num) => *num,
-                                        Value::Label(_) => todo!() // invalid
+                                        Value::Label(_) => todo!(), // invalid
                                     };
                                 }
                                 Operand::Register(register) => {
                                     match base.as_ref() {
                                         Operand::Register(_) => todo!(), // invalid
-                                        Operand::ImmediateValue(value) => {
-                                            match value {
-                                                Value::Label(_) => op2_value = (register.to_owned() as u16) << 12,
-                                                _ => {}
+                                        Operand::ImmediateValue(value) => match value {
+                                            Value::Label(_) => {
+                                                op2_value = (register.to_owned() as u16) << 12
                                             }
-                                        }
+                                            _ => {}
+                                        },
                                         _ => {}
                                     }
                                 }
@@ -197,13 +191,14 @@ impl Compiler {
                                         op2_offset = 0u16.wrapping_sub(op2_offset);
                                         op2_carry = true;
                                     }
-                                },
+                                }
                                 _ => {}
                             }
                         }
                     }
 
-                    let inst = instruction.to_owned().instruction_type as u16 | Compiler::get_modes(instruction, op1_carry, op2_carry);
+                    let inst = instruction.to_owned().instruction_type as u16
+                        | Compiler::get_modes(instruction, op1_carry, op2_carry);
 
                     //println!("inst: {:04X}, op1: {} ({}), op2: {} ({})", inst, op1_value, op1_offset, op2_value, op2_offset);
 
@@ -216,7 +211,9 @@ impl Compiler {
                     for value in data {
                         bytecode.push(match value {
                             Value::Number(num) => *num,
-                            Value::Label(label) => *self.symbol_table.get(&label.to_lowercase()).unwrap()
+                            Value::Label(label) => {
+                                *self.symbol_table.get(&label.to_lowercase()).unwrap()
+                            }
                         });
                         instruction_pointer += 1;
                     }

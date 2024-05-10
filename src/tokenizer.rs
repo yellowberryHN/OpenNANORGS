@@ -1,5 +1,5 @@
-use clap::builder::TypedValueParser;
 use crate::parser::Parser;
+use clap::builder::TypedValueParser;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Token {
@@ -70,7 +70,7 @@ pub struct Tokenizer {
     read_position: usize,
     char: u8,
     input: Vec<u8>,
-    preread: bool
+    preread: bool,
 }
 
 impl Tokenizer {
@@ -80,7 +80,7 @@ impl Tokenizer {
             read_position: 0,
             char: 0,
             input: input.into_bytes(),
-            preread: false
+            preread: false,
         };
 
         tokenizer.read_char();
@@ -111,8 +111,11 @@ impl Tokenizer {
             self.read_char();
         }
 
-        let info = String::from_utf8_lossy(&bot_info).to_string()
-            .split(", ").map(String::from).collect::<Vec<String>>();
+        let info = String::from_utf8_lossy(&bot_info)
+            .to_string()
+            .split(", ")
+            .map(String::from)
+            .collect::<Vec<String>>();
 
         Token::BotInfo(info)
     }
@@ -131,12 +134,11 @@ impl Tokenizer {
         }
     }
 
-
     fn read_int(&mut self) -> Token {
         let pos = self.position;
 
-        while self.char.is_ascii_hexdigit() || (self.char.to_ascii_lowercase() == 'x' as u8)  {
-           self.read_char();
+        while self.char.is_ascii_hexdigit() || (self.char.to_ascii_lowercase() == 'x' as u8) {
+            self.read_char();
         }
 
         self.preread = true;
@@ -196,18 +198,15 @@ impl Tokenizer {
 
                 if ident.to_lowercase().starts_with("r") {
                     // let num_str: String = *ident.split("").collect::<Vec<String>>()[1..].clone().collect();
-                    let num_chars = ident.split("").collect::<Vec<char>>();
+                    let num_chars: Vec<char> = ident.chars().collect();
                     let num_str: String = num_chars[1..].iter().collect();
-
                     let num = num_str.parse::<u16>();
 
                     match num {
-                        Ok(val) => {
-                            match val {
-                                0..=13 | 15 => return Token::Register(val),
-                                _ => {}
-                            }
-                        }
+                        Ok(val) => match val {
+                            0..=13 | 15 => return Token::Register(val),
+                            _ => {}
+                        },
                         _ => {}
                     }
                 }

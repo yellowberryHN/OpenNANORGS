@@ -16,7 +16,7 @@ pub enum ParserToken {
     Instruction(Instruction),
     Data(Vec<Value>),
     Label(String),
-    Comment
+    Comment,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -41,7 +41,7 @@ pub enum PlusMinus {
 #[derive(Debug, PartialEq, Clone)]
 pub enum Value {
     Number(u16),
-    Label(String)
+    Label(String),
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -60,7 +60,7 @@ pub enum Register {
     R11,
     R12,
     R13,
-    SP
+    SP = 15,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -189,17 +189,19 @@ impl Parser {
 
                 self.read_token(); // second value (could be bracket or plus/minus)
 
-                if self.token == Token::CloseBracket { // not indexed memory access
+                if self.token == Token::CloseBracket {
+                    // not indexed memory access
                     match one {
-                        Operand::Register(_) => { // what is this, fucking lisp?
-                            return Operand::RegisterIndexedDirect(Box::new(one),
-                                                                  PlusMinus::Plus,
-                                                                  Box::new(
-                                                                      Operand::ImmediateValue(
-                                                                          Value::Number(0))))
+                        Operand::Register(_) => {
+                            // what is this, fucking lisp?
+                            return Operand::RegisterIndexedDirect(
+                                Box::new(one),
+                                PlusMinus::Plus,
+                                Box::new(Operand::ImmediateValue(Value::Number(0))),
+                            );
                         }
                         Operand::ImmediateValue(value) => return Operand::Direct(value),
-                        _ => return one
+                        _ => return one,
                     }
                 } else {
                     match self.token {
@@ -212,7 +214,11 @@ impl Parser {
 
                             self.read_token(); // read closing bracket
 
-                            return Operand::RegisterIndexedDirect(Box::new(one), sign, Box::new(two));
+                            return Operand::RegisterIndexedDirect(
+                                Box::new(one),
+                                sign,
+                                Box::new(two),
+                            );
                         }
                         _ => {
                             println!("{:#?}", self.token);
