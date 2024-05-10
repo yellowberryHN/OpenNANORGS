@@ -1,3 +1,4 @@
+use clap::builder::TypedValueParser;
 use crate::parser::Parser;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -95,11 +96,6 @@ impl Tokenizer {
             self.char = self.input[self.read_position];
         }
 
-        //print!("{}",self.char.escape_ascii().to_string());
-        if(self.char.escape_ascii().to_string() == "]") {
-            println!("found the fucker")
-        }
-
         self.position = self.read_position;
         self.read_position += 1;
     }
@@ -145,7 +141,7 @@ impl Tokenizer {
 
         self.preread = true;
 
-        println!("FORTNITE BALLS: {:#?}", self.char as char);
+        //println!("FORTNITE BALLS: {:#?}", self.char as char);
 
         let num = String::from_utf8_lossy(&self.input[pos..self.position]).to_string();
 
@@ -167,7 +163,7 @@ impl Tokenizer {
         let mut ident = Vec::new();
 
         loop {
-            if self.char.is_ascii_alphabetic() {
+            if self.char.is_ascii_alphanumeric() || self.char == '_' as u8 {
                 ident.push(self.char);
                 self.read_char();
             } else {
@@ -195,17 +191,35 @@ impl Tokenizer {
             b'+' => Token::Plus,
             b'-' => Token::Minus,
             b'0'..=b'9' => self.read_int(),
-            b'a'..=b'z' | b'A'..=b'Z' => {
+            b'a'..=b'z' | b'A'..=b'Z' | b'_' => {
                 let ident = self.read_ident();
 
-                match ident.as_str() {
-                    "r" | "R" => {
-                        if let Token::Number(num) = self.read_int() {
-                            return Token::Register(num);
+                if ident.to_lowercase().starts_with("r") {
+                    // let num_str: String = *ident.split("").collect::<Vec<String>>()[1..].clone().collect();
+                    let num_chars = ident.split("").collect::<Vec<char>>();
+                    let num_str: String = num_chars[1..].iter().collect();
+
+                    let num = num_str.parse::<u16>();
+
+                    match num {
+                        Ok(val) => {
+                            match val {
+                                0..=13 | 15 => return Token::Register(val),
+                                _ => {}
+                            }
                         }
+                        _ => {}
                     }
+                }
+
+                match ident.to_lowercase().as_str() {
+                    // "r" => {
+                    //     if let Token::Number(num) = self.read_int() {
+                    //         return Token::Register(num);
+                    //     }
+                    // }
                     "info" => return self.read_bot_info(),
-                    "SP" => return Token::StackPointer,
+                    "sp" => return Token::StackPointer,
                     _ => {}
                 }
 

@@ -53,6 +53,9 @@ impl Compiler {
                     let mut op1_offset: u16 = 0;
                     let mut op2_offset: u16 = 0;
 
+                    let mut op1_carry: bool = false;
+                    let mut op2_carry: bool = false;
+
                     let positional = match instruction.instruction_type {
                         InstructionType::CALL => true,
                         InstructionType::JMP
@@ -74,6 +77,7 @@ impl Compiler {
                             match value {
                                 Value::Number(num) => op1_value = *num,
                                 Value::Label(label) => {
+                                    println!("{:#?}", label.to_lowercase());
                                     op1_value = *self.symbol_table.get(&label.to_lowercase()).unwrap();
                                     if positional {
                                         op1_value = op1_value.wrapping_sub(instruction_pointer);
@@ -96,7 +100,7 @@ impl Compiler {
                                     }
                                 }
                                 Operand::Register(register) => {
-                                    op1_value = register.to_owned() as u16;
+                                    op1_value = (register.to_owned() as u16) << 12;
                                 }
                                 _ => {}
                             }
@@ -112,7 +116,7 @@ impl Compiler {
                                         Operand::Register(_) => todo!(), // invalid
                                         Operand::ImmediateValue(value) => {
                                             match value {
-                                                Value::Label(_) => op1_value = register.to_owned() as u16,
+                                                Value::Label(_) => op1_value = (register.to_owned() as u16) << 12,
                                                 _ => {}
                                             }
                                         }
@@ -122,7 +126,12 @@ impl Compiler {
                                 _ => {}
                             }
                             match operator {
-                                PlusMinus::Minus => op1_offset = 0u16.wrapping_sub(op1_offset),
+                                PlusMinus::Minus => {
+                                    if op1_offset > 0 {
+                                        op1_offset = 0u16.wrapping_sub(op1_offset);
+                                        op1_carry = true;
+                                    }
+                                },
                                 _ => {}
                             }
                         }
@@ -146,14 +155,61 @@ impl Compiler {
                             op2_value = register.to_owned() as u16;
                         }
                         // TODO: WIP above
-                        Operand::RegisterIndexedDirect(_,_,_) => {}
+                        Operand::RegisterIndexedDirect(base, operator, offset) => {
+                            match base.as_ref() {
+                                Operand::ImmediateValue(value) => {
+                                    match value {
+                                        Value::Label(label) => {
+                                            op2_offset = *self.symbol_table.get(label).unwrap();
+                                        }
+                                        _ => {}
+                                    }
+                                }
+                                Operand::Register(register) => {
+                                    op2_value = (register.to_owned() as u16) << 12;
+                                }
+                                _ => {}
+                            }
+                            match offset.as_ref() {
+                                Operand::ImmediateValue(value) => {
+                                    op2_offset = match value {
+                                        Value::Number(num) => *num,
+                                        Value::Label(_) => todo!() // invalid
+                                    };
+                                }
+                                Operand::Register(register) => {
+                                    match base.as_ref() {
+                                        Operand::Register(_) => todo!(), // invalid
+                                        Operand::ImmediateValue(value) => {
+                                            match value {
+                                                Value::Label(_) => op2_value = (register.to_owned() as u16) << 12,
+                                                _ => {}
+                                            }
+                                        }
+                                        _ => {}
+                                    }
+                                }
+                                _ => {}
+                            }
+                            match operator {
+                                PlusMinus::Minus => {
+                                    if op2_offset > 0 {
+                                        op2_offset = 0u16.wrapping_sub(op2_offset);
+                                        op2_carry = true;
+                                    }
+                                },
+                                _ => {}
+                            }
+                        }
                     }
 
-                    let mut inst = instruction.to_owned().instruction_type as u16 | (Compiler::get_modes(instruction) << 12);
+                    let inst = instruction.to_owned().instruction_type as u16 | Compiler::get_modes(instruction, op1_carry, op2_carry);
+
+                    //println!("inst: {:04X}, op1: {} ({}), op2: {} ({})", inst, op1_value, op1_offset, op2_value, op2_offset);
 
                     bytecode.push(inst);
-                    bytecode.push(op1_value | (op1_offset << 12));
-                    bytecode.push(op2_value | (op2_offset << 12));
+                    bytecode.push(op1_value | (op1_offset & 0x0fff));
+                    bytecode.push(op2_value | (op2_offset & 0x0fff));
                     instruction_pointer += 3;
                 }
                 ParserToken::Data(data) => {
@@ -172,7 +228,7 @@ impl Compiler {
         self.output = bytecode;
     }
 
-    fn get_modes(instruction: &Instruction) -> u16 {
+    fn get_modes(instruction: &Instruction, op1_carry: bool, op2_carry: bool) -> u16 {
         /*
         ushort value = 0;
         value = (ushort)((ushort)op1mode << 2); // what the fuck
@@ -183,6 +239,15 @@ impl Compiler {
         let mut value = 0;
         value = Compiler::operand_to_mode_val(instruction.to_owned().operand1) << 2;
         value |= Compiler::operand_to_mode_val(instruction.to_owned().operand2);
+
+        value <<= 12;
+
+        if op1_carry {
+            value |= 0x800
+        }
+        if op2_carry {
+            value |= 0x400
+        }
 
         value
     }

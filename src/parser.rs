@@ -214,7 +214,10 @@ impl Parser {
 
                             return Operand::RegisterIndexedDirect(Box::new(one), sign, Box::new(two));
                         }
-                        _ => todo!() // this should never happen
+                        _ => {
+                            println!("{:#?}", self.token);
+                            todo!();
+                        }
                     }
                 }
             }

@@ -5,8 +5,12 @@ mod tokenizer;
 mod parser;
 mod compiler;
 mod symbol_table;
+mod cli;
 
 use std::{env, fs};
+use std::path::PathBuf;
+use clap::Parser as clapParse;
+use crate::cli::Arguments;
 use crate::rng::{LegacyRNG, ModernRNG};
 use crate::rng::RNGSystem;
 use crate::parser::{Parser, ParserToken};
@@ -227,15 +231,15 @@ fn yellow_test() {
     //println!("Hello, world!");
 }
 
-fn coal_test() {
-    let input: String = fs::read_to_string("bots/datatest.asm")
+fn coal_test(bot_path: PathBuf) {
+    let input: String = fs::read_to_string(bot_path)
         .unwrap()
         .parse()
         .unwrap();
 
     let mut tokenizer = Tokenizer::new(input.clone());
 
-    println!("{}", input);
+    //println!("{}", input);
 
     let tokens = tokenizer.tokenize();
 
@@ -291,15 +295,19 @@ fn coal_test() {
 }
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let args = Arguments::parse();
 
-    if args.len() > 1 {
-        match args[1].as_str() {
-            "yellow" => yellow_test(),
-            "coal" => coal_test(),
-            _ => {}
-        }
-    } else {
-        coal_test();
-    }
+    coal_test(args.bot_path)
+
+    // let args: Vec<String> = env::args().collect();
+    //
+    // if args.len() > 1 {
+    //     match args[1].as_str() {
+    //         "yellow" => yellow_test(),
+    //         "coal" => coal_test(),
+    //         _ => {}
+    //     }
+    // } else {
+    //     coal_test();
+    // }
 }
