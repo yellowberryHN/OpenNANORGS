@@ -68,6 +68,9 @@ impl Compiler {
                         | InstructionType::JS
                         | InstructionType::JNS => true,
                         _ => false,
+                    } && match instruction.operand1 {
+                        Operand::ImmediateValue(_) => true,
+                        _ => false
                     };
 
                     match op1 {

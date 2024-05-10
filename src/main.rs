@@ -7,8 +7,11 @@ mod compiler;
 mod symbol_table;
 mod cli;
 
-use std::{env, fs};
+use std::fs;
+use std::fs::File;
+use std::io::Write;
 use std::path::PathBuf;
+use byteorder::{BigEndian, WriteBytesExt};
 use clap::Parser as clapParse;
 use crate::cli::Arguments;
 use crate::rng::{LegacyRNG, ModernRNG};
@@ -232,7 +235,7 @@ fn yellow_test() {
 }
 
 fn coal_test(bot_path: PathBuf) {
-    let input: String = fs::read_to_string(bot_path)
+    let input: String = fs::read_to_string(&bot_path)
         .unwrap()
         .parse()
         .unwrap();
@@ -275,7 +278,7 @@ fn coal_test(bot_path: PathBuf) {
     println!("{:?}", compiler.output);
 
     let mut bruh = 0;
-    for word in compiler.output {
+    for word in &compiler.output {
         print!("{:04x} ", word);
         bruh += 1;
         if bruh == 3 {
@@ -283,6 +286,14 @@ fn coal_test(bot_path: PathBuf) {
             print!("\n");
         }
     }
+
+    let mut bytecode: File = File::create(format!("{}.bin", &bot_path.display())).unwrap();
+
+    for value in &compiler.output {
+        bytecode.write_u16::<BigEndian>(*value).unwrap();
+    }
+
+    bytecode.flush().unwrap();
 
     /*
     for entry in compiler.output {
