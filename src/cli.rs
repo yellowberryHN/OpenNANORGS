@@ -8,6 +8,10 @@ pub struct Arguments {
     #[arg(value_name="BOT", value_hint = ValueHint::FilePath)]
     pub bot_path: PathBuf,
 
+    /// This allows you to use the old argument format
+    #[arg(short='p', hide = true)]
+    legacy_player_flag: bool,
+
     /// Run in quiet mode (no display)
     #[arg(short = 'q', long = None, default_value_t = false)]
     pub quiet_mode: bool,
@@ -35,4 +39,8 @@ pub struct Arguments {
     /// Dump bytecode into firmware file
     #[arg(short = 'f', long = None, default_value_t = false)]
     pub dump_bytecode: bool,
+
+    /// Display additional logs for troubleshooting (internal)
+    #[arg(short='v', hide=true)]
+    pub verbose: bool,
 }

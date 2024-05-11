@@ -222,7 +222,7 @@ impl Position {
     }
 }
 
-fn yellow_test() {
+fn render_stuff() {
     let mut test = Bot::new("hhh".to_string(), 'h', Position { x: 0, y: 4, z: 0 });
     println!("{test:?}");
     let mut test2 = Tank::new(Position { x: 70, y: 40, z: 1 }, 69420, false);
@@ -234,23 +234,25 @@ fn yellow_test() {
     //println!("Hello, world!");
 }
 
-fn coal_test(bot_path: PathBuf) {
-    let input: String = fs::read_to_string(&bot_path)
+fn main() {
+    let args = Arguments::parse();
+
+    let input: String = fs::read_to_string(&args.bot_path)
         .unwrap()
         .parse()
         .unwrap();
 
     let mut tokenizer = Tokenizer::new(input.clone());
 
-    //println!("{}", input);
-
     let tokens = tokenizer.tokenize();
 
-    for token in tokens.clone() {
-        println!("{:?}", token);
-    }
+    if args.verbose {
+        for token in tokens.clone() {
+            println!("{:?}", token);
+        }
 
-    println!("-------------------------------------------");
+        println!("-------------------------------------------");
+    }
 
     let mut parser = Parser::new(tokens);
     let mut parser_tokens = Vec::new();
@@ -265,60 +267,60 @@ fn coal_test(bot_path: PathBuf) {
         }
     }
 
-    for token in parser_tokens.clone() {
-        println!("{:#?}", token);
+    if args.verbose {
+        for token in parser_tokens.clone() {
+            println!("{:#?}", token);
+        }
     }
 
     let symbol_table = SymbolTable::new(&parser_tokens);
-    println!("{:#?}", symbol_table.label_to_address);
+
+    if args.verbose {
+        println!("{:#?}", symbol_table.label_to_address);
+    }
 
     let mut compiler = Compiler::new(parser_tokens, symbol_table.label_to_address);
     compiler.compile();
 
-    println!("{:?}", compiler.output);
+    if args.verbose {
+        println!("{:?}", compiler.output);
 
-    let mut bruh = 0;
-    for word in &compiler.output {
-        print!("{:04x} ", word);
-        bruh += 1;
-        if bruh == 3 {
-            bruh = 0;
+        let mut bruh = 0;
+        for word in &compiler.output {
+            print!("{:04x} ", word);
+            bruh += 1;
+            if bruh == 3 {
+                bruh = 0;
+                print!("\n");
+            }
+        }
+        if bruh != 3 {
             print!("\n");
         }
     }
 
-    let mut bytecode: File = File::create(format!("{}.bin", &bot_path.display())).unwrap();
+    if args.dump_bytecode {
+        let file_path = format!("{}.bin", &args.bot_path.display());
+        let mut bytecode: File = File::create(&file_path).unwrap();
 
-    for value in &compiler.output {
-        bytecode.write_u16::<BigEndian>(*value).unwrap();
-    }
-
-    bytecode.flush().unwrap();
-
-    /*
-    for entry in compiler.output {
-        for word in entry {
-            print!("{:04x} ", word);
+        for value in &compiler.output {
+            bytecode.write_u16::<BigEndian>(*value).unwrap();
         }
-        print!("\n");
+
+        bytecode.flush().unwrap();
+        println!("saved to {}", &file_path)
+    } else if args.debug_bot.is_some() {
+        let bot_char: char = args.debug_bot.unwrap();
+        // TODO: do this validation with clap instead
+        match bot_char {
+            'A'..='Z' | 'a'..='x' => {
+                println!("you asked to debug \"{}\"", &bot_char)
+            }
+            _ => {
+                println!("invalid bot identifier \"{}\"", &bot_char)
+            }
+        }
+    } else {
+        println!("nothing happens here yet.")
     }
-    */
-}
-
-fn main() {
-    let args = Arguments::parse();
-
-    coal_test(args.bot_path)
-
-    // let args: Vec<String> = env::args().collect();
-    //
-    // if args.len() > 1 {
-    //     match args[1].as_str() {
-    //         "yellow" => yellow_test(),
-    //         "coal" => coal_test(),
-    //         _ => {}
-    //     }
-    // } else {
-    //     coal_test();
-    // }
 }

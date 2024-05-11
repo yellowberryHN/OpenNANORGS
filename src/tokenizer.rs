@@ -180,7 +180,6 @@ impl Tokenizer {
         self.skip_whitespace();
         self.preread = false;
 
-        print!("{}", self.char.escape_ascii().to_string());
         let token = match self.char {
             b'/' => self.read_comment(),
             b';' => self.read_comment(),

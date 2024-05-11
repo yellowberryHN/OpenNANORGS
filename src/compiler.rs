@@ -78,7 +78,6 @@ impl Compiler {
                         Operand::Direct(value) | Operand::ImmediateValue(value) => match value {
                             Value::Number(num) => op1_value = *num,
                             Value::Label(label) => {
-                                println!("{:#?}", label.to_lowercase());
                                 op1_value = *self.symbol_table.get(&label.to_lowercase()).unwrap();
 
                                 if positional {
@@ -89,7 +88,6 @@ impl Compiler {
                         Operand::Register(register) => {
                             op1_value = register.to_owned() as u16;
                         }
-                        // TODO: WIP
                         Operand::RegisterIndexedDirect(base, operator, offset) => {
                             match base.as_ref() {
                                 Operand::ImmediateValue(value) => match value {
@@ -151,7 +149,6 @@ impl Compiler {
                         Operand::Register(register) => {
                             op2_value = register.to_owned() as u16;
                         }
-                        // TODO: WIP above
                         Operand::RegisterIndexedDirect(base, operator, offset) => {
                             match base.as_ref() {
                                 Operand::ImmediateValue(value) => match value {
