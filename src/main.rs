@@ -1,37 +1,37 @@
 #![allow(dead_code)]
 
-mod rng;
-mod tokenizer;
-mod parser;
-mod compiler;
-mod symbol_table;
 mod cli;
+mod compiler;
+mod parser;
+mod rng;
+mod symbol_table;
+mod tokenizer;
 
+use crate::cli::Arguments;
+use crate::compiler::Compiler;
+use crate::parser::{Parser, ParserToken};
+use crate::rng::RNGSystem;
+use crate::rng::{LegacyRNG, ModernRNG};
+use crate::symbol_table::SymbolTable;
+use crate::tokenizer::Tokenizer;
+use byteorder::{BigEndian, WriteBytesExt};
+use clap::Parser as clapParse;
 use std::fs;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
-use byteorder::{BigEndian, WriteBytesExt};
-use clap::Parser as clapParse;
-use crate::cli::Arguments;
-use crate::rng::{LegacyRNG, ModernRNG};
-use crate::rng::RNGSystem;
-use crate::parser::{Parser, ParserToken};
-use crate::compiler::Compiler;
-use crate::symbol_table::SymbolTable;
-use crate::tokenizer::Tokenizer;
 
 #[derive(Debug)]
 enum EntityType {
     Item,
-    Bot
+    Bot,
 }
 
 #[derive(Debug)]
 enum ItemType {
     Sludge,
     CollectionPoint,
-    Ramp
+    Ramp,
 }
 
 #[derive(Debug)]
@@ -44,9 +44,9 @@ struct Item {
 impl Item {
     fn get_glyph(&self) -> char {
         match self.item_type {
-            ItemType::Sludge => { '*' }
-            ItemType::CollectionPoint => { '$' }
-            ItemType::Ramp => { '/' }
+            ItemType::Sludge => '*',
+            ItemType::CollectionPoint => '$',
+            ItemType::Ramp => '/',
         }
     }
 }
@@ -62,7 +62,7 @@ struct Tank {
     sludge_amount: u8,
     toxic_sludge: Vec<u8>,
 
-    elements: Vec<Option<Item>>
+    elements: Vec<Option<Item>>,
 }
 
 impl Tank {
@@ -75,11 +75,14 @@ impl Tank {
             elements: vec![],
             bounds,
             rng: match use_modern_rng {
-                true => {Box::new(ModernRNG::new(seed))}
-                false => {Box::new(LegacyRNG::new(seed))}
+                true => Box::new(ModernRNG::new(seed)),
+                false => Box::new(LegacyRNG::new(seed)),
             },
         };
-        tank.elements.resize_with(usize::from(tank.bounds.x) * usize::from(tank.bounds.y) * usize::from(tank.bounds.z), Default::default);
+        tank.elements.resize_with(
+            usize::from(tank.bounds.x) * usize::from(tank.bounds.y) * usize::from(tank.bounds.z),
+            Default::default,
+        );
         tank.bots = Self::create_bots(&mut tank);
         tank
     }
@@ -87,26 +90,38 @@ impl Tank {
     fn create_bots(&mut self) -> Vec<Bot> {
         let mut bots: Vec<Bot> = vec![];
         for n in 'A'..='Z' {
-            bots.push(Bot::new(n.to_string(), n, self.get_random_position(&EntityType::Bot)));
+            bots.push(Bot::new(
+                n.to_string(),
+                n,
+                self.get_random_position(&EntityType::Bot),
+            ));
         }
         for n in 'a'..='x' {
-            bots.push(Bot::new(n.to_string(), n, self.get_random_position(&EntityType::Bot)));
+            bots.push(Bot::new(
+                n.to_string(),
+                n,
+                self.get_random_position(&EntityType::Bot),
+            ));
         }
         bots
     }
 
     fn get_index(&self, pos: &Position) -> usize {
         println!("checking index of {:?}", pos);
-        usize::from(pos.x) + usize::from(pos.y) * usize::from(self.bounds.x) + usize::from(pos.z) * usize::from(self.bounds.x) * usize::from(self.bounds.y)
+        usize::from(pos.x)
+            + usize::from(pos.y) * usize::from(self.bounds.x)
+            + usize::from(pos.z) * usize::from(self.bounds.x) * usize::from(self.bounds.y)
     }
 
     fn is_occupied(&self, pos: &Position, entity: &EntityType) -> bool {
         let index = self.get_index(pos);
         match entity {
-            EntityType::Item => { self.elements[index].is_some() }
+            EntityType::Item => self.elements[index].is_some(),
             EntityType::Bot => {
                 for bot in &self.bots {
-                    if bot.position == *pos { return true; }
+                    if bot.position == *pos {
+                        return true;
+                    }
                 }
                 false
             }
@@ -115,7 +130,11 @@ impl Tank {
 
     fn add_item(&mut self, item_type: ItemType, id: u16, pos: Position) {
         let index = self.get_index(&pos);
-        self.elements[index] = Some(Item { id, position: pos, item_type });
+        self.elements[index] = Some(Item {
+            id,
+            position: pos,
+            item_type,
+        });
     }
 
     fn remove_item(&mut self, pos: &Position) {
@@ -126,9 +145,15 @@ impl Tank {
     fn get_random_position(&mut self, entity: &EntityType) -> Position {
         loop {
             let pos = Position {
-                x: u8::try_from(self.rng.rand(Some((self.bounds.x-1) as u32))).ok().unwrap(),
-                y: u8::try_from(self.rng.rand(Some((self.bounds.y-1) as u32))).ok().unwrap(),
-                z: u8::try_from(self.rng.rand(Some((self.bounds.z-1) as u32))).ok().unwrap(),
+                x: u8::try_from(self.rng.rand(Some((self.bounds.x - 1) as u32)))
+                    .ok()
+                    .unwrap(),
+                y: u8::try_from(self.rng.rand(Some((self.bounds.y - 1) as u32)))
+                    .ok()
+                    .unwrap(),
+                z: u8::try_from(self.rng.rand(Some((self.bounds.z - 1) as u32)))
+                    .ok()
+                    .unwrap(),
             };
             println!("{:?}", pos);
             if !self.is_occupied(&pos, entity) {
@@ -152,7 +177,7 @@ impl Tank {
 
     fn test_random(&mut self, times: u32) {
         for _ in 0..times {
-            println!("{}",&self.rng.rand(None));
+            println!("{}", &self.rng.rand(None));
         }
     }
 
@@ -205,8 +230,6 @@ impl Bot {
             sleeping: false,
         }
     }
-
-
 }
 
 #[derive(PartialEq, Debug)]
@@ -237,10 +260,7 @@ fn render_stuff() {
 fn main() {
     let args = Arguments::parse();
 
-    let input: String = fs::read_to_string(&args.bot_path)
-        .unwrap()
-        .parse()
-        .unwrap();
+    let input: String = fs::read_to_string(&args.bot_path).unwrap().parse().unwrap();
 
     let mut tokenizer = Tokenizer::new(input.clone());
 
@@ -308,6 +328,28 @@ fn main() {
         }
 
         bytecode.flush().unwrap();
+        println!("saved to {}", &file_path)
+    } else if args.dump_bytecode_text {
+        use std::fmt::Write;
+
+        let file_path = format!("{}.txt", &args.bot_path.display());
+        let mut output = String::new();
+
+        let mut bruh = 0;
+        for word in &compiler.output {
+            write!(&mut output, "{:04x} ", word).unwrap();
+            bruh += 1;
+            if bruh == 3 {
+                bruh = 0;
+                write!(&mut output, "\n").unwrap();
+            }
+        }
+        if bruh != 3 {
+            write!(&mut output, "\n").unwrap();
+        }
+
+        fs::write(&file_path, output).unwrap();
+
         println!("saved to {}", &file_path)
     } else if args.debug_bot.is_some() {
         let bot_char: char = args.debug_bot.unwrap();

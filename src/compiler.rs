@@ -21,7 +21,7 @@ impl Compiler {
             read_position: 0,
             byte_position: 0,
             instruction: ParserToken::Invalid,
-            output: Vec::new(),
+            output: [0; 3600].to_vec(),
             label_index: Vec::new(),
             input: input.clone(),
             labels: Vec::new(),
@@ -70,7 +70,7 @@ impl Compiler {
                         _ => false,
                     } && match instruction.operand1 {
                         Operand::ImmediateValue(_) => true,
-                        _ => false
+                        _ => false,
                     };
 
                     match op1 {
@@ -222,7 +222,9 @@ impl Compiler {
             }
         }
 
-        self.output = bytecode;
+        for (pos, word) in bytecode.iter().enumerate() {
+            self.output[pos] = *word;
+        }
     }
 
     fn get_modes(instruction: &Instruction, op1_carry: bool, op2_carry: bool) -> u16 {

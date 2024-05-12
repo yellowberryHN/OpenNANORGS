@@ -9,7 +9,7 @@ pub struct Arguments {
     pub bot_path: PathBuf,
 
     /// This allows you to use the old argument format
-    #[arg(short='p', hide = true)]
+    #[arg(short = 'p', hide = true)]
     legacy_player_flag: bool,
 
     /// Run in quiet mode (no display)
@@ -40,7 +40,12 @@ pub struct Arguments {
     #[arg(short = 'f', long = None, default_value_t = false)]
     pub dump_bytecode: bool,
 
+    /// Dump bytecode into firmware file as text
+    #[arg(long = "dump-bytecode-text", default_value_t = false, hide = true)]
+    pub dump_bytecode_text: bool,
+
     /// Display additional logs for troubleshooting (internal)
-    #[arg(short='v', hide=true)]
+    #[arg(short = 'v', hide = true)]
     pub verbose: bool,
 }
+
