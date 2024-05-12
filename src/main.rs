@@ -337,8 +337,14 @@ fn main() {
 
         let mut bruh = 0;
         for word in &compiler.output {
-            write!(&mut output, "{:04x} ", word).unwrap();
+            if bruh == 2 {
+                write!(&mut output, "{:04x}", word).unwrap();
+            } else {
+                write!(&mut output, "{:04x} ", word).unwrap();
+            }
+
             bruh += 1;
+
             if bruh == 3 {
                 bruh = 0;
                 write!(&mut output, "\n").unwrap();
