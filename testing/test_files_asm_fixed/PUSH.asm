@@ -1,0 +1,28 @@
+info: PUSH, Automated Testing
+someLabel: 
+PUSH r1
+PUSH [r1]
+PUSH [r1+1]
+PUSH [r1-1]
+PUSH r2
+PUSH [r2]
+PUSH [r2+1]
+PUSH [r2-1]
+PUSH r10
+PUSH [r10]
+PUSH [r10+1]
+PUSH [r10-1]
+PUSH r13
+PUSH [r13]
+PUSH [r13+1]
+PUSH [r13-1]
+PUSH SP
+PUSH [SP]
+PUSH [SP+1]
+PUSH [SP-1]
+PUSH 1000
+PUSH [1000]
+PUSH 0xDEAD
+PUSH [0xDEAD]
+PUSH someLabel
+PUSH [someLabel]

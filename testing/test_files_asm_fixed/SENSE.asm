@@ -1,0 +1,28 @@
+info: SENSE, Automated Testing
+someLabel: 
+SENSE r1
+SENSE [r1]
+SENSE [r1+1]
+SENSE [r1-1]
+SENSE r2
+SENSE [r2]
+SENSE [r2+1]
+SENSE [r2-1]
+SENSE r10
+SENSE [r10]
+SENSE [r10+1]
+SENSE [r10-1]
+SENSE r13
+SENSE [r13]
+SENSE [r13+1]
+SENSE [r13-1]
+SENSE SP
+SENSE [SP]
+SENSE [SP+1]
+SENSE [SP-1]
+; SENSE 1000
+; SENSE [1000]
+; SENSE 0xDEAD
+; SENSE [0xDEAD]
+; SENSE someLabel
+; SENSE [someLabel]

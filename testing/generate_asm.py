@@ -1,4 +1,4 @@
-import os, shutil
+import os
 
 instructions = [
     #("Instruction", "Operand1 Supported Modes", "Operand2 Supported Modes"),
@@ -92,11 +92,14 @@ def generate_operands(instruction, op1, op2):
 
 all_program_str = ""
 
+os.makedirs("test_files_asm", exist_ok=True)
+
 for instruction in instructions:
     program = [] 
     program.extend(generate_operands(instruction[0], instruction[1], instruction[2]))
 
     program_str = "info: " + instruction[0] +", Automated Testing\n"
+    program_str += "someLabel: \n"
     for p_instr in program:
         if p_instr[1] and p_instr[2]:
             program_str += p_instr[0] + " " + p_instr[1] + ", " + p_instr[2] + "\n"
@@ -107,10 +110,7 @@ for instruction in instructions:
         if not p_instr[1] and not p_instr[2]:
             program_str += p_instr[0] + "\n"
     
-    shutil.rmtree("test_files")
-    os.mkdir("test_files")
-
-    with open("test_files/" + instruction[0] + ".asm", "w") as file:
+    with open("test_files_asm/" + instruction[0] + ".asm", "w") as file:
         file.write(program_str)
 
     all_program_str += program_str

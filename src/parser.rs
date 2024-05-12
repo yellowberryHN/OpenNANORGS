@@ -88,6 +88,7 @@ impl Parser {
     }
 
     fn read_token(&mut self) {
+        println!("{:#?}", self.token);
         if !(self.token == Token::EOF) {
             self.token = self.input[self.read_position].clone();
         }

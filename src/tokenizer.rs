@@ -283,6 +283,11 @@ impl Tokenizer {
             tokens.push(self.next_token());
         }
 
+        // dirty hack, fixme?
+        if tokens.last() != Some(&Token::EOF) {
+            tokens.push(Token::EOF);
+        }
+
         tokens
     }
 }

@@ -1,0 +1,28 @@
+info: CALL, Automated Testing
+someLabel: 
+CALL r1
+CALL [r1]
+CALL [r1+1]
+CALL [r1-1]
+CALL r2
+CALL [r2]
+CALL [r2+1]
+CALL [r2-1]
+CALL r10
+CALL [r10]
+CALL [r10+1]
+CALL [r10-1]
+CALL r13
+CALL [r13]
+CALL [r13+1]
+CALL [r13-1]
+CALL SP
+CALL [SP]
+CALL [SP+1]
+CALL [SP-1]
+CALL 1000
+CALL [1000]
+CALL 0xDEAD
+CALL [0xDEAD]
+CALL someLabel
+CALL [someLabel]
