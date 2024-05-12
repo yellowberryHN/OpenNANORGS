@@ -14,5 +14,5 @@ for asm_file in os.listdir("test_files_asm_fixed"):
     os.makedirs("us", exist_ok=True)
 
     with open("us/" + asm_file.replace(".asm", ".txt"), "w") as output_file:
-        output_file.write(output)
+        output_file.write(output.upper())
 
