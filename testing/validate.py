@@ -21,6 +21,8 @@ for asm_file in os.listdir("test_files_asm_fixed"):
     with open("us/" + filename, "w") as output_file:
         output_file.write(output.upper())
 
+failing_tests = 0
+
 for filename in filenames:
     truth = ""
     us = ""
@@ -34,5 +36,11 @@ for filename in filenames:
 
     for i in range(0, len(truth)):
         if truth[i] != us[i]:
-            prefix = "[" + filename + ", line: " + str(i) + "]"
+            failing_tests += 1
+            prefix = "[" + filename + ", line: " + str(i+1) + "]"
             print(prefix + " " * (30 - len(prefix)) + truth[i].strip() + " ----- " + us[i].strip())
+
+if failing_tests > 0:
+    print(str(failing_tests) + " tests failed")
+else:
+    print("all tests passed! :)")

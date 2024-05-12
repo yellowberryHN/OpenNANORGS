@@ -68,15 +68,24 @@ impl Compiler {
                         | InstructionType::JS
                         | InstructionType::JNS => true,
                         _ => false,
-                    } && match instruction.operand1 {
-                        Operand::ImmediateValue(_) => true,
-                        _ => false,
                     };
 
                     match op1 {
                         Operand::None => {}
-                        Operand::Direct(value) | Operand::ImmediateValue(value) => match value {
+                        Operand::Direct(value) => match value {
                             Value::Number(num) => op1_value = *num,
+                            Value::Label(label) => {
+                                op1_value = *self.symbol_table.get(&label.to_lowercase()).unwrap();
+                            }
+                        },
+                        Operand::ImmediateValue(value) => match value {
+                            Value::Number(num) => {
+                                op1_value = *num;
+
+                                if positional {
+                                    op1_value = op1_value.wrapping_sub(instruction_pointer);
+                                }
+                            }
                             Value::Label(label) => {
                                 op1_value = *self.symbol_table.get(&label.to_lowercase()).unwrap();
 
@@ -137,8 +146,20 @@ impl Compiler {
 
                     match op2 {
                         Operand::None => {}
-                        Operand::Direct(value) | Operand::ImmediateValue(value) => match value {
+                        Operand::Direct(value) => match value {
                             Value::Number(num) => op2_value = *num,
+                            Value::Label(label) => {
+                                op2_value = *self.symbol_table.get(&label.to_lowercase()).unwrap();
+                            }
+                        },
+                        Operand::ImmediateValue(value) => match value {
+                            Value::Number(num) => {
+                                op2_value = *num;
+
+                                if positional  {
+                                    op2_value = op2_value.wrapping_sub(instruction_pointer);
+                                }
+                            }
                             Value::Label(label) => {
                                 op2_value = *self.symbol_table.get(&label.to_lowercase()).unwrap();
                                 if positional {
