@@ -1,4 +1,4 @@
-use clap::{Parser, Subcommand, ValueEnum, ValueHint};
+use clap::{Parser, ValueHint};
 use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
@@ -48,4 +48,3 @@ pub struct Arguments {
     #[arg(short = 'v', hide = true)]
     pub verbose: bool,
 }
-
