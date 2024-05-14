@@ -2,6 +2,7 @@
 
 mod cli;
 mod compiler;
+mod disassembler;
 mod interpreter;
 mod parser;
 mod rng;
@@ -10,6 +11,7 @@ mod tokenizer;
 
 use crate::cli::Arguments;
 use crate::compiler::Compiler;
+use crate::disassembler::Disassembler;
 use crate::parser::{Parser, ParserToken};
 use crate::symbol_table::SymbolTable;
 use crate::tokenizer::Tokenizer;
@@ -80,8 +82,12 @@ fn main() {
             print!("\n");
         }
     }
+    if args.show_disassembly {
+        let disassembler = Disassembler::new(compiler.output.clone());
 
-    if args.dump_bytecode {
+        disassembler.print_disassembly((&args.bot_path).file_name().unwrap().to_str().unwrap().to_string());
+    }
+    else if args.dump_bytecode {
         let file_path = format!("{}.bin", &args.bot_path.display());
         let mut bytecode: File = File::create(&file_path).unwrap();
 

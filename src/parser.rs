@@ -63,6 +63,29 @@ pub enum Register {
     SP = 15,
 }
 
+impl From<u16> for Register {
+    fn from(reg: u16) -> Self {
+        return match reg {
+            0 => Register::R0,
+            1 => Register::R1,
+            2 => Register::R2,
+            3 => Register::R3,
+            4 => Register::R4,
+            5 => Register::R5,
+            6 => Register::R6,
+            7 => Register::R7,
+            8 => Register::R8,
+            9 => Register::R9,
+            10 => Register::R10,
+            11 => Register::R11,
+            12 => Register::R12,
+            13 => Register::R13,
+            15 => Register::SP,
+            _ => Register::R0,
+        };
+    }
+}
+
 #[derive(Debug, PartialEq, Clone)]
 #[repr(u16)]
 pub enum Operand {
@@ -88,7 +111,6 @@ impl Parser {
     }
 
     fn read_token(&mut self) {
-        println!("{:#?}", self.token);
         if !(self.token == Token::EOF) {
             self.token = self.input[self.read_position].clone();
         }
@@ -133,27 +155,6 @@ impl Parser {
         }
     }
 
-    fn u16_to_reg(reg: u16) -> Register {
-        return match reg {
-            0 => Register::R0,
-            1 => Register::R1,
-            2 => Register::R2,
-            3 => Register::R3,
-            4 => Register::R4,
-            5 => Register::R5,
-            6 => Register::R6,
-            7 => Register::R7,
-            8 => Register::R8,
-            9 => Register::R9,
-            10 => Register::R10,
-            11 => Register::R11,
-            12 => Register::R12,
-            13 => Register::R13,
-            15 => Register::SP,
-            _ => Register::R0,
-        };
-    }
-
     fn token_to_operand(&mut self) -> Operand {
         match self.token.clone() {
             Token::Ident(ident) => {
@@ -163,7 +164,7 @@ impl Parser {
                 return Operand::ImmediateValue(Value::Number(int));
             }
             Token::Register(reg) => {
-                return Operand::Register(Parser::u16_to_reg(reg));
+                return Operand::Register(Register::from(reg));
             }
             Token::StackPointer => return Operand::Register(Register::SP),
             _ => return Operand::None,
@@ -222,7 +223,6 @@ impl Parser {
                             );
                         }
                         _ => {
-                            println!("{:#?}", self.token);
                             todo!();
                         }
                     }
@@ -278,8 +278,10 @@ impl Parser {
         let ptoken = match self.token.clone() {
             Token::EOF => ParserToken::EOF,
             Token::Invalid => ParserToken::Invalid,
-            Token::Instruction(instruction) => match instruction {
-                InstructionType::NOP | InstructionType::RET | InstructionType::EAT => {
+            Token::Instruction(instruction) => match instruction.get_operand_amount() {
+                1 => self.read_instruction_single(instruction),
+                2 => self.read_instruction_double(instruction),
+                0 | _ => {
                     let instruction = Instruction {
                         instruction_type: instruction,
                         operand1: Operand::None,
@@ -287,43 +289,6 @@ impl Parser {
                     };
                     ParserToken::Instruction(instruction)
                 }
-
-                InstructionType::PUSH
-                | InstructionType::POP
-                | InstructionType::CALL
-                | InstructionType::JMP
-                | InstructionType::JL
-                | InstructionType::JLE
-                | InstructionType::JG
-                | InstructionType::JGE
-                | InstructionType::JE
-                | InstructionType::JNE
-                | InstructionType::JS
-                | InstructionType::JNS
-                | InstructionType::ENERGY
-                | InstructionType::TRAVEL
-                | InstructionType::RELEASE
-                | InstructionType::SENSE => self.read_instruction_single(instruction),
-
-                InstructionType::MOV
-                | InstructionType::ADD
-                | InstructionType::SUB
-                | InstructionType::MULT
-                | InstructionType::DIV
-                | InstructionType::MOD
-                | InstructionType::AND
-                | InstructionType::OR
-                | InstructionType::XOR
-                | InstructionType::CMP
-                | InstructionType::TEST
-                | InstructionType::GETXY
-                | InstructionType::SHL
-                | InstructionType::SHR
-                | InstructionType::RAND
-                | InstructionType::CHARGE
-                | InstructionType::POKE
-                | InstructionType::PEEK
-                | InstructionType::CKSUM => self.read_instruction_double(instruction),
             },
             Token::Ident(ident) => match ident.to_lowercase().as_str() {
                 "data" => self.read_data(),

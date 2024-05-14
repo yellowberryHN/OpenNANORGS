@@ -56,19 +56,7 @@ impl Compiler {
                     let mut op1_carry: bool = false;
                     let mut op2_carry: bool = false;
 
-                    let positional = match instruction.instruction_type {
-                        InstructionType::CALL => true,
-                        InstructionType::JMP
-                        | InstructionType::JL
-                        | InstructionType::JLE
-                        | InstructionType::JG
-                        | InstructionType::JGE
-                        | InstructionType::JE
-                        | InstructionType::JNE
-                        | InstructionType::JS
-                        | InstructionType::JNS => true,
-                        _ => false,
-                    };
+                    let positional = instruction.instruction_type.is_positional();
 
                     match op1 {
                         Operand::None => {}
@@ -174,7 +162,6 @@ impl Compiler {
                             match base.as_ref() {
                                 Operand::ImmediateValue(value) => match value {
                                     Value::Label(label) => {
-                                        println!("{:#?}", label);
                                         op2_offset =
                                             *self.symbol_table.get(&label.to_lowercase()).unwrap();
                                     }
@@ -224,8 +211,8 @@ impl Compiler {
                     //println!("inst: {:04X}, op1: {} ({}), op2: {} ({})", inst, op1_value, op1_offset, op2_value, op2_offset);
 
                     bytecode.push(inst);
-                    bytecode.push(op1_value | (op1_offset & 0x0fff));
-                    bytecode.push(op2_value | (op2_offset & 0x0fff));
+                    bytecode.push(op1_value | (op1_offset & 0xFFF));
+                    bytecode.push(op2_value | (op2_offset & 0xFFF));
                     instruction_pointer += 3;
                 }
                 ParserToken::Data(data) => {

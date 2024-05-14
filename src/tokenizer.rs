@@ -65,6 +65,115 @@ pub enum InstructionType {
     CKSUM = 37,
 }
 
+impl From<u16> for InstructionType {
+    fn from(instruction: u16) -> Self {
+        match instruction {
+            0 => InstructionType::NOP,
+            1 => InstructionType::MOV,
+            2 => InstructionType::PUSH,
+            3 => InstructionType::POP,
+            4 => InstructionType::CALL,
+            5 => InstructionType::RET,
+            6 => InstructionType::JMP,
+            7 => InstructionType::JL,
+            8 => InstructionType::JLE,
+            9 => InstructionType::JG,
+            10 => InstructionType::JGE,
+            11 => InstructionType::JE,
+            12 => InstructionType::JNE,
+            13 => InstructionType::JS,
+            14 => InstructionType::JNS,
+            15 => InstructionType::ADD,
+            16 => InstructionType::SUB,
+            17 => InstructionType::MULT,
+            18 => InstructionType::DIV,
+            19 => InstructionType::MOD,
+            20 => InstructionType::AND,
+            21 => InstructionType::OR,
+            22 => InstructionType::XOR,
+            23 => InstructionType::CMP,
+            24 => InstructionType::TEST,
+            25 => InstructionType::GETXY,
+            26 => InstructionType::ENERGY,
+            27 => InstructionType::TRAVEL,
+            28 => InstructionType::SHL,
+            29 => InstructionType::SHR,
+            30 => InstructionType::SENSE,
+            31 => InstructionType::EAT,
+            32 => InstructionType::RAND,
+            33 => InstructionType::RELEASE,
+            34 => InstructionType::CHARGE,
+            35 => InstructionType::POKE,
+            36 => InstructionType::PEEK,
+            37 => InstructionType::CKSUM,
+            _ => InstructionType::NOP
+        }
+    }
+}
+
+impl InstructionType {
+    pub fn get_operand_amount(&self) -> u16 {
+        match self {
+            InstructionType::NOP
+            | InstructionType::RET
+            | InstructionType::EAT => 0,
+
+            InstructionType::PUSH
+            | InstructionType::POP
+            | InstructionType::CALL
+            | InstructionType::JMP
+            | InstructionType::JL
+            | InstructionType::JLE
+            | InstructionType::JG
+            | InstructionType::JGE
+            | InstructionType::JE
+            | InstructionType::JNE
+            | InstructionType::JS
+            | InstructionType::JNS
+            | InstructionType::ENERGY
+            | InstructionType::TRAVEL
+            | InstructionType::RELEASE
+            | InstructionType::SENSE => 1,
+
+            InstructionType::MOV
+            | InstructionType::ADD
+            | InstructionType::SUB
+            | InstructionType::MULT
+            | InstructionType::DIV
+            | InstructionType::MOD
+            | InstructionType::AND
+            | InstructionType::OR
+            | InstructionType::XOR
+            | InstructionType::CMP
+            | InstructionType::TEST
+            | InstructionType::GETXY
+            | InstructionType::SHL
+            | InstructionType::SHR
+            | InstructionType::RAND
+            | InstructionType::CHARGE
+            | InstructionType::POKE
+            | InstructionType::PEEK
+            | InstructionType::CKSUM => 2,
+        }
+    }
+
+    pub fn is_positional(&self) -> bool {
+        match self {
+            InstructionType::CALL
+            | InstructionType::JMP
+            | InstructionType::JL
+            | InstructionType::JLE
+            | InstructionType::JG
+            | InstructionType::JGE
+            | InstructionType::JE
+            | InstructionType::JNE
+            | InstructionType::JS
+            | InstructionType::JNS => true,
+            _ => false,
+        }
+    }
+}
+
 pub struct Tokenizer {
     position: usize,
     read_position: usize,
