@@ -9,11 +9,12 @@ Due to the limit of 1200 instructions per (or, more accurately, 3600 words) bot,
 splits test cases into multiple files based on instruction name.
 
 **GENERATE.PY IS NOT COMPLETE AND PRODUCED ASM FILES REQUIRE MODIFICATION**
+**`compile_truth.py` HANDLES THESE MODIFICATIONS FOR NOW**
 
 ## Compile Truth
 `compile_truth.py` accepts a path to your platforms NANORGs binary as the first argument,
 and compiles each assembly file produced from `generate_asm.py`. `compile_truth.py` also iteratively
-removes problematic instructions incorrectly generated from `validate.py`.
+removes problematic instructions incorrectly generated from `generate_asm.py`.
 
 ## Validate
 `validate.py` compiles all generated assembly, and compares the bytecode output with the source
