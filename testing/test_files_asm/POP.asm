@@ -20,9 +20,6 @@ POP SP
 POP [SP]
 POP [SP+1]
 POP [SP-1]
-;POP 1000
-;POP [1000]
-;POP 0xDEAD
-;POP [0xDEAD]
-;POP someLabel
-;POP [someLabel]
+POP [1000]
+POP [0xDEAD]
+POP [someLabel]
