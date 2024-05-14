@@ -5,7 +5,7 @@ site_author: Yellowberry
 repo_url: https://github.com/YellowberryHN/OpenNANORGS
 
 docs_dir: raw
-site_dir: build
+site_dir: ../docs
 
 theme:
   name: material
