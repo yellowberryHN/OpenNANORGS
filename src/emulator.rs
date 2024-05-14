@@ -93,7 +93,7 @@ impl Tank {
             + usize::from(pos.z) * usize::from(self.bounds.x) * usize::from(self.bounds.y)
     }
 
-    fn is_occupied(&self, pos: &Position, entity: &EntityType) -> bool {
+    pub fn is_occupied(&self, pos: &Position, entity: &EntityType) -> bool {
         let index = self.get_index(pos);
         match entity {
             EntityType::Item => self.elements[index].is_some(),
@@ -122,7 +122,7 @@ impl Tank {
         self.elements[index] = None;
     }
 
-    fn get_random_position(&mut self, entity: &EntityType) -> Position {
+    pub fn get_random_position(&mut self, entity: &EntityType) -> Position {
         loop {
             let pos = Position {
                 x: u8::try_from(self.rng.rand(Some((self.bounds.x - 1) as u32)))
@@ -221,6 +221,20 @@ impl Bot {
         let mut wee = self.clone();
         self.cpu.tick(&mut wee);
         *self = wee;
+    }
+
+    pub fn travel(&mut self, direction: u16) {
+        let mut new_position = self.position.clone();
+
+        match direction % 4 {
+            0 => new_position.y -= 1,
+            1 => new_position.y += 1,
+            2 => new_position.x += 1,
+            3 => new_position.x -= 1,
+            _ => panic!("Travel direction exceeded range ({direction})")
+        }
+
+        //self.tank.is_occupied(new_position)
     }
 }
 
