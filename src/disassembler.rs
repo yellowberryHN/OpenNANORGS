@@ -33,7 +33,7 @@ impl Disassembler {
     fn get_instruction(&self, position: u16) -> [u16;3] {
         let end = (position as usize) + 3;
         let slice = &self.bytecode[(position as usize)..end];
-        <[u16; 3]>::try_from(slice).expect("Instruction should have exactly 3 elements")
+        <[u16; 3]>::try_from(slice).expect("Instruction should have exactly 3 words")
     }
 
     pub fn parse_at(&self, ip: u16, data_allowed: bool) -> String {
@@ -48,9 +48,9 @@ impl Disassembler {
         if is_data && data_allowed {
             return format!("data {{ {} {} {} }}", bytes[0], bytes[1], bytes[2]);
         } else {
-            let instruction = InstructionType::from(bytes[0] & 0xFF);
+            let instruction_type = InstructionType::from(bytes[0] & 0xFF);
 
-            result += match instruction {
+            result += match instruction_type {
                 InstructionType::NOP => "nop",
                 InstructionType::MOV => "mov",
                 InstructionType::PUSH => "push",
@@ -91,7 +91,7 @@ impl Disassembler {
                 InstructionType::CKSUM => "cksum",
             };
 
-            let ops = instruction.get_operand_amount();
+            let ops = instruction_type.get_operand_amount();
 
             if ops >= 1 {
                 result += " ";
@@ -99,7 +99,7 @@ impl Disassembler {
                 let op1 = bytes[1];
                 let op1_type = bytes[0] >> 12 >> 2 & 0x3;
                 let op1_neg = bytes[0] >> 11 & 0x1 == 1;
-                let op1_pos = instruction.is_positional();
+                let op1_pos = instruction_type.is_positional();
 
                 result += Self::parse_operand(op1, op1_type, instruction_pointer, op1_pos, op1_neg).as_str();
             }

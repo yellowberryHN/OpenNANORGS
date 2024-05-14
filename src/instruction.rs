@@ -11,7 +11,7 @@ pub struct Instruction {
 impl Instruction {
     pub fn from_bytecode(bytecode: [u16; 3], instruction_pointer: u16) -> Instruction {
         //             opCode = (CPUOpCode)(this.bytecode[0] & 0xFF);
-        let op_code = InstructionType::From((bytecode[0] & 0xFF) as u16);
+        let op_code = InstructionType::from((bytecode[0] & 0xFF) as u16);
 
         Instruction {
             bytecode,

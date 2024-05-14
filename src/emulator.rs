@@ -32,8 +32,8 @@ impl Item {
 }
 
 #[derive(Debug)]
-struct Tank {
-    bots: Vec<Bot>,
+pub struct Tank {
+    pub bots: Vec<Bot>,
     bounds: Position,
     score: u64,
 
@@ -46,7 +46,7 @@ struct Tank {
 }
 
 impl Tank {
-    fn new(bounds: Position, seed: u32, use_modern_rng: bool) -> Tank {
+    pub fn new(bounds: Position, seed: u32, use_modern_rng: bool) -> Tank {
         let mut tank = Tank {
             bots: vec![],
             score: 0,
@@ -142,7 +142,7 @@ impl Tank {
         }
     }
 
-    fn fill_with_items(&mut self, num_items: usize) {
+    pub fn fill_with_items(&mut self, num_items: usize) {
         for _ in 0..num_items {
             let pos = self.get_random_position(&EntityType::Item);
             let rand_id = self.rng.rand(Some(self.sludge_amount as u32)) as u16;
@@ -190,18 +190,18 @@ impl Tank {
     }
 }
 
-#[derive(Debug)]
-struct Bot {
+#[derive(Debug, Clone)]
+pub struct Bot {
     name: String,
     glyph: char,
-    cpu: CPU,
-    position: Position,
-    energy: u16,
+    pub cpu: CPU,
+    pub position: Position,
+    pub energy: u16,
     sleeping: bool,
 }
 
 impl Bot {
-    fn new(name: String, glyph: char, position: Position) -> Bot {
+    pub fn new(name: String, glyph: char, position: Position) -> Bot {
         Bot {
             name,
             glyph,
@@ -211,18 +211,29 @@ impl Bot {
             sleeping: false,
         }
     }
+
+    pub fn flash(&mut self, bytecode: Vec<u16>) {
+        self.cpu.flash(bytecode);
+    }
+
+    pub fn tick(&mut self) {
+        // TODO: this is horrible.
+        let mut wee = self.clone();
+        self.cpu.tick(&mut wee);
+        *self = wee;
+    }
 }
 
-#[derive(PartialEq, Debug)]
-struct Position {
-    x: u8,
-    y: u8,
-    z: u8, // depth
+#[derive(PartialEq, Debug, Copy, Clone)]
+pub struct Position {
+    pub x: u8,
+    pub y: u8,
+    pub z: u8, // depth
 }
 
 impl Position {
-    fn new(x: u8, y: u8, z: u8) {
-        Position { x, y, z };
+    pub fn new(x: u8, y: u8, z: u8) -> Position {
+        Position { x, y, z }
     }
 }
 

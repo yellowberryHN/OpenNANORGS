@@ -22,6 +22,7 @@ use clap::Parser as clapParse;
 use std::fs;
 use std::fs::File;
 use std::io::Write;
+use crate::emulator::Position;
 
 fn main() {
     let args = Arguments::parse();
@@ -146,6 +147,32 @@ fn main() {
             }
         }
     } else {
-        println!("nothing happens here yet.")
+        /*
+        let mut test_bot = emulator::Bot::new("hhh".to_string(), 'h', emulator::Position::new(10,4,0));
+        test_bot.flash(compiler.output.clone());
+
+        test_bot.tick();
+        test_bot.tick();
+        test_bot.tick();
+
+        println!("{:?}", test_bot);
+        */
+
+        let mut test_tank = crate::emulator::Tank::new(Position { x: 70, y: 40, z: 1 }, 69420, false);
+        test_tank.fill_with_items(200);
+
+        for bot in &mut test_tank.bots {
+            bot.flash(compiler.output.clone());
+        }
+
+        for bot in &mut test_tank.bots {
+            bot.tick();
+            bot.tick();
+            bot.tick();
+        }
+
+        println!("{:?}", test_tank);
+
+        // println!("nothing happens here yet.")
     }
 }
