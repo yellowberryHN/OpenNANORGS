@@ -106,7 +106,7 @@ impl From<u16> for InstructionType {
             35 => InstructionType::POKE,
             36 => InstructionType::PEEK,
             37 => InstructionType::CKSUM,
-            _ => InstructionType::NOP
+            _ => InstructionType::NOP,
         }
     }
 }
@@ -114,9 +114,7 @@ impl From<u16> for InstructionType {
 impl InstructionType {
     pub fn get_operand_amount(&self) -> u16 {
         match self {
-            InstructionType::NOP
-            | InstructionType::RET
-            | InstructionType::EAT => 0,
+            InstructionType::NOP | InstructionType::RET | InstructionType::EAT => 0,
 
             InstructionType::PUSH
             | InstructionType::POP

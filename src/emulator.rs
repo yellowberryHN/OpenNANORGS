@@ -1,3 +1,4 @@
+use crate::cpu::CPU;
 use crate::rng::{LegacyRNG, ModernRNG, RNGSystem};
 
 #[derive(Debug)]
@@ -193,7 +194,7 @@ impl Tank {
 struct Bot {
     name: String,
     glyph: char,
-    //cpu: CPU;
+    cpu: CPU,
     position: Position,
     energy: u16,
     sleeping: bool,
@@ -204,6 +205,7 @@ impl Bot {
         Bot {
             name,
             glyph,
+            cpu: CPU::new(),
             position,
             energy: 10000,
             sleeping: false,
