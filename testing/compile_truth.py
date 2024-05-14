@@ -46,10 +46,7 @@ for asm_file in os.listdir("test_files_asm"):
     asm_file_path = "test_files_asm/" + asm_file
     out = subprocess.run([nanorgs_path, "-z:" + asm_file_path], stdout=subprocess.PIPE)
    
-    lines = []
-
-    for line in out.stdout.decode().splitlines()[2:-1]:
-        lines.append(line[38:-1])
+    lines = out.stdout.decode().splitlines()
 
     with open("truth/" + asm_file.replace(".asm", ".txt"), "w") as file:
         lines = "\n".join(lines)
