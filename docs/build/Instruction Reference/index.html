@@ -1,0 +1,1199 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentation for OpenNANORGS, the free and open source bot programming game.">
+      
+      
+        <meta name="author" content="Yellowberry">
+      
+      
+        <link rel="canonical" href="https://yellowberry.github.io/OpenNANORGS/Instruction%20Reference/">
+      
+      
+        <link rel="prev" href="../CPU%20Details/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.15">
+    
+    
+      
+        <title>Instruction Reference - OpenNANORGS Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.26e3688c.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ecc896b0.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../css/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#classic-instruction-set" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="OpenNANORGS Docs" class="md-header__button md-logo" aria-label="OpenNANORGS Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            OpenNANORGS Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Instruction Reference
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/YellowberryHN/OpenNANORGS" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M186.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1zM480 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2zm-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3zm-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="OpenNANORGS Docs" class="md-nav__button md-logo" aria-label="OpenNANORGS Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    OpenNANORGS Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/YellowberryHN/OpenNANORGS" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M186.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1zM480 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2zm-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3zm-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Bot%20Reference/" class="md-nav__link">
+        Bot Reference
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CPU%20Details/" class="md-nav__link">
+        CPU Details
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Instruction Reference
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Instruction Reference
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#classic-instruction-set" class="md-nav__link">
+    Classic Instruction Set
+  </a>
+  
+    <nav class="md-nav" aria-label="Classic Instruction Set">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nop" class="md-nav__link">
+    NOP
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mov-dest-src" class="md-nav__link">
+    MOV dest, src
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#push-src" class="md-nav__link">
+    PUSH src
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pop-dest" class="md-nav__link">
+    POP dest
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#call-pos" class="md-nav__link">
+    CALL pos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ret" class="md-nav__link">
+    RET
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jmp-pos" class="md-nav__link">
+    JMP pos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jl-pos" class="md-nav__link">
+    JL pos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jle-pos" class="md-nav__link">
+    JLE pos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jg-pos" class="md-nav__link">
+    JG pos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jge-pos" class="md-nav__link">
+    JGE pos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#je-pos" class="md-nav__link">
+    JE pos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jne-pos" class="md-nav__link">
+    JNE pos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#js-pos" class="md-nav__link">
+    JS pos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jns-pos" class="md-nav__link">
+    JNS pos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add-dest-src" class="md-nav__link">
+    ADD dest, src
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sub-dest-src" class="md-nav__link">
+    SUB dest, src
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mult-dest-src" class="md-nav__link">
+    MULT dest, src
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#div-dest-src" class="md-nav__link">
+    DIV dest, src
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mod-dest-src" class="md-nav__link">
+    MOD dest, src
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#and-dest-src" class="md-nav__link">
+    AND dest, src
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#or-dest-src" class="md-nav__link">
+    OR dest, src
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xor-dest-src" class="md-nav__link">
+    XOR dest, src
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cmp-lhs-rhs" class="md-nav__link">
+    CMP lhs, rhs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-lhs-rhs" class="md-nav__link">
+    TEST lhs, rhs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getxy-destx-desty" class="md-nav__link">
+    GETXY destx, desty
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#energy-dest" class="md-nav__link">
+    ENERGY dest
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#travel-dir" class="md-nav__link">
+    TRAVEL dir
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shl-dest-count" class="md-nav__link">
+    SHL dest, count
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shr-dest-count" class="md-nav__link">
+    SHR dest, count
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sense-dest" class="md-nav__link">
+    SENSE dest
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#eat" class="md-nav__link">
+    EAT
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rand-dest-max" class="md-nav__link">
+    RAND dest, max
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#release-amount" class="md-nav__link">
+    RELEASE amount
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#charge-dir-amount" class="md-nav__link">
+    CHARGE dir, amount
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#poke-dir-offset" class="md-nav__link">
+    POKE dir, offset
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#peek-dest-offset" class="md-nav__link">
+    PEEK dest, offset
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cksum-start-end" class="md-nav__link">
+    CKSUM start, end
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#extended-instruction-set-wip" class="md-nav__link">
+    Extended Instruction Set (WIP)
+  </a>
+  
+    <nav class="md-nav" aria-label="Extended Instruction Set (WIP)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#getid-dest" class="md-nav__link">
+    GETID dest
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#level-dest" class="md-nav__link">
+    LEVEL dest
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#climb" class="md-nav__link">
+    CLIMB
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#classic-instruction-set" class="md-nav__link">
+    Classic Instruction Set
+  </a>
+  
+    <nav class="md-nav" aria-label="Classic Instruction Set">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nop" class="md-nav__link">
+    NOP
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mov-dest-src" class="md-nav__link">
+    MOV dest, src
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#push-src" class="md-nav__link">
+    PUSH src
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pop-dest" class="md-nav__link">
+    POP dest
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#call-pos" class="md-nav__link">
+    CALL pos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ret" class="md-nav__link">
+    RET
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jmp-pos" class="md-nav__link">
+    JMP pos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jl-pos" class="md-nav__link">
+    JL pos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jle-pos" class="md-nav__link">
+    JLE pos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jg-pos" class="md-nav__link">
+    JG pos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jge-pos" class="md-nav__link">
+    JGE pos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#je-pos" class="md-nav__link">
+    JE pos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jne-pos" class="md-nav__link">
+    JNE pos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#js-pos" class="md-nav__link">
+    JS pos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jns-pos" class="md-nav__link">
+    JNS pos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add-dest-src" class="md-nav__link">
+    ADD dest, src
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sub-dest-src" class="md-nav__link">
+    SUB dest, src
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mult-dest-src" class="md-nav__link">
+    MULT dest, src
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#div-dest-src" class="md-nav__link">
+    DIV dest, src
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mod-dest-src" class="md-nav__link">
+    MOD dest, src
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#and-dest-src" class="md-nav__link">
+    AND dest, src
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#or-dest-src" class="md-nav__link">
+    OR dest, src
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xor-dest-src" class="md-nav__link">
+    XOR dest, src
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cmp-lhs-rhs" class="md-nav__link">
+    CMP lhs, rhs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-lhs-rhs" class="md-nav__link">
+    TEST lhs, rhs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getxy-destx-desty" class="md-nav__link">
+    GETXY destx, desty
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#energy-dest" class="md-nav__link">
+    ENERGY dest
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#travel-dir" class="md-nav__link">
+    TRAVEL dir
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shl-dest-count" class="md-nav__link">
+    SHL dest, count
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shr-dest-count" class="md-nav__link">
+    SHR dest, count
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sense-dest" class="md-nav__link">
+    SENSE dest
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#eat" class="md-nav__link">
+    EAT
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rand-dest-max" class="md-nav__link">
+    RAND dest, max
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#release-amount" class="md-nav__link">
+    RELEASE amount
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#charge-dir-amount" class="md-nav__link">
+    CHARGE dir, amount
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#poke-dir-offset" class="md-nav__link">
+    POKE dir, offset
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#peek-dest-offset" class="md-nav__link">
+    PEEK dest, offset
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cksum-start-end" class="md-nav__link">
+    CKSUM start, end
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#extended-instruction-set-wip" class="md-nav__link">
+    Extended Instruction Set (WIP)
+  </a>
+  
+    <nav class="md-nav" aria-label="Extended Instruction Set (WIP)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#getid-dest" class="md-nav__link">
+    GETID dest
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#level-dest" class="md-nav__link">
+    LEVEL dest
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#climb" class="md-nav__link">
+    CLIMB
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+  <h1>Instruction Reference</h1>
+
+<p>Here is a list of every instruction recognized by the bot's CPU.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Instructions do not modify flags unless specified.</p>
+</div>
+<h2 id="classic-instruction-set">Classic Instruction Set</h2>
+<h3 id="nop">NOP</h3>
+<p><strong>Opcode:</strong> 0 (<code>00</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Do nothing.</p>
+<h3 id="mov-dest-src">MOV <code>dest</code>, <code>src</code></h3>
+<p><strong>Opcode:</strong> 1 (<code>01</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Moves the value of <code>src</code> into <code>dest</code>.</p>
+<h3 id="push-src">PUSH <code>src</code></h3>
+<p><strong>Opcode:</strong> 2 (<code>02</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Pushes the value of <code>src</code> onto the stack. The stack pointer is pre-decremented first.</p>
+<h3 id="pop-dest">POP <code>dest</code></h3>
+<p><strong>Opcode:</strong> 3 (<code>03</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Pops the top value of the stack into <code>dest</code>. The stack pointer is post-incremented afterwards.</p>
+<h3 id="call-pos">CALL <code>pos</code></h3>
+<p><strong>Opcode:</strong> 4 (<code>04</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Pushes the address of the next instruction to the top of the stack, and then sets the instruction pointer to <strong>pos</strong>.</p>
+<h3 id="ret">RET</h3>
+<p><strong>Opcode:</strong> 5 (<code>05</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Sets the instruction pointer to the top value on the stack, and pops the top value from the stack.</p>
+<h3 id="jmp-pos">JMP <code>pos</code></h3>
+<p><strong>Opcode:</strong> 6 (<code>06</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Unconditionally sets the instruction pointer to the value of <code>pos</code>.</p>
+<h3 id="jl-pos">JL <code>pos</code></h3>
+<p><strong>Opcode:</strong> 7 (<code>07</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Sets the instruction pointer to the value of <code>pos</code> if the <code>L</code> flag is set. If the <code>L</code> flag is unset, continues execution normally.</p>
+<h3 id="jle-pos">JLE <code>pos</code></h3>
+<p><strong>Opcode:</strong> 8 (<code>08</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Sets the instruction pointer to the value of <code>pos</code> if the <code>L</code> or <code>E</code> flag is set. If the neither flag is set, continues execution normally.</p>
+<h3 id="jg-pos">JG <code>pos</code></h3>
+<p><strong>Opcode:</strong> 9 (<code>09</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Sets the instruction pointer to the value of <code>pos</code> if the <code>G</code> flag is set. If the <code>G</code> flag is unset, continues execution normally.</p>
+<h3 id="jge-pos">JGE <code>pos</code></h3>
+<p><strong>Opcode:</strong> 10 (<code>0A</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Sets the instruction pointer to the value of <code>pos</code> if the <code>G</code> or <code>E</code> flag is set. If the neither flag is set, continues execution normally.</p>
+<h3 id="je-pos">JE <code>pos</code></h3>
+<p><strong>Opcode:</strong> 11 (<code>0B</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Sets the instruction pointer to the value of <code>pos</code> if the <code>E</code> flag is set. If the <code>E</code> flag is unset, continues execution normally.</p>
+<h3 id="jne-pos">JNE <code>pos</code></h3>
+<p><strong>Opcode:</strong> 12 (<code>0C</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Sets the instruction pointer to the value of <code>pos</code> if the <code>E</code> flag is <strong>NOT</strong> set. If the <code>E</code> flag is set, continues execution normally.</p>
+<h3 id="js-pos">JS <code>pos</code></h3>
+<p><strong>Opcode:</strong> 13 (<code>0D</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Sets the instruction pointer to the value of <code>pos</code> if the <code>S</code> flag is set. If the <code>S</code> flag is unset, continues execution normally.</p>
+<h3 id="jns-pos">JNS <code>pos</code></h3>
+<p><strong>Opcode:</strong> 14 (<code>0E</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Sets the instruction pointer to the value of <code>pos</code> if the <code>S</code> flag is <strong>NOT</strong> set. If the <code>S</code> flag is set, continues execution normally.</p>
+<h3 id="add-dest-src">ADD <code>dest</code>, <code>src</code></h3>
+<p><strong>Opcode:</strong> 15 (<code>0F</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Adds the value of <code>src</code> to <code>dest</code>, and sets <code>dest</code> to the result.</p>
+<h3 id="sub-dest-src">SUB <code>dest</code>, <code>src</code></h3>
+<p><strong>Opcode:</strong> 16 (<code>10</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Subtracts the value of <code>src</code> from <code>dest</code>, and sets <code>dest</code> to the result.</p>
+<h3 id="mult-dest-src">MULT <code>dest</code>, <code>src</code></h3>
+<p><strong>Opcode:</strong> 17 (<code>11</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Multiplies the value of <code>dest</code> by <code>src</code>, and sets <code>dest</code> to the result.</p>
+<h3 id="div-dest-src">DIV <code>dest</code>, <code>src</code></h3>
+<p><strong>Opcode:</strong> 18 (<code>12</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Divides the value of <code>dest</code> by <code>src</code>, and sets <code>dest</code> to the result. Division by zero will act as a <a href="#NOP">NOP</a> instruction.</p>
+<h3 id="mod-dest-src">MOD <code>dest</code>, <code>src</code></h3>
+<p><strong>Opcode:</strong> 19 (<code>13</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Performs a modulo division on the value of <code>dest</code> by <code>src</code>, and sets <code>dest</code> to the result. Modulo by zero will act as a <a href="#NOP">NOP</a> instruction.</p>
+<h3 id="and-dest-src">AND <code>dest</code>, <code>src</code></h3>
+<p><strong>Opcode:</strong> 20 (<code>14</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Performs a bitwise AND on the value of <code>dest</code> based on the value of <code>src</code>.</p>
+<h3 id="or-dest-src">OR <code>dest</code>, <code>src</code></h3>
+<p><strong>Opcode:</strong> 21 (<code>15</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Performs a bitwise OR on the value of <code>dest</code> based on the value of <code>src</code>.</p>
+<h3 id="xor-dest-src">XOR <code>dest</code>, <code>src</code></h3>
+<p><strong>Opcode:</strong> 22 (<code>16</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Performs a bitwise XOR on the value of <code>dest</code> based on the value of <code>src</code>.</p>
+<h3 id="cmp-lhs-rhs">CMP <code>lhs</code>, <code>rhs</code></h3>
+<p><strong>Opcode:</strong> 23 (<code>17</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Performs a comparison between the values of <code>lhs</code> and <code>rhs</code>.</p>
+<p><strong>Flags:</strong> Clears all current flags. Performs the following:</p>
+<ul>
+<li><code>L</code> flag is set if <code>lhs</code> &lt; <code>rhs</code></li>
+<li><code>G</code> flag is set if <code>lhs</code> &gt; <code>rhs</code></li>
+<li><code>E</code> flag is set if <code>lhs</code> == <code>rhs</code></li>
+</ul>
+<h3 id="test-lhs-rhs">TEST <code>lhs</code>, <code>rhs</code></h3>
+<p><strong>Opcode:</strong> 24 (<code>18</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Tests equality between <code>lhs</code> and <code>rhs</code> by performing a bitwise AND. The value of the bitwise AND is discarded.</p>
+<p><strong>Flags:</strong> Clears all current flags. <code>E</code> flag is set if the bitwise AND returns 0.</p>
+<h3 id="getxy-destx-desty">GETXY <code>destx</code>, <code>desty</code></h3>
+<p><strong>Opcode:</strong> 25 (<code>19</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Places the bot's current X and Y coordinates into the specified <code>destx</code> and <code>desty</code> locations.</p>
+<h3 id="energy-dest">ENERGY <code>dest</code></h3>
+<p><strong>Opcode:</strong> 26 (<code>1A</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Places the bot's current energy level into the location specified by <code>dest</code>.</p>
+<h3 id="travel-dir">TRAVEL <code>dir</code></h3>
+<p><strong>Opcode:</strong> 27 (<code>1B</code>)<br/>
+<strong>Energy Used:</strong> <strong><em>1-10</em></strong></p>
+<p>Moves the bot one tile in the direction specified by <code>dir</code>, as long as the tile is not occupied by another bot or out of bounds. This instruction costs <strong>10 energy</strong> if successful, otherwise it costs 1 energy.</p>
+<p>The directions are as follows:</p>
+<ul>
+<li><code>0</code> (North) - Bot's Y coordinate decreases by 1</li>
+<li><code>1</code> (South) - Bot's Y coordinate increases by 1</li>
+<li><code>2</code> (East) - Bot's X coordinate increases by 1</li>
+<li><code>3</code> (West) - Bot's X coordinate decreases by 1</li>
+</ul>
+<p>If a value greater than 3 is specified by <code>dir</code>, the direction will be <code>dir % 4</code>. In other words, it will wrap around.</p>
+<p><strong>Flags:</strong> <code>S</code> flag is set if the movement was successful, if not, the <code>S</code> flag is unset.</p>
+<h3 id="shl-dest-count">SHL <code>dest</code>, <code>count</code></h3>
+<p><strong>Opcode:</strong> 28 (<code>1C</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Performs a bitwise left shift on the value of <code>dest</code>, shifting left <code>count</code> times. If <code>count</code> is greater than 16, the result is undefined.</p>
+<h3 id="shr-dest-count">SHR <code>dest</code>, <code>count</code></h3>
+<p><strong>Opcode:</strong> 29 (<code>1D</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Performs a bitwise right shift on the value of <code>dest</code>, shifting right <code>count</code> times. If <code>count</code> is greater than 16, the result is undefined.</p>
+<h3 id="sense-dest">SENSE <code>dest</code></h3>
+<p><strong>Opcode:</strong> 30 (<code>1E</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Checks the contents of the current tile. If the tile is not empty, the ID of the object on the tile will be set into the location set by <code>dest</code>. If the tile contains sludge, <code>dest</code> will be set to the non-zero sludge type. If the tile contains a collection point, <code>dest</code> will be set to 65535 (<code>FFFF</code>). If the tile is empty, <code>dest</code> will be set to 0.</p>
+<p><strong>Flags:</strong> <code>S</code> flag is set if the tile is not empty, if it is empty, the <code>S</code> flag is unset.</p>
+<h3 id="eat">EAT</h3>
+<p><strong>Opcode:</strong> 31 (<code>1F</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Attempts to eat the contents of the current tile. If the tile contains sludge, the bot will eat the sludge and receive 2000 energy. If receiving 2000 energy would put the bot's energy level over 65535, the bot fail to eat the sludge.</p>
+<p><strong>Flags:</strong> <code>S</code> flag is set if the eating is successful, if not, the <code>S</code> flag is unset.</p>
+<h3 id="rand-dest-max">RAND <code>dest</code>, <code>max</code></h3>
+<p><strong>Opcode:</strong> 32 (<code>20</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Calculates a random number between 0 and the value of <code>max</code>, exclusive, and stores it into <code>dest</code>.</p>
+<h3 id="release-amount">RELEASE <code>amount</code></h3>
+<p><strong>Opcode:</strong> 33 (<code>21</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Attempts to release <code>amount</code> of energy onto the current tile. If the tile contains a collection point, the bot's energy will be reduced by <code>amount</code>, and the tank score will be increased by <code>amount</code>. If the tile does not contain a collection point, the bot will lose the energy released with no increase in score. If the bot attempts to release more energy than it has, the release will fail.</p>
+<p><strong>Flags:</strong> <code>S</code> flag is set if the release is successful, if not, the <code>S</code> flag is unset.</p>
+<h3 id="charge-dir-amount">CHARGE <code>dir</code>, <code>amount</code></h3>
+<p><strong>Opcode:</strong> 34 (<code>22</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Attempts to give <code>amount</code> of energy to a bot in the direction specified by <code>dir</code>. If the tile in the specified direction contains a bot, the current bot's energy will be reduced by <code>amount</code> and the target bot's energy will be increased by <code>amount</code>. If the tile in the specified direction does not contain a bot, charging will fail. If the bot attempts to charge more energy than it has, charging will fail. If charging the target bot would put its energy level over 65535, charging will fail.</p>
+<p><strong>Flags:</strong> <code>S</code> flag is set if the charging is successful, if not, the <code>S</code> flag is unset.</p>
+<h3 id="poke-dir-offset">POKE <code>dir</code>, <code>offset</code></h3>
+<p><strong>Opcode:</strong> 35 (<code>23</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Attempts to set the memory at <code>offset</code> of a bot in the direction specified by <code>dir</code> to the current value of <code>R0</code>. If the tile in the specified direction does not contain a bot, poking will fail.</p>
+<p><strong>Flags:</strong> <code>S</code> flag is set if the poking is successful, if not, the <code>S</code> flag is unset.</p>
+<h3 id="peek-dest-offset">PEEK <code>dest</code>, <code>offset</code></h3>
+<p><strong>Opcode:</strong> 36 (<code>24</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Attempts to set the value of <code>dest</code> to the memory at <code>offset</code> of a bot in the direction specified by <code>dest</code>. If the tile in the specified direction does not contain a bot, peeking will fail.</p>
+<p><strong>Flags:</strong> <code>S</code> flag is set if the poking is successful, if not, the <code>S</code> flag is unset.</p>
+<h3 id="cksum-start-end">CKSUM <code>start</code>, <code>end</code></h3>
+<p><strong>Opcode:</strong> 37 (<code>25</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Calculates a checksum of the specified range of memory from <code>start</code> to <code>end</code>, exclusive, by adding their values together. The result is stored into the location specified by <code>start</code>.</p>
+<h2 id="extended-instruction-set-wip">Extended Instruction Set (WIP)</h2>
+<p>These instructions are recognized when the extended features are enabled. These are subject to change until finalized.</p>
+<h3 id="getid-dest">GETID <code>dest</code></h3>
+<p><strong>Opcode:</strong> 38 (<code>26</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Places the bot's ID into <code>dest</code>. Bot ID is determined by the character they are represented by.</p>
+<h3 id="level-dest">LEVEL <code>dest</code></h3>
+<p><strong>Opcode:</strong> 39 (<code>27</code>)<br/>
+<strong>Energy Used:</strong> 1</p>
+<p>Places the bot's current level (Z coordinate) into <code>dest</code>.</p>
+<h3 id="climb">CLIMB</h3>
+<p><strong>Opcode:</strong> 40 (<code>28</code>)<br/>
+<strong>Energy Used:</strong> <strong><em>1-10</em></strong></p>
+<p>Moves the bot to the other side of a ramp, as long as the other side of the ramp is not occupied by another bot. This instruction costs <strong>10 energy</strong> if successful, otherwise it costs 1 energy.</p>
+<p><strong>Flags:</strong> <code>S</code> flag is set if the movement was successful, if not, the <code>S</code> flag is unset.</p>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.sections", "navigation.tracking", "toc.follow"], "search": "../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.b4d07000.min.js"></script>
+      
+    
+  </body>
+</html>

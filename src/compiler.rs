@@ -249,13 +249,6 @@ impl Compiler {
     }
 
     fn get_modes(instruction: &Instruction, op1_carry: bool, op2_carry: bool) -> u16 {
-        /*
-        ushort value = 0;
-        value = (ushort)((ushort)op1mode << 2); // what the fuck
-        value |= (ushort)op2mode;
-
-        return value;
-        */
         let mut value = 0;
         value = Compiler::operand_to_mode_val(instruction.to_owned().operand1) << 2;
         value |= Compiler::operand_to_mode_val(instruction.to_owned().operand2);

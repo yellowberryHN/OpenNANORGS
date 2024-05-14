@@ -1,0 +1,30 @@
+site_name: OpenNANORGS Docs
+site_url: https://yellowberry.github.io/OpenNANORGS/
+site_description: Documentation for OpenNANORGS, the free and open source bot programming game.
+site_author: Yellowberry
+repo_url: https://github.com/YellowberryHN/OpenNANORGS
+
+docs_dir: raw
+site_dir: build
+
+theme:
+  name: material
+  palette:
+    primary: custom
+    accent: custom
+    scheme: slate
+  icon:
+    repo: fontawesome/brands/github-alt
+  features:
+    - navigation.sections
+    - navigation.tracking
+    - toc.follow
+extra_css:
+  - css/extra.css
+
+markdown_extensions:
+    - callouts
+    - toc:
+        permalink: #
+        toc_depth: 6
+    - attr_list
