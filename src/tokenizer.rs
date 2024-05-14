@@ -111,6 +111,51 @@ impl From<u16> for InstructionType {
     }
 }
 
+impl From<InstructionType> for String {
+    fn from(instruction_type: InstructionType) -> Self {
+        match instruction_type {
+            InstructionType::NOP => "nop",
+            InstructionType::MOV => "mov",
+            InstructionType::PUSH => "push",
+            InstructionType::POP => "pop",
+            InstructionType::CALL => "call",
+            InstructionType::RET => "ret",
+            InstructionType::JMP => "jmp",
+            InstructionType::JL => "jl",
+            InstructionType::JLE => "jle",
+            InstructionType::JG => "jg",
+            InstructionType::JGE => "jge",
+            InstructionType::JE => "je",
+            InstructionType::JNE => "jne",
+            InstructionType::JS => "js",
+            InstructionType::JNS => "jns",
+            InstructionType::ADD => "add",
+            InstructionType::SUB => "sub",
+            InstructionType::MULT => "mult",
+            InstructionType::DIV => "div",
+            InstructionType::MOD => "mod",
+            InstructionType::AND => "and",
+            InstructionType::OR => "or",
+            InstructionType::XOR => "xor",
+            InstructionType::CMP => "cmp",
+            InstructionType::TEST => "test",
+            InstructionType::GETXY => "getxy",
+            InstructionType::ENERGY => "energy",
+            InstructionType::TRAVEL => "travel",
+            InstructionType::SHL => "shl",
+            InstructionType::SHR => "shr",
+            InstructionType::SENSE => "sense",
+            InstructionType::EAT => "eat",
+            InstructionType::RAND => "rand",
+            InstructionType::RELEASE => "release",
+            InstructionType::CHARGE => "charge",
+            InstructionType::POKE => "poke",
+            InstructionType::PEEK => "peek",
+            InstructionType::CKSUM => "cksum",
+        }.to_string()
+    }
+}
+
 impl InstructionType {
     pub fn get_operand_amount(&self) -> u16 {
         match self {
@@ -198,7 +243,6 @@ impl Tokenizer {
     pub fn read_char(&mut self) {
         if self.read_position >= self.input.len() {
             self.char = 0;
-            //todo!();
         } else {
             self.char = self.input[self.read_position];
         }

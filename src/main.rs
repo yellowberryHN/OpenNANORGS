@@ -27,64 +27,8 @@ use crate::emulator::Position;
 fn main() {
     let args = Arguments::parse();
 
-    let input: String = fs::read_to_string(&args.bot_path).unwrap().parse().unwrap();
+    let compiler = Compiler::new_from_file(&args.bot_path, args.verbose);
 
-    let mut tokenizer = Tokenizer::new(input.clone());
-
-    let tokens = tokenizer.tokenize();
-
-    if args.verbose {
-        for token in tokens.clone() {
-            println!("{:?}", token);
-        }
-
-        println!("-------------------------------------------");
-    }
-
-    let mut parser = Parser::new(tokens);
-    let mut parser_tokens = Vec::new();
-
-    loop {
-        let token = parser.next_token();
-
-        parser_tokens.push(token.clone());
-
-        if token == ParserToken::EOF {
-            break;
-        }
-    }
-
-    if args.verbose {
-        for token in parser_tokens.clone() {
-            println!("{:#?}", token);
-        }
-    }
-
-    let symbol_table = SymbolTable::new(&parser_tokens);
-
-    if args.verbose {
-        println!("{:#?}", symbol_table.label_to_address);
-    }
-
-    let mut compiler = Compiler::new(parser_tokens, symbol_table.label_to_address);
-    compiler.compile();
-
-    if args.verbose {
-        println!("{:?}", compiler.output);
-
-        let mut bruh = 0;
-        for word in &compiler.output {
-            print!("{:04x} ", word);
-            bruh += 1;
-            if bruh == 3 {
-                bruh = 0;
-                print!("\n");
-            }
-        }
-        if bruh != 3 {
-            print!("\n");
-        }
-    }
     if args.show_disassembly {
         let disassembler = Disassembler::new(compiler.output.clone());
 

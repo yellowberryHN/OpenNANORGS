@@ -1,6 +1,9 @@
-use crate::parser::{Instruction, Operand, ParserToken, PlusMinus, Register, Value};
+use crate::parser::{Instruction, Operand, Parser, ParserToken, PlusMinus, Register, Value};
 use crate::tokenizer::{InstructionType, Tokenizer};
 use std::collections::HashMap;
+use std::fs;
+use std::path::PathBuf;
+use crate::symbol_table::SymbolTable;
 
 pub struct Compiler {
     position: usize,
@@ -29,6 +32,69 @@ impl Compiler {
         };
 
         compiler.read_instruction();
+        compiler
+    }
+
+    pub fn new_from_file(path: &PathBuf, verbose: bool) -> Compiler {
+        let input: String = fs::read_to_string(path).unwrap().parse().unwrap();
+
+        let mut tokenizer = Tokenizer::new(input.clone());
+
+        let tokens = tokenizer.tokenize();
+
+        if verbose {
+            for token in tokens.clone() {
+                println!("{:?}", token);
+            }
+
+            println!("-------------------------------------------");
+        }
+
+        let mut parser = Parser::new(tokens);
+        let mut parser_tokens = Vec::new();
+
+        loop {
+            let token = parser.next_token();
+
+            parser_tokens.push(token.clone());
+
+            if token == ParserToken::EOF {
+                break;
+            }
+        }
+
+        if verbose {
+            for token in parser_tokens.clone() {
+                println!("{:#?}", token);
+            }
+        }
+
+        let symbol_table = SymbolTable::new(&parser_tokens);
+
+        if verbose {
+            println!("{:#?}", symbol_table.label_to_address);
+        }
+
+        let mut compiler = Compiler::new(parser_tokens, symbol_table.label_to_address);
+        compiler.compile();
+
+        if verbose {
+            println!("{:?}", compiler.output);
+
+            let mut bruh = 0;
+            for word in &compiler.output {
+                print!("{:04x} ", word);
+                bruh += 1;
+                if bruh == 3 {
+                    bruh = 0;
+                    print!("\n");
+                }
+            }
+            if bruh != 3 {
+                print!("\n");
+            }
+        }
+
         compiler
     }
 
@@ -103,12 +169,13 @@ impl Compiler {
                                 Operand::ImmediateValue(value) => {
                                     op1_offset = match value {
                                         Value::Number(num) => *num,
-                                        Value::Label(label) => todo!(), // invalid
+                                        Value::Label(label) =>
+                                            panic!("Label cannot be used as offset")
                                     };
                                 }
                                 Operand::Register(register) => {
                                     match base.as_ref() {
-                                        Operand::Register(_) => todo!(), // invalid
+                                        Operand::Register(_) => panic!("Register cannot be used as offset"), // invalid
                                         Operand::ImmediateValue(value) => match value {
                                             Value::Label(_) => {
                                                 op1_value = (register.to_owned() as u16) << 12
@@ -176,12 +243,12 @@ impl Compiler {
                                 Operand::ImmediateValue(value) => {
                                     op2_offset = match value {
                                         Value::Number(num) => *num,
-                                        Value::Label(_) => todo!(), // invalid
+                                        Value::Label(_) => panic!("Label cannot be used as offset"),
                                     };
                                 }
                                 Operand::Register(register) => {
                                     match base.as_ref() {
-                                        Operand::Register(_) => todo!(), // invalid
+                                        Operand::Register(_) => panic!("Register cannot be used as offset"),
                                         Operand::ImmediateValue(value) => match value {
                                             Value::Label(_) => {
                                                 op2_value = (register.to_owned() as u16) << 12
@@ -237,8 +304,8 @@ impl Compiler {
 
     fn get_modes(instruction: &Instruction, op1_carry: bool, op2_carry: bool) -> u16 {
         let mut value = 0;
-        value = Compiler::operand_to_mode_val(instruction.to_owned().operand1) << 2;
-        value |= Compiler::operand_to_mode_val(instruction.to_owned().operand2);
+        value = u16::from(instruction.to_owned().operand1) << 2;
+        value |= u16::from(instruction.to_owned().operand2);
 
         value <<= 12;
 
@@ -250,16 +317,6 @@ impl Compiler {
         }
 
         value
-    }
-
-    fn operand_to_mode_val(operand: Operand) -> u16 {
-        match operand {
-            Operand::None => 0,
-            Operand::Direct(_) => 0,
-            Operand::Register(_) => 1,
-            Operand::ImmediateValue(_) => 2,
-            Operand::RegisterIndexedDirect(_, _, _) => 3,
-        }
     }
 
     fn read_instruction(&mut self) {

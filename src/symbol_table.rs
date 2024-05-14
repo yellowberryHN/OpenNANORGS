@@ -20,7 +20,7 @@ impl SymbolTable {
 
     fn add_label(&mut self, label: &String, position: u16) {
         if self.label_to_address.contains_key(&label.to_lowercase()) {
-            todo!()
+            panic!("Label \"{label}\" already defined")
         }
         else {
             self.label_to_address.insert(label.to_lowercase(), position);

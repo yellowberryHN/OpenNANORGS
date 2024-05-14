@@ -38,6 +38,16 @@ pub enum PlusMinus {
     Minus,
 }
 
+impl From<Token> for PlusMinus {
+    fn from(token: Token) -> PlusMinus {
+        match token {
+            Token::Plus => PlusMinus::Plus,
+            Token::Minus => PlusMinus::Minus,
+            _ => panic!("Tried to convert non-sign token into PlusMinus")
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Clone)]
 pub enum Value {
     Number(u16),
@@ -96,6 +106,36 @@ pub enum Operand {
     RegisterIndexedDirect(Box<Operand>, PlusMinus, Box<Operand>), // 11 | [r0+100] OR [label+r0]
 }
 
+impl From<Token> for Operand {
+    fn from(token: Token) -> Operand {
+        match token {
+            Token::Ident(ident) => {
+                Operand::ImmediateValue(Value::Label(ident))
+            }
+            Token::Number(int) => {
+                Operand::ImmediateValue(Value::Number(int))
+            }
+            Token::Register(reg) => {
+                Operand::Register(Register::from(reg))
+            }
+            Token::StackPointer => return Operand::Register(Register::SP),
+            _ => panic!("Token is not an operand"),
+        }
+    }
+}
+
+impl From<Operand> for u16 {
+    fn from(operand: Operand) -> u16 {
+        match operand {
+            Operand::None => 0,
+            Operand::Direct(_) => 0,
+            Operand::Register(_) => 1,
+            Operand::ImmediateValue(_) => 2,
+            Operand::RegisterIndexedDirect(_, _, _) => 3,
+        }
+    }
+}
+
 impl Parser {
     pub fn new(input: Vec<Token>) -> Parser {
         let mut parser = Parser {
@@ -129,7 +169,7 @@ impl Parser {
         self.read_token();
 
         while self.token != Token::CloseCurly {
-            match self.token_to_operand() {
+            match Operand::from(self.token.clone()) {
                 Operand::ImmediateValue(val) => {
                     data.push(val);
                 }
@@ -155,39 +195,15 @@ impl Parser {
         }
     }
 
-    fn token_to_operand(&mut self) -> Operand {
-        match self.token.clone() {
-            Token::Ident(ident) => {
-                return Operand::ImmediateValue(Value::Label(ident));
-            }
-            Token::Number(int) => {
-                return Operand::ImmediateValue(Value::Number(int));
-            }
-            Token::Register(reg) => {
-                return Operand::Register(Register::from(reg));
-            }
-            Token::StackPointer => return Operand::Register(Register::SP),
-            _ => return Operand::None,
-        }
-    }
-
-    fn token_to_sign(&mut self) -> PlusMinus {
-        match self.token.clone() {
-            Token::Plus => return PlusMinus::Plus,
-            Token::Minus => return PlusMinus::Minus,
-            _ => todo!(),
-        }
-    }
-
     fn read_operand(&mut self, instruction: InstructionType) -> Operand {
         match self.token.clone() {
             Token::Ident(_) | Token::Number(_) | Token::Register(_) | Token::StackPointer => {
-                return self.token_to_operand()
+                return Operand::from(self.token.clone());
             }
             Token::OpenBracket => {
                 self.read_token(); // first operand
 
-                let one = self.token_to_operand();
+                let one = Operand::from(self.token.clone());
 
                 self.read_token(); // second value (could be bracket or plus/minus)
 
@@ -208,11 +224,11 @@ impl Parser {
                 } else {
                     match self.token {
                         Token::Plus | Token::Minus => {
-                            let sign = self.token_to_sign();
+                            let sign = PlusMinus::from(self.token.clone());
 
                             self.read_token(); // second operand
 
-                            let two = self.token_to_operand();
+                            let two = Operand::from(self.token.clone());
 
                             self.read_token(); // read closing bracket
 
@@ -223,7 +239,7 @@ impl Parser {
                             );
                         }
                         _ => {
-                            todo!();
+                            panic!("Sign expected for register indexed direct addressing mode");
                         }
                     }
                 }
