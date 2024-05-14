@@ -520,159 +520,159 @@ CKSUM [SP-1], 0xDEAD
 CKSUM [SP-1], [0xDEAD]
 CKSUM [SP-1], someLabel
 CKSUM [SP-1], [someLabel]
-; CKSUM 1000, r1
-; CKSUM 1000, [r1]
-; CKSUM 1000, [r1+1]
-; CKSUM 1000, [r1-1]
-; CKSUM 1000, r2
-; CKSUM 1000, [r2]
-; CKSUM 1000, [r2+1]
-; CKSUM 1000, [r2-1]
-; CKSUM 1000, r10
-; CKSUM 1000, [r10]
-; CKSUM 1000, [r10+1]
-; CKSUM 1000, [r10-1]
-; CKSUM 1000, r13
-; CKSUM 1000, [r13]
-; CKSUM 1000, [r13+1]
-; CKSUM 1000, [r13-1]
-; CKSUM 1000, SP
-; CKSUM 1000, [SP]
-; CKSUM 1000, [SP+1]
-; CKSUM 1000, [SP-1]
-; CKSUM 1000, 1000
-; CKSUM 1000, [1000]
-; CKSUM 1000, 0xDEAD
-; CKSUM 1000, [0xDEAD]
-; CKSUM 1000, someLabel
-; CKSUM 1000, [someLabel]
-; CKSUM [1000], r1
-; CKSUM [1000], [r1]
-; CKSUM [1000], [r1+1]
-; CKSUM [1000], [r1-1]
-; CKSUM [1000], r2
-; CKSUM [1000], [r2]
-; CKSUM [1000], [r2+1]
-; CKSUM [1000], [r2-1]
-; CKSUM [1000], r10
-; CKSUM [1000], [r10]
-; CKSUM [1000], [r10+1]
-; CKSUM [1000], [r10-1]
-; CKSUM [1000], r13
-; CKSUM [1000], [r13]
-; CKSUM [1000], [r13+1]
-; CKSUM [1000], [r13-1]
-; CKSUM [1000], SP
-; CKSUM [1000], [SP]
-; CKSUM [1000], [SP+1]
-; CKSUM [1000], [SP-1]
-; CKSUM [1000], 1000
-; CKSUM [1000], [1000]
-; CKSUM [1000], 0xDEAD
-; CKSUM [1000], [0xDEAD]
-; CKSUM [1000], someLabel
-; CKSUM [1000], [someLabel]
-; CKSUM 0xDEAD, r1
-; CKSUM 0xDEAD, [r1]
-; CKSUM 0xDEAD, [r1+1]
-; CKSUM 0xDEAD, [r1-1]
-; CKSUM 0xDEAD, r2
-; CKSUM 0xDEAD, [r2]
-; CKSUM 0xDEAD, [r2+1]
-; CKSUM 0xDEAD, [r2-1]
-; CKSUM 0xDEAD, r10
-; CKSUM 0xDEAD, [r10]
-; CKSUM 0xDEAD, [r10+1]
-; CKSUM 0xDEAD, [r10-1]
-; CKSUM 0xDEAD, r13
-; CKSUM 0xDEAD, [r13]
-; CKSUM 0xDEAD, [r13+1]
-; CKSUM 0xDEAD, [r13-1]
-; CKSUM 0xDEAD, SP
-; CKSUM 0xDEAD, [SP]
-; CKSUM 0xDEAD, [SP+1]
-; CKSUM 0xDEAD, [SP-1]
-; CKSUM 0xDEAD, 1000
-; CKSUM 0xDEAD, [1000]
-; CKSUM 0xDEAD, 0xDEAD
-; CKSUM 0xDEAD, [0xDEAD]
-; CKSUM 0xDEAD, someLabel
-; CKSUM 0xDEAD, [someLabel]
-; CKSUM [0xDEAD], r1
-; CKSUM [0xDEAD], [r1]
-; CKSUM [0xDEAD], [r1+1]
-; CKSUM [0xDEAD], [r1-1]
-; CKSUM [0xDEAD], r2
-; CKSUM [0xDEAD], [r2]
-; CKSUM [0xDEAD], [r2+1]
-; CKSUM [0xDEAD], [r2-1]
-; CKSUM [0xDEAD], r10
-; CKSUM [0xDEAD], [r10]
-; CKSUM [0xDEAD], [r10+1]
-; CKSUM [0xDEAD], [r10-1]
-; CKSUM [0xDEAD], r13
-; CKSUM [0xDEAD], [r13]
-; CKSUM [0xDEAD], [r13+1]
-; CKSUM [0xDEAD], [r13-1]
-; CKSUM [0xDEAD], SP
-; CKSUM [0xDEAD], [SP]
-; CKSUM [0xDEAD], [SP+1]
-; CKSUM [0xDEAD], [SP-1]
-; CKSUM [0xDEAD], 1000
-; CKSUM [0xDEAD], [1000]
-; CKSUM [0xDEAD], 0xDEAD
-; CKSUM [0xDEAD], [0xDEAD]
-; CKSUM [0xDEAD], someLabel
-; CKSUM [0xDEAD], [someLabel]
-; CKSUM someLabel, r1
-; CKSUM someLabel, [r1]
-; CKSUM someLabel, [r1+1]
-; CKSUM someLabel, [r1-1]
-; CKSUM someLabel, r2
-; CKSUM someLabel, [r2]
-; CKSUM someLabel, [r2+1]
-; CKSUM someLabel, [r2-1]
-; CKSUM someLabel, r10
-; CKSUM someLabel, [r10]
-; CKSUM someLabel, [r10+1]
-; CKSUM someLabel, [r10-1]
-; CKSUM someLabel, r13
-; CKSUM someLabel, [r13]
-; CKSUM someLabel, [r13+1]
-; CKSUM someLabel, [r13-1]
-; CKSUM someLabel, SP
-; CKSUM someLabel, [SP]
-; CKSUM someLabel, [SP+1]
-; CKSUM someLabel, [SP-1]
-; CKSUM someLabel, 1000
-; CKSUM someLabel, [1000]
-; CKSUM someLabel, 0xDEAD
-; CKSUM someLabel, [0xDEAD]
-; CKSUM someLabel, someLabel
-; CKSUM someLabel, [someLabel]
-; CKSUM [someLabel], r1
-; CKSUM [someLabel], [r1]
-; CKSUM [someLabel], [r1+1]
-; CKSUM [someLabel], [r1-1]
-; CKSUM [someLabel], r2
-; CKSUM [someLabel], [r2]
-; CKSUM [someLabel], [r2+1]
-; CKSUM [someLabel], [r2-1]
-; CKSUM [someLabel], r10
-; CKSUM [someLabel], [r10]
-; CKSUM [someLabel], [r10+1]
-; CKSUM [someLabel], [r10-1]
-; CKSUM [someLabel], r13
-; CKSUM [someLabel], [r13]
-; CKSUM [someLabel], [r13+1]
-; CKSUM [someLabel], [r13-1]
-; CKSUM [someLabel], SP
-; CKSUM [someLabel], [SP]
-; CKSUM [someLabel], [SP+1]
-; CKSUM [someLabel], [SP-1]
-; CKSUM [someLabel], 1000
-; CKSUM [someLabel], [1000]
-; CKSUM [someLabel], 0xDEAD
-; CKSUM [someLabel], [0xDEAD]
-; CKSUM [someLabel], someLabel
-; CKSUM [someLabel], [someLabel]
+;CKSUM 1000, r1
+;CKSUM 1000, [r1]
+;CKSUM 1000, [r1+1]
+;CKSUM 1000, [r1-1]
+;CKSUM 1000, r2
+;CKSUM 1000, [r2]
+;CKSUM 1000, [r2+1]
+;CKSUM 1000, [r2-1]
+;CKSUM 1000, r10
+;CKSUM 1000, [r10]
+;CKSUM 1000, [r10+1]
+;CKSUM 1000, [r10-1]
+;CKSUM 1000, r13
+;CKSUM 1000, [r13]
+;CKSUM 1000, [r13+1]
+;CKSUM 1000, [r13-1]
+;CKSUM 1000, SP
+;CKSUM 1000, [SP]
+;CKSUM 1000, [SP+1]
+;CKSUM 1000, [SP-1]
+;CKSUM 1000, 1000
+;CKSUM 1000, [1000]
+;CKSUM 1000, 0xDEAD
+;CKSUM 1000, [0xDEAD]
+;CKSUM 1000, someLabel
+;CKSUM 1000, [someLabel]
+;CKSUM [1000], r1
+;CKSUM [1000], [r1]
+;CKSUM [1000], [r1+1]
+;CKSUM [1000], [r1-1]
+;CKSUM [1000], r2
+;CKSUM [1000], [r2]
+;CKSUM [1000], [r2+1]
+;CKSUM [1000], [r2-1]
+;CKSUM [1000], r10
+;CKSUM [1000], [r10]
+;CKSUM [1000], [r10+1]
+;CKSUM [1000], [r10-1]
+;CKSUM [1000], r13
+;CKSUM [1000], [r13]
+;CKSUM [1000], [r13+1]
+;CKSUM [1000], [r13-1]
+;CKSUM [1000], SP
+;CKSUM [1000], [SP]
+;CKSUM [1000], [SP+1]
+;CKSUM [1000], [SP-1]
+;CKSUM [1000], 1000
+;CKSUM [1000], [1000]
+;CKSUM [1000], 0xDEAD
+;CKSUM [1000], [0xDEAD]
+;CKSUM [1000], someLabel
+;CKSUM [1000], [someLabel]
+;CKSUM 0xDEAD, r1
+;CKSUM 0xDEAD, [r1]
+;CKSUM 0xDEAD, [r1+1]
+;CKSUM 0xDEAD, [r1-1]
+;CKSUM 0xDEAD, r2
+;CKSUM 0xDEAD, [r2]
+;CKSUM 0xDEAD, [r2+1]
+;CKSUM 0xDEAD, [r2-1]
+;CKSUM 0xDEAD, r10
+;CKSUM 0xDEAD, [r10]
+;CKSUM 0xDEAD, [r10+1]
+;CKSUM 0xDEAD, [r10-1]
+;CKSUM 0xDEAD, r13
+;CKSUM 0xDEAD, [r13]
+;CKSUM 0xDEAD, [r13+1]
+;CKSUM 0xDEAD, [r13-1]
+;CKSUM 0xDEAD, SP
+;CKSUM 0xDEAD, [SP]
+;CKSUM 0xDEAD, [SP+1]
+;CKSUM 0xDEAD, [SP-1]
+;CKSUM 0xDEAD, 1000
+;CKSUM 0xDEAD, [1000]
+;CKSUM 0xDEAD, 0xDEAD
+;CKSUM 0xDEAD, [0xDEAD]
+;CKSUM 0xDEAD, someLabel
+;CKSUM 0xDEAD, [someLabel]
+;CKSUM [0xDEAD], r1
+;CKSUM [0xDEAD], [r1]
+;CKSUM [0xDEAD], [r1+1]
+;CKSUM [0xDEAD], [r1-1]
+;CKSUM [0xDEAD], r2
+;CKSUM [0xDEAD], [r2]
+;CKSUM [0xDEAD], [r2+1]
+;CKSUM [0xDEAD], [r2-1]
+;CKSUM [0xDEAD], r10
+;CKSUM [0xDEAD], [r10]
+;CKSUM [0xDEAD], [r10+1]
+;CKSUM [0xDEAD], [r10-1]
+;CKSUM [0xDEAD], r13
+;CKSUM [0xDEAD], [r13]
+;CKSUM [0xDEAD], [r13+1]
+;CKSUM [0xDEAD], [r13-1]
+;CKSUM [0xDEAD], SP
+;CKSUM [0xDEAD], [SP]
+;CKSUM [0xDEAD], [SP+1]
+;CKSUM [0xDEAD], [SP-1]
+;CKSUM [0xDEAD], 1000
+;CKSUM [0xDEAD], [1000]
+;CKSUM [0xDEAD], 0xDEAD
+;CKSUM [0xDEAD], [0xDEAD]
+;CKSUM [0xDEAD], someLabel
+;CKSUM [0xDEAD], [someLabel]
+;CKSUM someLabel, r1
+;CKSUM someLabel, [r1]
+;CKSUM someLabel, [r1+1]
+;CKSUM someLabel, [r1-1]
+;CKSUM someLabel, r2
+;CKSUM someLabel, [r2]
+;CKSUM someLabel, [r2+1]
+;CKSUM someLabel, [r2-1]
+;CKSUM someLabel, r10
+;CKSUM someLabel, [r10]
+;CKSUM someLabel, [r10+1]
+;CKSUM someLabel, [r10-1]
+;CKSUM someLabel, r13
+;CKSUM someLabel, [r13]
+;CKSUM someLabel, [r13+1]
+;CKSUM someLabel, [r13-1]
+;CKSUM someLabel, SP
+;CKSUM someLabel, [SP]
+;CKSUM someLabel, [SP+1]
+;CKSUM someLabel, [SP-1]
+;CKSUM someLabel, 1000
+;CKSUM someLabel, [1000]
+;CKSUM someLabel, 0xDEAD
+;CKSUM someLabel, [0xDEAD]
+;CKSUM someLabel, someLabel
+;CKSUM someLabel, [someLabel]
+;CKSUM [someLabel], r1
+;CKSUM [someLabel], [r1]
+;CKSUM [someLabel], [r1+1]
+;CKSUM [someLabel], [r1-1]
+;CKSUM [someLabel], r2
+;CKSUM [someLabel], [r2]
+;CKSUM [someLabel], [r2+1]
+;CKSUM [someLabel], [r2-1]
+;CKSUM [someLabel], r10
+;CKSUM [someLabel], [r10]
+;CKSUM [someLabel], [r10+1]
+;CKSUM [someLabel], [r10-1]
+;CKSUM [someLabel], r13
+;CKSUM [someLabel], [r13]
+;CKSUM [someLabel], [r13+1]
+;CKSUM [someLabel], [r13-1]
+;CKSUM [someLabel], SP
+;CKSUM [someLabel], [SP]
+;CKSUM [someLabel], [SP+1]
+;CKSUM [someLabel], [SP-1]
+;CKSUM [someLabel], 1000
+;CKSUM [someLabel], [1000]
+;CKSUM [someLabel], 0xDEAD
+;CKSUM [someLabel], [0xDEAD]
+;CKSUM [someLabel], someLabel
+;CKSUM [someLabel], [someLabel]

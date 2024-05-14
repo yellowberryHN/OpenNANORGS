@@ -520,159 +520,159 @@ RAND [SP-1], 0xDEAD
 RAND [SP-1], [0xDEAD]
 RAND [SP-1], someLabel
 RAND [SP-1], [someLabel]
-; RAND 1000, r1
-; RAND 1000, [r1]
-; RAND 1000, [r1+1]
-; RAND 1000, [r1-1]
-; RAND 1000, r2
-; RAND 1000, [r2]
-; RAND 1000, [r2+1]
-; RAND 1000, [r2-1]
-; RAND 1000, r10
-; RAND 1000, [r10]
-; RAND 1000, [r10+1]
-; RAND 1000, [r10-1]
-; RAND 1000, r13
-; RAND 1000, [r13]
-; RAND 1000, [r13+1]
-; RAND 1000, [r13-1]
-; RAND 1000, SP
-; RAND 1000, [SP]
-; RAND 1000, [SP+1]
-; RAND 1000, [SP-1]
-; RAND 1000, 1000
-; RAND 1000, [1000]
-; RAND 1000, 0xDEAD
-; RAND 1000, [0xDEAD]
-; RAND 1000, someLabel
-; RAND 1000, [someLabel]
-; RAND [1000], r1
-; RAND [1000], [r1]
-; RAND [1000], [r1+1]
-; RAND [1000], [r1-1]
-; RAND [1000], r2
-; RAND [1000], [r2]
-; RAND [1000], [r2+1]
-; RAND [1000], [r2-1]
-; RAND [1000], r10
-; RAND [1000], [r10]
-; RAND [1000], [r10+1]
-; RAND [1000], [r10-1]
-; RAND [1000], r13
-; RAND [1000], [r13]
-; RAND [1000], [r13+1]
-; RAND [1000], [r13-1]
-; RAND [1000], SP
-; RAND [1000], [SP]
-; RAND [1000], [SP+1]
-; RAND [1000], [SP-1]
-; RAND [1000], 1000
-; RAND [1000], [1000]
-; RAND [1000], 0xDEAD
-; RAND [1000], [0xDEAD]
-; RAND [1000], someLabel
-; RAND [1000], [someLabel]
-; RAND 0xDEAD, r1
-; RAND 0xDEAD, [r1]
-; RAND 0xDEAD, [r1+1]
-; RAND 0xDEAD, [r1-1]
-; RAND 0xDEAD, r2
-; RAND 0xDEAD, [r2]
-; RAND 0xDEAD, [r2+1]
-; RAND 0xDEAD, [r2-1]
-; RAND 0xDEAD, r10
-; RAND 0xDEAD, [r10]
-; RAND 0xDEAD, [r10+1]
-; RAND 0xDEAD, [r10-1]
-; RAND 0xDEAD, r13
-; RAND 0xDEAD, [r13]
-; RAND 0xDEAD, [r13+1]
-; RAND 0xDEAD, [r13-1]
-; RAND 0xDEAD, SP
-; RAND 0xDEAD, [SP]
-; RAND 0xDEAD, [SP+1]
-; RAND 0xDEAD, [SP-1]
-; RAND 0xDEAD, 1000
-; RAND 0xDEAD, [1000]
-; RAND 0xDEAD, 0xDEAD
-; RAND 0xDEAD, [0xDEAD]
-; RAND 0xDEAD, someLabel
-; RAND 0xDEAD, [someLabel]
-; RAND [0xDEAD], r1
-; RAND [0xDEAD], [r1]
-; RAND [0xDEAD], [r1+1]
-; RAND [0xDEAD], [r1-1]
-; RAND [0xDEAD], r2
-; RAND [0xDEAD], [r2]
-; RAND [0xDEAD], [r2+1]
-; RAND [0xDEAD], [r2-1]
-; RAND [0xDEAD], r10
-; RAND [0xDEAD], [r10]
-; RAND [0xDEAD], [r10+1]
-; RAND [0xDEAD], [r10-1]
-; RAND [0xDEAD], r13
-; RAND [0xDEAD], [r13]
-; RAND [0xDEAD], [r13+1]
-; RAND [0xDEAD], [r13-1]
-; RAND [0xDEAD], SP
-; RAND [0xDEAD], [SP]
-; RAND [0xDEAD], [SP+1]
-; RAND [0xDEAD], [SP-1]
-; RAND [0xDEAD], 1000
-; RAND [0xDEAD], [1000]
-; RAND [0xDEAD], 0xDEAD
-; RAND [0xDEAD], [0xDEAD]
-; RAND [0xDEAD], someLabel
-; RAND [0xDEAD], [someLabel]
-; RAND someLabel, r1
-; RAND someLabel, [r1]
-; RAND someLabel, [r1+1]
-; RAND someLabel, [r1-1]
-; RAND someLabel, r2
-; RAND someLabel, [r2]
-; RAND someLabel, [r2+1]
-; RAND someLabel, [r2-1]
-; RAND someLabel, r10
-; RAND someLabel, [r10]
-; RAND someLabel, [r10+1]
-; RAND someLabel, [r10-1]
-; RAND someLabel, r13
-; RAND someLabel, [r13]
-; RAND someLabel, [r13+1]
-; RAND someLabel, [r13-1]
-; RAND someLabel, SP
-; RAND someLabel, [SP]
-; RAND someLabel, [SP+1]
-; RAND someLabel, [SP-1]
-; RAND someLabel, 1000
-; RAND someLabel, [1000]
-; RAND someLabel, 0xDEAD
-; RAND someLabel, [0xDEAD]
-; RAND someLabel, someLabel
-; RAND someLabel, [someLabel]
-; RAND [someLabel], r1
-; RAND [someLabel], [r1]
-; RAND [someLabel], [r1+1]
-; RAND [someLabel], [r1-1]
-; RAND [someLabel], r2
-; RAND [someLabel], [r2]
-; RAND [someLabel], [r2+1]
-; RAND [someLabel], [r2-1]
-; RAND [someLabel], r10
-; RAND [someLabel], [r10]
-; RAND [someLabel], [r10+1]
-; RAND [someLabel], [r10-1]
-; RAND [someLabel], r13
-; RAND [someLabel], [r13]
-; RAND [someLabel], [r13+1]
-; RAND [someLabel], [r13-1]
-; RAND [someLabel], SP
-; RAND [someLabel], [SP]
-; RAND [someLabel], [SP+1]
-; RAND [someLabel], [SP-1]
-; RAND [someLabel], 1000
-; RAND [someLabel], [1000]
-; RAND [someLabel], 0xDEAD
-; RAND [someLabel], [0xDEAD]
-; RAND [someLabel], someLabel
-; RAND [someLabel], [someLabel]
+;RAND 1000, r1
+;RAND 1000, [r1]
+;RAND 1000, [r1+1]
+;RAND 1000, [r1-1]
+;RAND 1000, r2
+;RAND 1000, [r2]
+;RAND 1000, [r2+1]
+;RAND 1000, [r2-1]
+;RAND 1000, r10
+;RAND 1000, [r10]
+;RAND 1000, [r10+1]
+;RAND 1000, [r10-1]
+;RAND 1000, r13
+;RAND 1000, [r13]
+;RAND 1000, [r13+1]
+;RAND 1000, [r13-1]
+;RAND 1000, SP
+;RAND 1000, [SP]
+;RAND 1000, [SP+1]
+;RAND 1000, [SP-1]
+;RAND 1000, 1000
+;RAND 1000, [1000]
+;RAND 1000, 0xDEAD
+;RAND 1000, [0xDEAD]
+;RAND 1000, someLabel
+;RAND 1000, [someLabel]
+;RAND [1000], r1
+;RAND [1000], [r1]
+;RAND [1000], [r1+1]
+;RAND [1000], [r1-1]
+;RAND [1000], r2
+;RAND [1000], [r2]
+;RAND [1000], [r2+1]
+;RAND [1000], [r2-1]
+;RAND [1000], r10
+;RAND [1000], [r10]
+;RAND [1000], [r10+1]
+;RAND [1000], [r10-1]
+;RAND [1000], r13
+;RAND [1000], [r13]
+;RAND [1000], [r13+1]
+;RAND [1000], [r13-1]
+;RAND [1000], SP
+;RAND [1000], [SP]
+;RAND [1000], [SP+1]
+;RAND [1000], [SP-1]
+;RAND [1000], 1000
+;RAND [1000], [1000]
+;RAND [1000], 0xDEAD
+;RAND [1000], [0xDEAD]
+;RAND [1000], someLabel
+;RAND [1000], [someLabel]
+;RAND 0xDEAD, r1
+;RAND 0xDEAD, [r1]
+;RAND 0xDEAD, [r1+1]
+;RAND 0xDEAD, [r1-1]
+;RAND 0xDEAD, r2
+;RAND 0xDEAD, [r2]
+;RAND 0xDEAD, [r2+1]
+;RAND 0xDEAD, [r2-1]
+;RAND 0xDEAD, r10
+;RAND 0xDEAD, [r10]
+;RAND 0xDEAD, [r10+1]
+;RAND 0xDEAD, [r10-1]
+;RAND 0xDEAD, r13
+;RAND 0xDEAD, [r13]
+;RAND 0xDEAD, [r13+1]
+;RAND 0xDEAD, [r13-1]
+;RAND 0xDEAD, SP
+;RAND 0xDEAD, [SP]
+;RAND 0xDEAD, [SP+1]
+;RAND 0xDEAD, [SP-1]
+;RAND 0xDEAD, 1000
+;RAND 0xDEAD, [1000]
+;RAND 0xDEAD, 0xDEAD
+;RAND 0xDEAD, [0xDEAD]
+;RAND 0xDEAD, someLabel
+;RAND 0xDEAD, [someLabel]
+;RAND [0xDEAD], r1
+;RAND [0xDEAD], [r1]
+;RAND [0xDEAD], [r1+1]
+;RAND [0xDEAD], [r1-1]
+;RAND [0xDEAD], r2
+;RAND [0xDEAD], [r2]
+;RAND [0xDEAD], [r2+1]
+;RAND [0xDEAD], [r2-1]
+;RAND [0xDEAD], r10
+;RAND [0xDEAD], [r10]
+;RAND [0xDEAD], [r10+1]
+;RAND [0xDEAD], [r10-1]
+;RAND [0xDEAD], r13
+;RAND [0xDEAD], [r13]
+;RAND [0xDEAD], [r13+1]
+;RAND [0xDEAD], [r13-1]
+;RAND [0xDEAD], SP
+;RAND [0xDEAD], [SP]
+;RAND [0xDEAD], [SP+1]
+;RAND [0xDEAD], [SP-1]
+;RAND [0xDEAD], 1000
+;RAND [0xDEAD], [1000]
+;RAND [0xDEAD], 0xDEAD
+;RAND [0xDEAD], [0xDEAD]
+;RAND [0xDEAD], someLabel
+;RAND [0xDEAD], [someLabel]
+;RAND someLabel, r1
+;RAND someLabel, [r1]
+;RAND someLabel, [r1+1]
+;RAND someLabel, [r1-1]
+;RAND someLabel, r2
+;RAND someLabel, [r2]
+;RAND someLabel, [r2+1]
+;RAND someLabel, [r2-1]
+;RAND someLabel, r10
+;RAND someLabel, [r10]
+;RAND someLabel, [r10+1]
+;RAND someLabel, [r10-1]
+;RAND someLabel, r13
+;RAND someLabel, [r13]
+;RAND someLabel, [r13+1]
+;RAND someLabel, [r13-1]
+;RAND someLabel, SP
+;RAND someLabel, [SP]
+;RAND someLabel, [SP+1]
+;RAND someLabel, [SP-1]
+;RAND someLabel, 1000
+;RAND someLabel, [1000]
+;RAND someLabel, 0xDEAD
+;RAND someLabel, [0xDEAD]
+;RAND someLabel, someLabel
+;RAND someLabel, [someLabel]
+;RAND [someLabel], r1
+;RAND [someLabel], [r1]
+;RAND [someLabel], [r1+1]
+;RAND [someLabel], [r1-1]
+;RAND [someLabel], r2
+;RAND [someLabel], [r2]
+;RAND [someLabel], [r2+1]
+;RAND [someLabel], [r2-1]
+;RAND [someLabel], r10
+;RAND [someLabel], [r10]
+;RAND [someLabel], [r10+1]
+;RAND [someLabel], [r10-1]
+;RAND [someLabel], r13
+;RAND [someLabel], [r13]
+;RAND [someLabel], [r13+1]
+;RAND [someLabel], [r13-1]
+;RAND [someLabel], SP
+;RAND [someLabel], [SP]
+;RAND [someLabel], [SP+1]
+;RAND [someLabel], [SP-1]
+;RAND [someLabel], 1000
+;RAND [someLabel], [1000]
+;RAND [someLabel], 0xDEAD
+;RAND [someLabel], [0xDEAD]
+;RAND [someLabel], someLabel
+;RAND [someLabel], [someLabel]

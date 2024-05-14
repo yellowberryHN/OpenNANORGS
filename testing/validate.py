@@ -3,11 +3,11 @@ import subprocess
 
 filenames = []
 
-for asm_file in os.listdir("test_files_asm_fixed"):
+for asm_file in os.listdir("test_files_asm"):
     # this should be run in release mode due to the absurd amount of times we invoke the compiler
-    subprocess.run(["cargo", "run", "--release", "--", "--dump-bytecode-text", "test_files_asm_fixed/" + asm_file], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) 
+    subprocess.run(["cargo", "run", "--release", "--", "--dump-bytecode-text", "test_files_asm/" + asm_file], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) 
 
-    output_file_name = "test_files_asm_fixed/" + asm_file + ".txt"
+    output_file_name = "test_files_asm/" + asm_file + ".txt"
     output = ""
 
     with open(output_file_name) as output_file:

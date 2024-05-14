@@ -520,159 +520,159 @@ SHL [SP-1], 0xDEAD
 SHL [SP-1], [0xDEAD]
 SHL [SP-1], someLabel
 SHL [SP-1], [someLabel]
-; SHL 1000, r1
-; SHL 1000, [r1]
-; SHL 1000, [r1+1]
-; SHL 1000, [r1-1]
-; SHL 1000, r2
-; SHL 1000, [r2]
-; SHL 1000, [r2+1]
-; SHL 1000, [r2-1]
-; SHL 1000, r10
-; SHL 1000, [r10]
-; SHL 1000, [r10+1]
-; SHL 1000, [r10-1]
-; SHL 1000, r13
-; SHL 1000, [r13]
-; SHL 1000, [r13+1]
-; SHL 1000, [r13-1]
-; SHL 1000, SP
-; SHL 1000, [SP]
-; SHL 1000, [SP+1]
-; SHL 1000, [SP-1]
-; SHL 1000, 1000
-; SHL 1000, [1000]
-; SHL 1000, 0xDEAD
-; SHL 1000, [0xDEAD]
-; SHL 1000, someLabel
-; SHL 1000, [someLabel]
-; SHL [1000], r1
-; SHL [1000], [r1]
-; SHL [1000], [r1+1]
-; SHL [1000], [r1-1]
-; SHL [1000], r2
-; SHL [1000], [r2]
-; SHL [1000], [r2+1]
-; SHL [1000], [r2-1]
-; SHL [1000], r10
-; SHL [1000], [r10]
-; SHL [1000], [r10+1]
-; SHL [1000], [r10-1]
-; SHL [1000], r13
-; SHL [1000], [r13]
-; SHL [1000], [r13+1]
-; SHL [1000], [r13-1]
-; SHL [1000], SP
-; SHL [1000], [SP]
-; SHL [1000], [SP+1]
-; SHL [1000], [SP-1]
-; SHL [1000], 1000
-; SHL [1000], [1000]
-; SHL [1000], 0xDEAD
-; SHL [1000], [0xDEAD]
-; SHL [1000], someLabel
-; SHL [1000], [someLabel]
-; SHL 0xDEAD, r1
-; SHL 0xDEAD, [r1]
-; SHL 0xDEAD, [r1+1]
-; SHL 0xDEAD, [r1-1]
-; SHL 0xDEAD, r2
-; SHL 0xDEAD, [r2]
-; SHL 0xDEAD, [r2+1]
-; SHL 0xDEAD, [r2-1]
-; SHL 0xDEAD, r10
-; SHL 0xDEAD, [r10]
-; SHL 0xDEAD, [r10+1]
-; SHL 0xDEAD, [r10-1]
-; SHL 0xDEAD, r13
-; SHL 0xDEAD, [r13]
-; SHL 0xDEAD, [r13+1]
-; SHL 0xDEAD, [r13-1]
-; SHL 0xDEAD, SP
-; SHL 0xDEAD, [SP]
-; SHL 0xDEAD, [SP+1]
-; SHL 0xDEAD, [SP-1]
-; SHL 0xDEAD, 1000
-; SHL 0xDEAD, [1000]
-; SHL 0xDEAD, 0xDEAD
-; SHL 0xDEAD, [0xDEAD]
-; SHL 0xDEAD, someLabel
-; SHL 0xDEAD, [someLabel]
-; SHL [0xDEAD], r1
-; SHL [0xDEAD], [r1]
-; SHL [0xDEAD], [r1+1]
-; SHL [0xDEAD], [r1-1]
-; SHL [0xDEAD], r2
-; SHL [0xDEAD], [r2]
-; SHL [0xDEAD], [r2+1]
-; SHL [0xDEAD], [r2-1]
-; SHL [0xDEAD], r10
-; SHL [0xDEAD], [r10]
-; SHL [0xDEAD], [r10+1]
-; SHL [0xDEAD], [r10-1]
-; SHL [0xDEAD], r13
-; SHL [0xDEAD], [r13]
-; SHL [0xDEAD], [r13+1]
-; SHL [0xDEAD], [r13-1]
-; SHL [0xDEAD], SP
-; SHL [0xDEAD], [SP]
-; SHL [0xDEAD], [SP+1]
-; SHL [0xDEAD], [SP-1]
-; SHL [0xDEAD], 1000
-; SHL [0xDEAD], [1000]
-; SHL [0xDEAD], 0xDEAD
-; SHL [0xDEAD], [0xDEAD]
-; SHL [0xDEAD], someLabel
-; SHL [0xDEAD], [someLabel]
-; SHL someLabel, r1
-; SHL someLabel, [r1]
-; SHL someLabel, [r1+1]
-; SHL someLabel, [r1-1]
-; SHL someLabel, r2
-; SHL someLabel, [r2]
-; SHL someLabel, [r2+1]
-; SHL someLabel, [r2-1]
-; SHL someLabel, r10
-; SHL someLabel, [r10]
-; SHL someLabel, [r10+1]
-; SHL someLabel, [r10-1]
-; SHL someLabel, r13
-; SHL someLabel, [r13]
-; SHL someLabel, [r13+1]
-; SHL someLabel, [r13-1]
-; SHL someLabel, SP
-; SHL someLabel, [SP]
-; SHL someLabel, [SP+1]
-; SHL someLabel, [SP-1]
-; SHL someLabel, 1000
-; SHL someLabel, [1000]
-; SHL someLabel, 0xDEAD
-; SHL someLabel, [0xDEAD]
-; SHL someLabel, someLabel
-; SHL someLabel, [someLabel]
-; SHL [someLabel], r1
-; SHL [someLabel], [r1]
-; SHL [someLabel], [r1+1]
-; SHL [someLabel], [r1-1]
-; SHL [someLabel], r2
-; SHL [someLabel], [r2]
-; SHL [someLabel], [r2+1]
-; SHL [someLabel], [r2-1]
-; SHL [someLabel], r10
-; SHL [someLabel], [r10]
-; SHL [someLabel], [r10+1]
-; SHL [someLabel], [r10-1]
-; SHL [someLabel], r13
-; SHL [someLabel], [r13]
-; SHL [someLabel], [r13+1]
-; SHL [someLabel], [r13-1]
-; SHL [someLabel], SP
-; SHL [someLabel], [SP]
-; SHL [someLabel], [SP+1]
-; SHL [someLabel], [SP-1]
-; SHL [someLabel], 1000
-; SHL [someLabel], [1000]
-; SHL [someLabel], 0xDEAD
-; SHL [someLabel], [0xDEAD]
-; SHL [someLabel], someLabel
-; SHL [someLabel], [someLabel]
+;SHL 1000, r1
+;SHL 1000, [r1]
+;SHL 1000, [r1+1]
+;SHL 1000, [r1-1]
+;SHL 1000, r2
+;SHL 1000, [r2]
+;SHL 1000, [r2+1]
+;SHL 1000, [r2-1]
+;SHL 1000, r10
+;SHL 1000, [r10]
+;SHL 1000, [r10+1]
+;SHL 1000, [r10-1]
+;SHL 1000, r13
+;SHL 1000, [r13]
+;SHL 1000, [r13+1]
+;SHL 1000, [r13-1]
+;SHL 1000, SP
+;SHL 1000, [SP]
+;SHL 1000, [SP+1]
+;SHL 1000, [SP-1]
+;SHL 1000, 1000
+;SHL 1000, [1000]
+;SHL 1000, 0xDEAD
+;SHL 1000, [0xDEAD]
+;SHL 1000, someLabel
+;SHL 1000, [someLabel]
+;SHL [1000], r1
+;SHL [1000], [r1]
+;SHL [1000], [r1+1]
+;SHL [1000], [r1-1]
+;SHL [1000], r2
+;SHL [1000], [r2]
+;SHL [1000], [r2+1]
+;SHL [1000], [r2-1]
+;SHL [1000], r10
+;SHL [1000], [r10]
+;SHL [1000], [r10+1]
+;SHL [1000], [r10-1]
+;SHL [1000], r13
+;SHL [1000], [r13]
+;SHL [1000], [r13+1]
+;SHL [1000], [r13-1]
+;SHL [1000], SP
+;SHL [1000], [SP]
+;SHL [1000], [SP+1]
+;SHL [1000], [SP-1]
+;SHL [1000], 1000
+;SHL [1000], [1000]
+;SHL [1000], 0xDEAD
+;SHL [1000], [0xDEAD]
+;SHL [1000], someLabel
+;SHL [1000], [someLabel]
+;SHL 0xDEAD, r1
+;SHL 0xDEAD, [r1]
+;SHL 0xDEAD, [r1+1]
+;SHL 0xDEAD, [r1-1]
+;SHL 0xDEAD, r2
+;SHL 0xDEAD, [r2]
+;SHL 0xDEAD, [r2+1]
+;SHL 0xDEAD, [r2-1]
+;SHL 0xDEAD, r10
+;SHL 0xDEAD, [r10]
+;SHL 0xDEAD, [r10+1]
+;SHL 0xDEAD, [r10-1]
+;SHL 0xDEAD, r13
+;SHL 0xDEAD, [r13]
+;SHL 0xDEAD, [r13+1]
+;SHL 0xDEAD, [r13-1]
+;SHL 0xDEAD, SP
+;SHL 0xDEAD, [SP]
+;SHL 0xDEAD, [SP+1]
+;SHL 0xDEAD, [SP-1]
+;SHL 0xDEAD, 1000
+;SHL 0xDEAD, [1000]
+;SHL 0xDEAD, 0xDEAD
+;SHL 0xDEAD, [0xDEAD]
+;SHL 0xDEAD, someLabel
+;SHL 0xDEAD, [someLabel]
+;SHL [0xDEAD], r1
+;SHL [0xDEAD], [r1]
+;SHL [0xDEAD], [r1+1]
+;SHL [0xDEAD], [r1-1]
+;SHL [0xDEAD], r2
+;SHL [0xDEAD], [r2]
+;SHL [0xDEAD], [r2+1]
+;SHL [0xDEAD], [r2-1]
+;SHL [0xDEAD], r10
+;SHL [0xDEAD], [r10]
+;SHL [0xDEAD], [r10+1]
+;SHL [0xDEAD], [r10-1]
+;SHL [0xDEAD], r13
+;SHL [0xDEAD], [r13]
+;SHL [0xDEAD], [r13+1]
+;SHL [0xDEAD], [r13-1]
+;SHL [0xDEAD], SP
+;SHL [0xDEAD], [SP]
+;SHL [0xDEAD], [SP+1]
+;SHL [0xDEAD], [SP-1]
+;SHL [0xDEAD], 1000
+;SHL [0xDEAD], [1000]
+;SHL [0xDEAD], 0xDEAD
+;SHL [0xDEAD], [0xDEAD]
+;SHL [0xDEAD], someLabel
+;SHL [0xDEAD], [someLabel]
+;SHL someLabel, r1
+;SHL someLabel, [r1]
+;SHL someLabel, [r1+1]
+;SHL someLabel, [r1-1]
+;SHL someLabel, r2
+;SHL someLabel, [r2]
+;SHL someLabel, [r2+1]
+;SHL someLabel, [r2-1]
+;SHL someLabel, r10
+;SHL someLabel, [r10]
+;SHL someLabel, [r10+1]
+;SHL someLabel, [r10-1]
+;SHL someLabel, r13
+;SHL someLabel, [r13]
+;SHL someLabel, [r13+1]
+;SHL someLabel, [r13-1]
+;SHL someLabel, SP
+;SHL someLabel, [SP]
+;SHL someLabel, [SP+1]
+;SHL someLabel, [SP-1]
+;SHL someLabel, 1000
+;SHL someLabel, [1000]
+;SHL someLabel, 0xDEAD
+;SHL someLabel, [0xDEAD]
+;SHL someLabel, someLabel
+;SHL someLabel, [someLabel]
+;SHL [someLabel], r1
+;SHL [someLabel], [r1]
+;SHL [someLabel], [r1+1]
+;SHL [someLabel], [r1-1]
+;SHL [someLabel], r2
+;SHL [someLabel], [r2]
+;SHL [someLabel], [r2+1]
+;SHL [someLabel], [r2-1]
+;SHL [someLabel], r10
+;SHL [someLabel], [r10]
+;SHL [someLabel], [r10+1]
+;SHL [someLabel], [r10-1]
+;SHL [someLabel], r13
+;SHL [someLabel], [r13]
+;SHL [someLabel], [r13+1]
+;SHL [someLabel], [r13-1]
+;SHL [someLabel], SP
+;SHL [someLabel], [SP]
+;SHL [someLabel], [SP+1]
+;SHL [someLabel], [SP-1]
+;SHL [someLabel], 1000
+;SHL [someLabel], [1000]
+;SHL [someLabel], 0xDEAD
+;SHL [someLabel], [0xDEAD]
+;SHL [someLabel], someLabel
+;SHL [someLabel], [someLabel]

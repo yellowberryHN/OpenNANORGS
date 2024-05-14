@@ -98,7 +98,7 @@ for instruction in instructions:
     program = [] 
     program.extend(generate_operands(instruction[0], instruction[1], instruction[2]))
 
-    program_str = "info: " + instruction[0] +", Automated Testing\n"
+    program_str = "info: " + instruction[0] + ", Automated Testing\n"
     program_str += "someLabel: \n"
     for p_instr in program:
         if p_instr[1] and p_instr[2]:
@@ -114,6 +114,7 @@ for instruction in instructions:
         file.write(program_str)
 
     all_program_str += program_str
+
 
 print("Generated: " + str(len(instructions)) + " test files, containing " + str(len(all_program_str.split("\n"))) + " lines")
 

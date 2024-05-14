@@ -520,159 +520,159 @@ MOD [SP-1], 0xDEAD
 MOD [SP-1], [0xDEAD]
 MOD [SP-1], someLabel
 MOD [SP-1], [someLabel]
-; MOD 1000, r1
-; MOD 1000, [r1]
-; MOD 1000, [r1+1]
-; MOD 1000, [r1-1]
-; MOD 1000, r2
-; MOD 1000, [r2]
-; MOD 1000, [r2+1]
-; MOD 1000, [r2-1]
-; MOD 1000, r10
-; MOD 1000, [r10]
-; MOD 1000, [r10+1]
-; MOD 1000, [r10-1]
-; MOD 1000, r13
-; MOD 1000, [r13]
-; MOD 1000, [r13+1]
-; MOD 1000, [r13-1]
-; MOD 1000, SP
-; MOD 1000, [SP]
-; MOD 1000, [SP+1]
-; MOD 1000, [SP-1]
-; MOD 1000, 1000
-; MOD 1000, [1000]
-; MOD 1000, 0xDEAD
-; MOD 1000, [0xDEAD]
-; MOD 1000, someLabel
-; MOD 1000, [someLabel]
-; MOD [1000], r1
-; MOD [1000], [r1]
-; MOD [1000], [r1+1]
-; MOD [1000], [r1-1]
-; MOD [1000], r2
-; MOD [1000], [r2]
-; MOD [1000], [r2+1]
-; MOD [1000], [r2-1]
-; MOD [1000], r10
-; MOD [1000], [r10]
-; MOD [1000], [r10+1]
-; MOD [1000], [r10-1]
-; MOD [1000], r13
-; MOD [1000], [r13]
-; MOD [1000], [r13+1]
-; MOD [1000], [r13-1]
-; MOD [1000], SP
-; MOD [1000], [SP]
-; MOD [1000], [SP+1]
-; MOD [1000], [SP-1]
-; MOD [1000], 1000
-; MOD [1000], [1000]
-; MOD [1000], 0xDEAD
-; MOD [1000], [0xDEAD]
-; MOD [1000], someLabel
-; MOD [1000], [someLabel]
-; MOD 0xDEAD, r1
-; MOD 0xDEAD, [r1]
-; MOD 0xDEAD, [r1+1]
-; MOD 0xDEAD, [r1-1]
-; MOD 0xDEAD, r2
-; MOD 0xDEAD, [r2]
-; MOD 0xDEAD, [r2+1]
-; MOD 0xDEAD, [r2-1]
-; MOD 0xDEAD, r10
-; MOD 0xDEAD, [r10]
-; MOD 0xDEAD, [r10+1]
-; MOD 0xDEAD, [r10-1]
-; MOD 0xDEAD, r13
-; MOD 0xDEAD, [r13]
-; MOD 0xDEAD, [r13+1]
-; MOD 0xDEAD, [r13-1]
-; MOD 0xDEAD, SP
-; MOD 0xDEAD, [SP]
-; MOD 0xDEAD, [SP+1]
-; MOD 0xDEAD, [SP-1]
-; MOD 0xDEAD, 1000
-; MOD 0xDEAD, [1000]
-; MOD 0xDEAD, 0xDEAD
-; MOD 0xDEAD, [0xDEAD]
-; MOD 0xDEAD, someLabel
-; MOD 0xDEAD, [someLabel]
-; MOD [0xDEAD], r1
-; MOD [0xDEAD], [r1]
-; MOD [0xDEAD], [r1+1]
-; MOD [0xDEAD], [r1-1]
-; MOD [0xDEAD], r2
-; MOD [0xDEAD], [r2]
-; MOD [0xDEAD], [r2+1]
-; MOD [0xDEAD], [r2-1]
-; MOD [0xDEAD], r10
-; MOD [0xDEAD], [r10]
-; MOD [0xDEAD], [r10+1]
-; MOD [0xDEAD], [r10-1]
-; MOD [0xDEAD], r13
-; MOD [0xDEAD], [r13]
-; MOD [0xDEAD], [r13+1]
-; MOD [0xDEAD], [r13-1]
-; MOD [0xDEAD], SP
-; MOD [0xDEAD], [SP]
-; MOD [0xDEAD], [SP+1]
-; MOD [0xDEAD], [SP-1]
-; MOD [0xDEAD], 1000
-; MOD [0xDEAD], [1000]
-; MOD [0xDEAD], 0xDEAD
-; MOD [0xDEAD], [0xDEAD]
-; MOD [0xDEAD], someLabel
-; MOD [0xDEAD], [someLabel]
-; MOD someLabel, r1
-; MOD someLabel, [r1]
-; MOD someLabel, [r1+1]
-; MOD someLabel, [r1-1]
-; MOD someLabel, r2
-; MOD someLabel, [r2]
-; MOD someLabel, [r2+1]
-; MOD someLabel, [r2-1]
-; MOD someLabel, r10
-; MOD someLabel, [r10]
-; MOD someLabel, [r10+1]
-; MOD someLabel, [r10-1]
-; MOD someLabel, r13
-; MOD someLabel, [r13]
-; MOD someLabel, [r13+1]
-; MOD someLabel, [r13-1]
-; MOD someLabel, SP
-; MOD someLabel, [SP]
-; MOD someLabel, [SP+1]
-; MOD someLabel, [SP-1]
-; MOD someLabel, 1000
-; MOD someLabel, [1000]
-; MOD someLabel, 0xDEAD
-; MOD someLabel, [0xDEAD]
-; MOD someLabel, someLabel
-; MOD someLabel, [someLabel]
-; MOD [someLabel], r1
-; MOD [someLabel], [r1]
-; MOD [someLabel], [r1+1]
-; MOD [someLabel], [r1-1]
-; MOD [someLabel], r2
-; MOD [someLabel], [r2]
-; MOD [someLabel], [r2+1]
-; MOD [someLabel], [r2-1]
-; MOD [someLabel], r10
-; MOD [someLabel], [r10]
-; MOD [someLabel], [r10+1]
-; MOD [someLabel], [r10-1]
-; MOD [someLabel], r13
-; MOD [someLabel], [r13]
-; MOD [someLabel], [r13+1]
-; MOD [someLabel], [r13-1]
-; MOD [someLabel], SP
-; MOD [someLabel], [SP]
-; MOD [someLabel], [SP+1]
-; MOD [someLabel], [SP-1]
-; MOD [someLabel], 1000
-; MOD [someLabel], [1000]
-; MOD [someLabel], 0xDEAD
-; MOD [someLabel], [0xDEAD]
-; MOD [someLabel], someLabel
-; MOD [someLabel], [someLabel]
+;MOD 1000, r1
+;MOD 1000, [r1]
+;MOD 1000, [r1+1]
+;MOD 1000, [r1-1]
+;MOD 1000, r2
+;MOD 1000, [r2]
+;MOD 1000, [r2+1]
+;MOD 1000, [r2-1]
+;MOD 1000, r10
+;MOD 1000, [r10]
+;MOD 1000, [r10+1]
+;MOD 1000, [r10-1]
+;MOD 1000, r13
+;MOD 1000, [r13]
+;MOD 1000, [r13+1]
+;MOD 1000, [r13-1]
+;MOD 1000, SP
+;MOD 1000, [SP]
+;MOD 1000, [SP+1]
+;MOD 1000, [SP-1]
+;MOD 1000, 1000
+;MOD 1000, [1000]
+;MOD 1000, 0xDEAD
+;MOD 1000, [0xDEAD]
+;MOD 1000, someLabel
+;MOD 1000, [someLabel]
+;MOD [1000], r1
+;MOD [1000], [r1]
+;MOD [1000], [r1+1]
+;MOD [1000], [r1-1]
+;MOD [1000], r2
+;MOD [1000], [r2]
+;MOD [1000], [r2+1]
+;MOD [1000], [r2-1]
+;MOD [1000], r10
+;MOD [1000], [r10]
+;MOD [1000], [r10+1]
+;MOD [1000], [r10-1]
+;MOD [1000], r13
+;MOD [1000], [r13]
+;MOD [1000], [r13+1]
+;MOD [1000], [r13-1]
+;MOD [1000], SP
+;MOD [1000], [SP]
+;MOD [1000], [SP+1]
+;MOD [1000], [SP-1]
+;MOD [1000], 1000
+;MOD [1000], [1000]
+;MOD [1000], 0xDEAD
+;MOD [1000], [0xDEAD]
+;MOD [1000], someLabel
+;MOD [1000], [someLabel]
+;MOD 0xDEAD, r1
+;MOD 0xDEAD, [r1]
+;MOD 0xDEAD, [r1+1]
+;MOD 0xDEAD, [r1-1]
+;MOD 0xDEAD, r2
+;MOD 0xDEAD, [r2]
+;MOD 0xDEAD, [r2+1]
+;MOD 0xDEAD, [r2-1]
+;MOD 0xDEAD, r10
+;MOD 0xDEAD, [r10]
+;MOD 0xDEAD, [r10+1]
+;MOD 0xDEAD, [r10-1]
+;MOD 0xDEAD, r13
+;MOD 0xDEAD, [r13]
+;MOD 0xDEAD, [r13+1]
+;MOD 0xDEAD, [r13-1]
+;MOD 0xDEAD, SP
+;MOD 0xDEAD, [SP]
+;MOD 0xDEAD, [SP+1]
+;MOD 0xDEAD, [SP-1]
+;MOD 0xDEAD, 1000
+;MOD 0xDEAD, [1000]
+;MOD 0xDEAD, 0xDEAD
+;MOD 0xDEAD, [0xDEAD]
+;MOD 0xDEAD, someLabel
+;MOD 0xDEAD, [someLabel]
+;MOD [0xDEAD], r1
+;MOD [0xDEAD], [r1]
+;MOD [0xDEAD], [r1+1]
+;MOD [0xDEAD], [r1-1]
+;MOD [0xDEAD], r2
+;MOD [0xDEAD], [r2]
+;MOD [0xDEAD], [r2+1]
+;MOD [0xDEAD], [r2-1]
+;MOD [0xDEAD], r10
+;MOD [0xDEAD], [r10]
+;MOD [0xDEAD], [r10+1]
+;MOD [0xDEAD], [r10-1]
+;MOD [0xDEAD], r13
+;MOD [0xDEAD], [r13]
+;MOD [0xDEAD], [r13+1]
+;MOD [0xDEAD], [r13-1]
+;MOD [0xDEAD], SP
+;MOD [0xDEAD], [SP]
+;MOD [0xDEAD], [SP+1]
+;MOD [0xDEAD], [SP-1]
+;MOD [0xDEAD], 1000
+;MOD [0xDEAD], [1000]
+;MOD [0xDEAD], 0xDEAD
+;MOD [0xDEAD], [0xDEAD]
+;MOD [0xDEAD], someLabel
+;MOD [0xDEAD], [someLabel]
+;MOD someLabel, r1
+;MOD someLabel, [r1]
+;MOD someLabel, [r1+1]
+;MOD someLabel, [r1-1]
+;MOD someLabel, r2
+;MOD someLabel, [r2]
+;MOD someLabel, [r2+1]
+;MOD someLabel, [r2-1]
+;MOD someLabel, r10
+;MOD someLabel, [r10]
+;MOD someLabel, [r10+1]
+;MOD someLabel, [r10-1]
+;MOD someLabel, r13
+;MOD someLabel, [r13]
+;MOD someLabel, [r13+1]
+;MOD someLabel, [r13-1]
+;MOD someLabel, SP
+;MOD someLabel, [SP]
+;MOD someLabel, [SP+1]
+;MOD someLabel, [SP-1]
+;MOD someLabel, 1000
+;MOD someLabel, [1000]
+;MOD someLabel, 0xDEAD
+;MOD someLabel, [0xDEAD]
+;MOD someLabel, someLabel
+;MOD someLabel, [someLabel]
+;MOD [someLabel], r1
+;MOD [someLabel], [r1]
+;MOD [someLabel], [r1+1]
+;MOD [someLabel], [r1-1]
+;MOD [someLabel], r2
+;MOD [someLabel], [r2]
+;MOD [someLabel], [r2+1]
+;MOD [someLabel], [r2-1]
+;MOD [someLabel], r10
+;MOD [someLabel], [r10]
+;MOD [someLabel], [r10+1]
+;MOD [someLabel], [r10-1]
+;MOD [someLabel], r13
+;MOD [someLabel], [r13]
+;MOD [someLabel], [r13+1]
+;MOD [someLabel], [r13-1]
+;MOD [someLabel], SP
+;MOD [someLabel], [SP]
+;MOD [someLabel], [SP+1]
+;MOD [someLabel], [SP-1]
+;MOD [someLabel], 1000
+;MOD [someLabel], [1000]
+;MOD [someLabel], 0xDEAD
+;MOD [someLabel], [0xDEAD]
+;MOD [someLabel], someLabel
+;MOD [someLabel], [someLabel]

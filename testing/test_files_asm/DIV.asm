@@ -520,159 +520,159 @@ DIV [SP-1], 0xDEAD
 DIV [SP-1], [0xDEAD]
 DIV [SP-1], someLabel
 DIV [SP-1], [someLabel]
-; DIV 1000, r1
-; DIV 1000, [r1]
-; DIV 1000, [r1+1]
-; DIV 1000, [r1-1]
-; DIV 1000, r2
-; DIV 1000, [r2]
-; DIV 1000, [r2+1]
-; DIV 1000, [r2-1]
-; DIV 1000, r10
-; DIV 1000, [r10]
-; DIV 1000, [r10+1]
-; DIV 1000, [r10-1]
-; DIV 1000, r13
-; DIV 1000, [r13]
-; DIV 1000, [r13+1]
-; DIV 1000, [r13-1]
-; DIV 1000, SP
-; DIV 1000, [SP]
-; DIV 1000, [SP+1]
-; DIV 1000, [SP-1]
-; DIV 1000, 1000
-; DIV 1000, [1000]
-; DIV 1000, 0xDEAD
-; DIV 1000, [0xDEAD]
-; DIV 1000, someLabel
-; DIV 1000, [someLabel]
-; DIV [1000], r1
-; DIV [1000], [r1]
-; DIV [1000], [r1+1]
-; DIV [1000], [r1-1]
-; DIV [1000], r2
-; DIV [1000], [r2]
-; DIV [1000], [r2+1]
-; DIV [1000], [r2-1]
-; DIV [1000], r10
-; DIV [1000], [r10]
-; DIV [1000], [r10+1]
-; DIV [1000], [r10-1]
-; DIV [1000], r13
-; DIV [1000], [r13]
-; DIV [1000], [r13+1]
-; DIV [1000], [r13-1]
-; DIV [1000], SP
-; DIV [1000], [SP]
-; DIV [1000], [SP+1]
-; DIV [1000], [SP-1]
-; DIV [1000], 1000
-; DIV [1000], [1000]
-; DIV [1000], 0xDEAD
-; DIV [1000], [0xDEAD]
-; DIV [1000], someLabel
-; DIV [1000], [someLabel]
-; DIV 0xDEAD, r1
-; DIV 0xDEAD, [r1]
-; DIV 0xDEAD, [r1+1]
-; DIV 0xDEAD, [r1-1]
-; DIV 0xDEAD, r2
-; DIV 0xDEAD, [r2]
-; DIV 0xDEAD, [r2+1]
-; DIV 0xDEAD, [r2-1]
-; DIV 0xDEAD, r10
-; DIV 0xDEAD, [r10]
-; DIV 0xDEAD, [r10+1]
-; DIV 0xDEAD, [r10-1]
-; DIV 0xDEAD, r13
-; DIV 0xDEAD, [r13]
-; DIV 0xDEAD, [r13+1]
-; DIV 0xDEAD, [r13-1]
-; DIV 0xDEAD, SP
-; DIV 0xDEAD, [SP]
-; DIV 0xDEAD, [SP+1]
-; DIV 0xDEAD, [SP-1]
-; DIV 0xDEAD, 1000
-; DIV 0xDEAD, [1000]
-; DIV 0xDEAD, 0xDEAD
-; DIV 0xDEAD, [0xDEAD]
-; DIV 0xDEAD, someLabel
-; DIV 0xDEAD, [someLabel]
-; DIV [0xDEAD], r1
-; DIV [0xDEAD], [r1]
-; DIV [0xDEAD], [r1+1]
-; DIV [0xDEAD], [r1-1]
-; DIV [0xDEAD], r2
-; DIV [0xDEAD], [r2]
-; DIV [0xDEAD], [r2+1]
-; DIV [0xDEAD], [r2-1]
-; DIV [0xDEAD], r10
-; DIV [0xDEAD], [r10]
-; DIV [0xDEAD], [r10+1]
-; DIV [0xDEAD], [r10-1]
-; DIV [0xDEAD], r13
-; DIV [0xDEAD], [r13]
-; DIV [0xDEAD], [r13+1]
-; DIV [0xDEAD], [r13-1]
-; DIV [0xDEAD], SP
-; DIV [0xDEAD], [SP]
-; DIV [0xDEAD], [SP+1]
-; DIV [0xDEAD], [SP-1]
-; DIV [0xDEAD], 1000
-; DIV [0xDEAD], [1000]
-; DIV [0xDEAD], 0xDEAD
-; DIV [0xDEAD], [0xDEAD]
-; DIV [0xDEAD], someLabel
-; DIV [0xDEAD], [someLabel]
-; DIV someLabel, r1
-; DIV someLabel, [r1]
-; DIV someLabel, [r1+1]
-; DIV someLabel, [r1-1]
-; DIV someLabel, r2
-; DIV someLabel, [r2]
-; DIV someLabel, [r2+1]
-; DIV someLabel, [r2-1]
-; DIV someLabel, r10
-; DIV someLabel, [r10]
-; DIV someLabel, [r10+1]
-; DIV someLabel, [r10-1]
-; DIV someLabel, r13
-; DIV someLabel, [r13]
-; DIV someLabel, [r13+1]
-; DIV someLabel, [r13-1]
-; DIV someLabel, SP
-; DIV someLabel, [SP]
-; DIV someLabel, [SP+1]
-; DIV someLabel, [SP-1]
-; DIV someLabel, 1000
-; DIV someLabel, [1000]
-; DIV someLabel, 0xDEAD
-; DIV someLabel, [0xDEAD]
-; DIV someLabel, someLabel
-; DIV someLabel, [someLabel]
-; DIV [someLabel], r1
-; DIV [someLabel], [r1]
-; DIV [someLabel], [r1+1]
-; DIV [someLabel], [r1-1]
-; DIV [someLabel], r2
-; DIV [someLabel], [r2]
-; DIV [someLabel], [r2+1]
-; DIV [someLabel], [r2-1]
-; DIV [someLabel], r10
-; DIV [someLabel], [r10]
-; DIV [someLabel], [r10+1]
-; DIV [someLabel], [r10-1]
-; DIV [someLabel], r13
-; DIV [someLabel], [r13]
-; DIV [someLabel], [r13+1]
-; DIV [someLabel], [r13-1]
-; DIV [someLabel], SP
-; DIV [someLabel], [SP]
-; DIV [someLabel], [SP+1]
-; DIV [someLabel], [SP-1]
-; DIV [someLabel], 1000
-; DIV [someLabel], [1000]
-; DIV [someLabel], 0xDEAD
-; DIV [someLabel], [0xDEAD]
-; DIV [someLabel], someLabel
-; DIV [someLabel], [someLabel]
+;DIV 1000, r1
+;DIV 1000, [r1]
+;DIV 1000, [r1+1]
+;DIV 1000, [r1-1]
+;DIV 1000, r2
+;DIV 1000, [r2]
+;DIV 1000, [r2+1]
+;DIV 1000, [r2-1]
+;DIV 1000, r10
+;DIV 1000, [r10]
+;DIV 1000, [r10+1]
+;DIV 1000, [r10-1]
+;DIV 1000, r13
+;DIV 1000, [r13]
+;DIV 1000, [r13+1]
+;DIV 1000, [r13-1]
+;DIV 1000, SP
+;DIV 1000, [SP]
+;DIV 1000, [SP+1]
+;DIV 1000, [SP-1]
+;DIV 1000, 1000
+;DIV 1000, [1000]
+;DIV 1000, 0xDEAD
+;DIV 1000, [0xDEAD]
+;DIV 1000, someLabel
+;DIV 1000, [someLabel]
+;DIV [1000], r1
+;DIV [1000], [r1]
+;DIV [1000], [r1+1]
+;DIV [1000], [r1-1]
+;DIV [1000], r2
+;DIV [1000], [r2]
+;DIV [1000], [r2+1]
+;DIV [1000], [r2-1]
+;DIV [1000], r10
+;DIV [1000], [r10]
+;DIV [1000], [r10+1]
+;DIV [1000], [r10-1]
+;DIV [1000], r13
+;DIV [1000], [r13]
+;DIV [1000], [r13+1]
+;DIV [1000], [r13-1]
+;DIV [1000], SP
+;DIV [1000], [SP]
+;DIV [1000], [SP+1]
+;DIV [1000], [SP-1]
+;DIV [1000], 1000
+;DIV [1000], [1000]
+;DIV [1000], 0xDEAD
+;DIV [1000], [0xDEAD]
+;DIV [1000], someLabel
+;DIV [1000], [someLabel]
+;DIV 0xDEAD, r1
+;DIV 0xDEAD, [r1]
+;DIV 0xDEAD, [r1+1]
+;DIV 0xDEAD, [r1-1]
+;DIV 0xDEAD, r2
+;DIV 0xDEAD, [r2]
+;DIV 0xDEAD, [r2+1]
+;DIV 0xDEAD, [r2-1]
+;DIV 0xDEAD, r10
+;DIV 0xDEAD, [r10]
+;DIV 0xDEAD, [r10+1]
+;DIV 0xDEAD, [r10-1]
+;DIV 0xDEAD, r13
+;DIV 0xDEAD, [r13]
+;DIV 0xDEAD, [r13+1]
+;DIV 0xDEAD, [r13-1]
+;DIV 0xDEAD, SP
+;DIV 0xDEAD, [SP]
+;DIV 0xDEAD, [SP+1]
+;DIV 0xDEAD, [SP-1]
+;DIV 0xDEAD, 1000
+;DIV 0xDEAD, [1000]
+;DIV 0xDEAD, 0xDEAD
+;DIV 0xDEAD, [0xDEAD]
+;DIV 0xDEAD, someLabel
+;DIV 0xDEAD, [someLabel]
+;DIV [0xDEAD], r1
+;DIV [0xDEAD], [r1]
+;DIV [0xDEAD], [r1+1]
+;DIV [0xDEAD], [r1-1]
+;DIV [0xDEAD], r2
+;DIV [0xDEAD], [r2]
+;DIV [0xDEAD], [r2+1]
+;DIV [0xDEAD], [r2-1]
+;DIV [0xDEAD], r10
+;DIV [0xDEAD], [r10]
+;DIV [0xDEAD], [r10+1]
+;DIV [0xDEAD], [r10-1]
+;DIV [0xDEAD], r13
+;DIV [0xDEAD], [r13]
+;DIV [0xDEAD], [r13+1]
+;DIV [0xDEAD], [r13-1]
+;DIV [0xDEAD], SP
+;DIV [0xDEAD], [SP]
+;DIV [0xDEAD], [SP+1]
+;DIV [0xDEAD], [SP-1]
+;DIV [0xDEAD], 1000
+;DIV [0xDEAD], [1000]
+;DIV [0xDEAD], 0xDEAD
+;DIV [0xDEAD], [0xDEAD]
+;DIV [0xDEAD], someLabel
+;DIV [0xDEAD], [someLabel]
+;DIV someLabel, r1
+;DIV someLabel, [r1]
+;DIV someLabel, [r1+1]
+;DIV someLabel, [r1-1]
+;DIV someLabel, r2
+;DIV someLabel, [r2]
+;DIV someLabel, [r2+1]
+;DIV someLabel, [r2-1]
+;DIV someLabel, r10
+;DIV someLabel, [r10]
+;DIV someLabel, [r10+1]
+;DIV someLabel, [r10-1]
+;DIV someLabel, r13
+;DIV someLabel, [r13]
+;DIV someLabel, [r13+1]
+;DIV someLabel, [r13-1]
+;DIV someLabel, SP
+;DIV someLabel, [SP]
+;DIV someLabel, [SP+1]
+;DIV someLabel, [SP-1]
+;DIV someLabel, 1000
+;DIV someLabel, [1000]
+;DIV someLabel, 0xDEAD
+;DIV someLabel, [0xDEAD]
+;DIV someLabel, someLabel
+;DIV someLabel, [someLabel]
+;DIV [someLabel], r1
+;DIV [someLabel], [r1]
+;DIV [someLabel], [r1+1]
+;DIV [someLabel], [r1-1]
+;DIV [someLabel], r2
+;DIV [someLabel], [r2]
+;DIV [someLabel], [r2+1]
+;DIV [someLabel], [r2-1]
+;DIV [someLabel], r10
+;DIV [someLabel], [r10]
+;DIV [someLabel], [r10+1]
+;DIV [someLabel], [r10-1]
+;DIV [someLabel], r13
+;DIV [someLabel], [r13]
+;DIV [someLabel], [r13+1]
+;DIV [someLabel], [r13-1]
+;DIV [someLabel], SP
+;DIV [someLabel], [SP]
+;DIV [someLabel], [SP+1]
+;DIV [someLabel], [SP-1]
+;DIV [someLabel], 1000
+;DIV [someLabel], [1000]
+;DIV [someLabel], 0xDEAD
+;DIV [someLabel], [0xDEAD]
+;DIV [someLabel], someLabel
+;DIV [someLabel], [someLabel]
