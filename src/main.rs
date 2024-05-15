@@ -14,15 +14,18 @@ pub mod tokenizer;
 use crate::cli::Arguments;
 use crate::compiler::Compiler;
 use crate::disassembler::Disassembler;
-use crate::parser::{Parser, ParserToken};
-use crate::symbol_table::SymbolTable;
-use crate::tokenizer::Tokenizer;
+use crate::emulator::{Item, Position, Tank};
 use byteorder::{BigEndian, WriteBytesExt};
 use clap::Parser as clapParse;
+use ruscii::app::{App, State};
+use ruscii::terminal::{Window};
+use ruscii::drawing::{Pencil};
+use ruscii::keyboard::{KeyEvent, Key};
+use ruscii::spatial::{Vec2};
+use ruscii::gui::{FPSCounter};
 use std::fs;
 use std::fs::File;
 use std::io::Write;
-use crate::emulator::Position;
 
 fn main() {
     let args = Arguments::parse();
@@ -102,7 +105,7 @@ fn main() {
         println!("{:?}", test_bot);
         */
 
-        let mut test_tank = crate::emulator::Tank::new(Position { x: 70, y: 40, z: 1 }, 69420, false);
+        let mut test_tank = Tank::new(Position::new(70, 40, 1), 69420, false);
         test_tank.fill_with_items(200);
 
         for bot in &mut test_tank.bots {
@@ -115,8 +118,42 @@ fn main() {
             bot.tick();
         }
 
-        println!("{:?}", test_tank);
+        //println!("{:?}", test_tank);
 
-        // println!("nothing happens here yet.")
+        //println!("nothing happens here yet.")
+
+        let mut fps_counter = FPSCounter::default();
+        let mut app = App::default();
+
+        app.run(|app_state: &mut State, window: &mut Window| {
+            for key_event in app_state.keyboard().last_key_events() {
+                match key_event {
+                    KeyEvent::Pressed(Key::Esc) => app_state.stop(),
+                    KeyEvent::Pressed(Key::Q) => app_state.stop(),
+                    _ => (),
+                }
+            }
+
+            fps_counter.update();
+            test_tank.tick();
+
+            let mut pencil = Pencil::new(window.canvas_mut());
+
+            for element in &test_tank.elements {
+                let element = element.as_ref();
+                match element {
+                    None => {}
+                    Some(element) => {
+                        pencil.draw_char(element.get_glyph(), element.position.into());
+                    }
+                }
+            }
+
+            for bot in &test_tank.bots {
+                pencil.draw_char(bot.get_glyph(), bot.position.into());
+            }
+
+            pencil.draw_text(&format!("FPS: {}", fps_counter.count()), Vec2::xy(0, 40));
+        });
     }
 }

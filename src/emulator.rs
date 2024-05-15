@@ -1,3 +1,5 @@
+use std::cmp::{max, min};
+use ruscii::spatial::Vec2;
 use crate::cpu::CPU;
 use crate::rng::{LegacyRNG, ModernRNG, RNGSystem};
 
@@ -15,14 +17,14 @@ enum ItemType {
 }
 
 #[derive(Debug)]
-struct Item {
-    id: u16,
-    position: Position,
-    item_type: ItemType,
+pub struct Item {
+    pub id: u16,
+    pub position: Position,
+    pub item_type: ItemType,
 }
 
 impl Item {
-    fn get_glyph(&self) -> char {
+    pub fn get_glyph(&self) -> char {
         match self.item_type {
             ItemType::Sludge => '*',
             ItemType::CollectionPoint => '$',
@@ -37,12 +39,12 @@ pub struct Tank {
     bounds: Position,
     score: u64,
 
-    rng: Box<dyn RNGSystem>,
+    pub rng: Box<dyn RNGSystem>,
 
     sludge_amount: u8,
     toxic_sludge: Vec<u8>,
 
-    elements: Vec<Option<Item>>,
+    pub elements: Vec<Option<Item>>,
 }
 
 impl Tank {
@@ -65,6 +67,12 @@ impl Tank {
         );
         tank.bots = Self::create_bots(&mut tank);
         tank
+    }
+
+    pub fn tick(&mut self) {
+        for mut bot in &mut self.bots {
+            bot.tick();
+        }
     }
 
     fn create_bots(&mut self) -> Vec<Bot> {
@@ -218,9 +226,12 @@ impl Bot {
 
     pub fn tick(&mut self) {
         // TODO: this is horrible.
+        /*
         let mut wee = self.clone();
         self.cpu.tick(&mut wee);
         *self = wee;
+        */
+        self.travel(0);
     }
 
     pub fn travel(&mut self, direction: u16) {
@@ -232,9 +243,18 @@ impl Bot {
             2 => new_position.x += 1,
             3 => new_position.x -= 1,
             _ => panic!("Travel direction exceeded range ({direction})")
-        }
+        };
+
+        self.energy -= 10;
 
         //self.tank.is_occupied(new_position)
+        //println!("old position is {:#?}", self.position);
+        self.position = new_position;
+        //println!("new position is {:#?}", self.position);
+    }
+
+    pub fn get_glyph(&self) -> char {
+        self.glyph
     }
 }
 
@@ -243,6 +263,15 @@ pub struct Position {
     pub x: u8,
     pub y: u8,
     pub z: u8, // depth
+}
+
+impl From<Position> for Vec2 {
+    fn from(pos: Position) -> Self {
+        Vec2 {
+            x: pos.x as i32,
+            y: pos.y as i32,
+        }
+    }
 }
 
 impl Position {
