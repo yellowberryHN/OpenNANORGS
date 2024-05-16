@@ -22,7 +22,7 @@ pub struct Arguments {
 
     /// Specify # of iterations
     #[arg(short = 'i', long = None, default_value = "1000000", value_name="NUM")]
-    pub iterations: i32,
+    pub iterations: u32,
 
     /// Log organism program trace to specified file
     #[arg(short = 'l', long = None, value_name="PATH")]
@@ -30,7 +30,7 @@ pub struct Arguments {
 
     /// Specify the randomization seed
     #[arg(short = 's', long = None)]
-    pub seed: Option<i32>,
+    pub seed: Option<u32>,
 
     /// Show the disassembly and bytecode for this organism
     #[arg(short = 'z', long = None, default_value_t = false)]

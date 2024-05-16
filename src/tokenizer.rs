@@ -106,7 +106,7 @@ impl From<u16> for InstructionType {
             35 => InstructionType::POKE,
             36 => InstructionType::PEEK,
             37 => InstructionType::CKSUM,
-            _ => InstructionType::NOP,
+            _ => panic!("Not a valid instruction!")
         }
     }
 }
