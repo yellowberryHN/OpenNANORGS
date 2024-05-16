@@ -168,6 +168,22 @@ impl std::fmt::Display for CPUFlags {
     }
 }
 
+macro_rules! simple_math_instr {
+    ($idx:expr, $src:expr, $dest:expr, $bots: expr, $op:tt) => {
+        {
+            let idx: usize = $idx;
+            let src: Operand = $src;
+            let dest: Operand = $dest;
+            let bots: &mut Vec<Bot> = $bots;
+
+            let value = bots[idx].get(&dest) $op bots[idx].get(&src);
+            bots[idx].put(&dest, value);
+            bots[idx].energy -= 1;
+            bots[idx].increment_ip();
+        }
+    };
+}
+
 // Bot Helpers
 impl Bot {
     pub fn new(id: u16, position: Position) -> Bot {
@@ -412,24 +428,24 @@ impl Bot {
                     Bot::jns(idx, op1, bots);
                 }
                 InstructionType::ADD => {
-                    Bot::add(idx, op1, op2, bots);
+                    simple_math_instr!(idx, op1, op2, bots, +);
                 }
                 InstructionType::SUB => {
-                    Bot::sub(idx, op1, op2, bots);
+                    simple_math_instr!(idx, op1, op2, bots, -);
                 }
                 InstructionType::MULT => {
-                    Bot::mult(idx, op1, op2, bots);
+                    simple_math_instr!(idx, op1, op2, bots, *);
                 }
                 // InstructionType::DIV => {},
                 // InstructionType::MOD => {},
                 InstructionType::AND => {
-                    Bot::and(idx, op1, op2, bots);
+                    simple_math_instr!(idx, op1, op2, bots, &);
                 }
                 InstructionType::OR => {
-                    Bot::or(idx, op1, op2, bots);
+                    simple_math_instr!(idx, op1, op2, bots, |);
                 }
                 InstructionType::XOR => {
-                    Bot::xor(idx, op1, op2, bots);
+                    simple_math_instr!(idx, op1, op2, bots, ^);
                 }
                 // InstructionType::CMP => {},
                 // InstructionType::TEST => {},
