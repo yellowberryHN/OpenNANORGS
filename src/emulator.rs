@@ -634,56 +634,6 @@ impl Bot {
 
         bots[idx].flags.success = !failed;
     }
-
-    fn add(idx: usize, dest: Operand, src: Operand, bots: &mut Vec<Bot>) {
-        let value = bots[idx].get(&dest) + bots[idx].get(&src);
-        bots[idx].put(&dest, value);
-        bots[idx].energy -= 1;
-        bots[idx].increment_ip();
-    }
-
-    fn sub(idx: usize, dest: Operand, src: Operand, bots: &mut Vec<Bot>) {
-        let value = bots[idx].get(&dest) - bots[idx].get(&src);
-        bots[idx].put(&dest, value);
-        bots[idx].energy -= 1;
-        bots[idx].increment_ip();
-    }
-
-    fn mult(idx: usize, dest: Operand, src: Operand, bots: &mut Vec<Bot>) {
-        let value = bots[idx].get(&dest) * bots[idx].get(&src);
-        bots[idx].put(&dest, value);
-        bots[idx].energy -= 1;
-        bots[idx].increment_ip();
-    }
-
-    // fn div(idx: usize, dest: Operand, src: Operand, bots: &mut Vec<Bot>) {
-    //     let value = bots[idx].get(&dest) / bots[idx].get(&src);
-    //     bots[idx].put(&dest, value);
-    //     bots[idx].energy -= 1;
-    //     bots[idx].increment_ip();
-    // }
-    //
-
-    fn and(idx: usize, dest: Operand, src: Operand, bots: &mut Vec<Bot>) {
-        let value = bots[idx].get(&dest) & bots[idx].get(&src);
-        bots[idx].put(&dest, value);
-        bots[idx].energy -= 1;
-        bots[idx].increment_ip();
-    }
-
-    fn or(idx: usize, dest: Operand, src: Operand, bots: &mut Vec<Bot>) {
-        let value = bots[idx].get(&dest) | bots[idx].get(&src);
-        bots[idx].put(&dest, value);
-        bots[idx].energy -= 1;
-        bots[idx].increment_ip();
-    }
-
-    fn xor(idx: usize, dest: Operand, src: Operand, bots: &mut Vec<Bot>) {
-        let value = bots[idx].get(&dest) ^ bots[idx].get(&src);
-        bots[idx].put(&dest, value);
-        bots[idx].energy -= 1;
-        bots[idx].increment_ip();
-    }
 }
 
 #[derive(PartialEq, Debug, Copy, Clone)]
