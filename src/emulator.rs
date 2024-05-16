@@ -1,8 +1,10 @@
+use std::cmp::PartialEq;
 use crate::parser::{Operand, Register, Value};
 use crate::rng::{LegacyRNG, ModernRNG, RNGSystem};
 use crate::tokenizer::InstructionType;
 use ruscii::spatial::Vec2;
 use std::fmt::Formatter;
+use std::thread::current;
 
 #[derive(Debug)]
 pub enum ItemType {
@@ -74,9 +76,20 @@ impl Tank {
         });
     }
 
-    fn remove_item(&mut self, pos: &Position) {
+    fn eat_item(&mut self, pos: &Position) -> bool {
         let index = self.get_index(pos);
-        self.elements[index] = None;
+        match &self.elements[index] {
+            Some(item) => {
+                match item.item_type {
+                    ItemType::Sludge => {
+                        self.elements[index] = None;
+                        return false; // TODO: return toxicity
+                    }
+                    _ => panic!("this shouldn't happen")
+                }
+            }
+            None => false
+        }
     }
 
     pub fn get_random_position(&self, rng: &mut Box<dyn RNGSystem>) -> Position {
@@ -108,11 +121,20 @@ impl Tank {
         self.elements[index].as_ref()
     }
 
-    /*fn test_random(&mut self, times: u32) {
-        for _ in 0..times {
-            println!("{}", &self.rng.rand(None));
+    pub fn deposit(&mut self, amount: u16, pos: &Position) -> bool {
+        match self.get_item(pos) {
+            Some(item) => {
+                match item.item_type {
+                    ItemType::Sludge => {
+                        self.score += amount as u64;
+                        return true;
+                    }
+                    _ => false
+                }
+            }
+            None => false
         }
-    }*/
+    }
 }
 
 #[derive(Debug)]
@@ -145,6 +167,13 @@ impl CPUFlags {
             equal: false,
             greater: false,
         }
+    }
+
+    fn clear(&mut self) {
+        self.success = false;
+        self.less = false;
+        self.equal = false;
+        self.greater = false;
     }
 }
 
@@ -343,6 +372,26 @@ impl Bot {
         }
     }
 
+    fn mutate(&mut self, rng: &mut Box<dyn RNGSystem>) {
+        let index = rng.rand(Some(self.program_memory.len() as u32)) as usize;
+        let value = rng.rand(Some(0x1_0000)) as u16;
+        self.program_memory[index] = value;
+    }
+
+    // TODO: this needs bounds handling, probably
+    fn push(&mut self, value: u16) {
+        self.stack_pointer -= 1;
+        self.program_memory[self.stack_pointer as usize] = value;
+    }
+
+    // TODO: this needs bounds handling, probably
+    fn pop(&mut self) -> u16 {
+        let result = self.program_memory[self.stack_pointer as usize];
+        self.stack_pointer += 1;
+
+        result
+    }
+
     pub fn tick(idx: usize, tank: &mut Tank, bots: &mut Vec<Bot>, rng: &mut Box<dyn RNGSystem>) {
         // i'm tired
         if bots[idx].energy < 1 {
@@ -389,43 +438,49 @@ impl Bot {
             let instruction_type = InstructionType::from(instruction_id);
             match instruction_type {
                 InstructionType::NOP => {
-                    bots[idx].energy -= 1;
-                    bots[idx].increment_ip();
+                    Bot::op_nop(idx, bots);
                 }
                 InstructionType::MOV => {
-                    Bot::mov(idx, op1, op2, bots);
-                    bots[idx].increment_ip();
+                    Bot::op_mov(idx, op1, op2, bots);
                 }
-                // InstructionType::PUSH => {},
-                // InstructionType::POP => {},
-                // InstructionType::CALL => {},
-                // InstructionType::RET => {},
+                InstructionType::PUSH => {
+                    Bot::op_push(idx, op1, bots);
+                },
+                InstructionType::POP => {
+                    Bot::op_pop(idx, op1, bots);
+                },
+                InstructionType::CALL => {
+                    Bot::op_call(idx, op1, bots);
+                },
+                InstructionType::RET => {
+                    Bot::op_ret(idx, bots);
+                },
                 InstructionType::JMP => {
-                    Bot::jmp(idx, op1, bots);
+                    Bot::op_jmp(idx, op1, bots);
                 }
                 InstructionType::JL => {
-                    Bot::jl(idx, op1, bots);
+                    Bot::op_jl(idx, op1, bots);
                 }
                 InstructionType::JLE => {
-                    Bot::jle(idx, op1, bots);
+                    Bot::op_jle(idx, op1, bots);
                 }
                 InstructionType::JG => {
-                    Bot::jg(idx, op1, bots);
+                    Bot::op_jg(idx, op1, bots);
                 }
                 InstructionType::JGE => {
-                    Bot::jge(idx, op1, bots);
+                    Bot::op_jge(idx, op1, bots);
                 }
                 InstructionType::JE => {
-                    Bot::je(idx, op1, bots);
+                    Bot::op_je(idx, op1, bots);
                 }
                 InstructionType::JNE => {
-                    Bot::jne(idx, op1, bots);
+                    Bot::op_jne(idx, op1, bots);
                 }
                 InstructionType::JS => {
-                    Bot::js(idx, op1, bots);
+                    Bot::op_js(idx, op1, bots);
                 }
                 InstructionType::JNS => {
-                    Bot::jns(idx, op1, bots);
+                    Bot::op_jns(idx, op1, bots);
                 }
                 InstructionType::ADD => {
                     simple_math_instr!(idx, op1, op2, bots, +);
@@ -436,8 +491,12 @@ impl Bot {
                 InstructionType::MULT => {
                     simple_math_instr!(idx, op1, op2, bots, *);
                 }
-                // InstructionType::DIV => {},
-                // InstructionType::MOD => {},
+                InstructionType::DIV => {
+                    Bot::op_div(idx, op1, op2, bots);
+                },
+                InstructionType::MOD => {
+                    Bot::op_mod(idx, op1, op2, bots);
+                },
                 InstructionType::AND => {
                     simple_math_instr!(idx, op1, op2, bots, &);
                 }
@@ -447,32 +506,51 @@ impl Bot {
                 InstructionType::XOR => {
                     simple_math_instr!(idx, op1, op2, bots, ^);
                 }
-                // InstructionType::CMP => {},
-                // InstructionType::TEST => {},
-                // InstructionType::GETXY => {},
-                // InstructionType::ENERGY => {},
+                InstructionType::CMP => {
+                    Bot::op_cmp(idx, op1, op2, bots);
+                }
+                InstructionType::TEST => {
+                    Bot::op_test(idx, op1, op2, bots);
+                },
+                InstructionType::GETXY => {
+                    Bot::op_getxy(idx, op1, op2, bots);
+                },
+                InstructionType::ENERGY => {
+                    Bot::op_energy(idx, op1, bots);
+                },
                 InstructionType::TRAVEL => {
-                    Bot::travel(idx, op1, tank, bots);
-                    bots[idx].increment_ip();
+                    Bot::op_travel(idx, op1, tank, bots);
                 }
-                // InstructionType::SHL => {},
-                // InstructionType::SHR => {},
-                // InstructionType::SENSE => {},
-                // InstructionType::EAT => {},
+                InstructionType::SHL => {
+                    Bot::op_shl(idx, op1, op2, bots);
+                },
+                InstructionType::SHR => {
+                    Bot::op_shl(idx, op1, op2, bots);
+                },
+                InstructionType::SENSE => {
+                    Bot::op_sense(idx, op1, tank, bots);
+                },
+                InstructionType::EAT => {
+                    Bot::op_eat(idx, tank, rng, bots);
+                },
                 InstructionType::RAND => {
-                    Bot::rand(idx, op1, op2, rng, bots);
-                    bots[idx].increment_ip();
+                    Bot::op_rand(idx, op1, op2, rng, bots);
                 }
-                // InstructionType::RELEASE => {},
-                // InstructionType::CHARGE => {},
-                // InstructionType::POKE => {},
-                // InstructionType::PEEK => {},
+                InstructionType::RELEASE => {
+                    Bot::op_release(idx, op1, tank, bots);
+                },
+                InstructionType::CHARGE => {
+                    Bot::op_charge(idx, op1, op2, tank, bots);
+                },
+                InstructionType::POKE => {
+                    Bot::op_poke(idx, op1, op2, tank, bots);
+                },
+                InstructionType::PEEK => {
+                    Bot::op_peek(idx, op1, op2, tank, bots);
+                },
                 // InstructionType::CKSUM => {},
-                _ => {
-                    // not an instruction, do nothing
-                    bots[idx].energy -= 1;
-                    bots[idx].increment_ip();
-                }
+                // not an instruction, do nothing
+                _ => Bot::op_nop(idx, bots)
             }
         } else {
             return;
@@ -482,114 +560,213 @@ impl Bot {
 
 // Bot Instructions
 impl Bot {
-    fn getid(idx: usize, bots: &Vec<Bot>) -> u16 {
-        bots[idx].id
+    fn op_nop(idx: usize, bots: &mut Vec<Bot>) {
+        bots[idx].energy -= 1;
+        bots[idx].increment_ip();
     }
 
-    fn mov(idx: usize, to: Operand, from: Operand, bots: &mut Vec<Bot>) {
+    fn op_mov(idx: usize, to: Operand, from: Operand, bots: &mut Vec<Bot>) {
         let data = bots[idx].get(&from);
         bots[idx].put(&to, data);
         bots[idx].energy -= 1;
+        bots[idx].increment_ip();
     }
 
-    fn jmp(idx: usize, to: Operand, bots: &mut Vec<Bot>) {
-        bots[idx].jump_to(to);
+    fn op_push(idx: usize, src: Operand, bots: &mut Vec<Bot>) {
+        let value = bots[idx].get(&src);
+        bots[idx].push(value);
         bots[idx].energy -= 1;
+        bots[idx].increment_ip();
     }
 
-    fn jl(idx: usize, to: Operand, bots: &mut Vec<Bot>) {
+    fn op_pop(idx: usize, dest: Operand, bots: &mut Vec<Bot>) {
+        let value = bots[idx].pop();
+        bots[idx].put(&dest, value);
+        bots[idx].energy -= 1;
+        bots[idx].increment_ip();
+    }
+
+    fn op_call(idx: usize, to: Operand, bots: &mut Vec<Bot>) {
+        bots[idx].energy -= 1;
+        let next_ip = bots[idx].instruction_pointer + 3;
+        bots[idx].push(next_ip);
+        bots[idx].jump_to(to);
+    }
+
+    fn op_ret(idx: usize, bots: &mut Vec<Bot>) {
+        bots[idx].energy -= 1;
+        let address = bots[idx].pop();
+        bots[idx].jump_to(Operand::Direct(Value::Number(address)));
+    }
+
+    fn op_jmp(idx: usize, to: Operand, bots: &mut Vec<Bot>) {
+        bots[idx].energy -= 1;
+        bots[idx].jump_to(to);
+    }
+
+    fn op_jl(idx: usize, to: Operand, bots: &mut Vec<Bot>) {
+        bots[idx].energy -= 1;
+
         if bots[idx].flags.less {
             bots[idx].jump_to(to);
         } else {
             bots[idx].increment_ip();
         }
-        bots[idx].energy -= 1;
+
     }
 
-    fn jle(idx: usize, to: Operand, bots: &mut Vec<Bot>) {
+    fn op_jle(idx: usize, to: Operand, bots: &mut Vec<Bot>) {
+        bots[idx].energy -= 1;
+
         if bots[idx].flags.less || bots[idx].flags.equal {
             bots[idx].jump_to(to);
         } else {
             bots[idx].increment_ip();
         }
-        bots[idx].energy -= 1;
     }
 
-    fn jg(idx: usize, to: Operand, bots: &mut Vec<Bot>) {
+    fn op_jg(idx: usize, to: Operand, bots: &mut Vec<Bot>) {
+        bots[idx].energy -= 1;
+
         if bots[idx].flags.greater {
             bots[idx].jump_to(to);
         } else {
             bots[idx].increment_ip();
         }
-        bots[idx].energy -= 1;
     }
 
-    fn jge(idx: usize, to: Operand, bots: &mut Vec<Bot>) {
+    fn op_jge(idx: usize, to: Operand, bots: &mut Vec<Bot>) {
+        bots[idx].energy -= 1;
+
         if bots[idx].flags.greater || bots[idx].flags.equal {
             bots[idx].jump_to(to);
         } else {
             bots[idx].increment_ip();
         }
-        bots[idx].energy -= 1;
     }
 
-    fn je(idx: usize, to: Operand, bots: &mut Vec<Bot>) {
+    fn op_je(idx: usize, to: Operand, bots: &mut Vec<Bot>) {
+        bots[idx].energy -= 1;
+
         if bots[idx].flags.equal {
             bots[idx].jump_to(to);
         } else {
             bots[idx].increment_ip();
         }
-        bots[idx].energy -= 1;
     }
 
-    fn jne(idx: usize, to: Operand, bots: &mut Vec<Bot>) {
+    fn op_jne(idx: usize, to: Operand, bots: &mut Vec<Bot>) {
+        bots[idx].energy -= 1;
+
         if !bots[idx].flags.equal {
             bots[idx].jump_to(to);
         } else {
             bots[idx].increment_ip();
         }
-        bots[idx].energy -= 1;
     }
 
-    fn js(idx: usize, to: Operand, bots: &mut Vec<Bot>) {
+    fn op_js(idx: usize, to: Operand, bots: &mut Vec<Bot>) {
+        bots[idx].energy -= 1;
+
         if bots[idx].flags.success {
             bots[idx].jump_to(to);
         } else {
             bots[idx].increment_ip();
         }
-        bots[idx].energy -= 1;
     }
 
-    fn jns(idx: usize, to: Operand, bots: &mut Vec<Bot>) {
+    fn op_jns(idx: usize, to: Operand, bots: &mut Vec<Bot>) {
+        bots[idx].energy -= 1;
+
         if !bots[idx].flags.success {
             bots[idx].jump_to(to);
         } else {
             bots[idx].increment_ip();
         }
-        bots[idx].energy -= 1;
     }
 
-    fn rand(
-        idx: usize,
-        to: Operand,
-        max: Operand,
-        rng: &mut Box<dyn RNGSystem>,
-        bots: &mut Vec<Bot>,
-    ) {
-        let max = bots[idx].get(&max);
-        let result = rng.rand(Some(max as u32)) as u16;
-
-        bots[idx].put(&to, result);
-
+    fn op_div(idx: usize, dest: Operand, src: Operand, bots: &mut Vec<Bot>) {
+        let divisor = bots[idx].get(&src);
+        if divisor == 0 {
+            Bot::op_nop(idx, bots);
+            return;
+        }
+        let value = bots[idx].get(&dest) / divisor;
+        bots[idx].put(&dest, value);
         bots[idx].energy -= 1;
+        bots[idx].increment_ip();
     }
 
-    fn travel(idx: usize, direction: Operand, tank: &Tank, bots: &mut Vec<Bot>) {
+    fn op_mod(idx: usize, dest: Operand, src: Operand, bots: &mut Vec<Bot>) {
+        let divisor = bots[idx].get(&src);
+        if divisor == 0 {
+            Bot::op_nop(idx, bots);
+            return;
+        }
+        let value = bots[idx].get(&dest) % divisor;
+        bots[idx].put(&dest, value);
+        bots[idx].energy -= 1;
+        bots[idx].increment_ip();
+    }
+
+    fn op_cmp(idx: usize, op1: Operand, op2: Operand, bots: &mut Vec<Bot>) {
+        let lhs = bots[idx].get(&op1);
+        let rhs = bots[idx].get(&op2);
+
+        bots[idx].flags.clear();
+
+        if lhs < rhs {
+            bots[idx].flags.less = true;
+        } else if lhs > rhs {
+            bots[idx].flags.greater = true;
+        }
+
+        if lhs == rhs {
+            bots[idx].flags.equal = true;
+        }
+
+        bots[idx].energy -= 1;
+        bots[idx].increment_ip();
+    }
+
+    fn op_test(idx: usize, op1: Operand, op2: Operand, bots: &mut Vec<Bot>) {
+        let lhs = bots[idx].get(&op1);
+        let rhs = bots[idx].get(&op2);
+
+        bots[idx].flags.clear();
+
+        if lhs & rhs == 0 {
+            bots[idx].flags.equal = true;
+        }
+
+        bots[idx].energy -= 1;
+        bots[idx].increment_ip();
+    }
+
+    fn op_getxy(idx: usize, destx: Operand, desty: Operand, bots: &mut Vec<Bot>) {
+        let pos = bots[idx].position;
+        bots[idx].put(&destx, pos.x as u16);
+        bots[idx].put(&desty, pos.y as u16);
+
+        bots[idx].energy -= 1;
+        bots[idx].increment_ip();
+    }
+
+    fn op_energy(idx: usize, dest: Operand, bots: &mut Vec<Bot>) {
+        let energy = bots[idx].energy;
+        bots[idx].put(&dest, energy);
+
+        bots[idx].energy -= 1;
+        bots[idx].increment_ip();
+    }
+
+    fn op_travel(idx: usize, direction: Operand, tank: &Tank, bots: &mut Vec<Bot>) {
         let mut new_position = bots[idx].position.clone();
         let mut failed: bool = false;
 
         let direction = bots[idx].get(&direction);
 
+        // TODO: break direction check out into a function, for charge/peek/poke
         match direction % 4 {
             0 => {
                 if new_position.y == 0 {
@@ -633,6 +810,188 @@ impl Bot {
         }
 
         bots[idx].flags.success = !failed;
+
+        bots[idx].increment_ip();
+    }
+
+    fn op_shl(idx: usize, dest: Operand, amount: Operand, bots: &mut Vec<Bot>) {
+        let mut result = bots[idx].get(&dest);
+
+        result = result.wrapping_shl(bots[idx].get(&amount) as u32);
+
+        bots[idx].put(&dest, result);
+
+        bots[idx].energy -= 1;
+        bots[idx].increment_ip();
+    }
+
+    fn op_shr(idx: usize, dest: Operand, amount: Operand, bots: &mut Vec<Bot>) {
+        let mut result = bots[idx].get(&dest);
+
+        result = result.wrapping_shr(bots[idx].get(&amount) as u32);
+
+        bots[idx].put(&dest, result);
+
+        bots[idx].energy -= 1;
+        bots[idx].increment_ip();
+    }
+
+    fn op_sense(idx: usize, dest: Operand, tank: &Tank, bots: &mut Vec<Bot>) {
+        let pos = &bots[idx].position;
+        let tile = tank.get_item(pos);
+        match tile {
+            Some(tile) => {
+                bots[idx].put(&dest, tile.id);
+                bots[idx].flags.success = true;
+            },
+            None => {
+                bots[idx].put(&dest, 0);
+                bots[idx].flags.success = false;
+            }
+        }
+
+        bots[idx].energy -= 1;
+        bots[idx].increment_ip();
+    }
+
+    fn op_eat(idx: usize, tank: &mut Tank, rng: &mut Box<dyn RNGSystem>, bots: &mut Vec<Bot>) {
+        let pos = &bots[idx].position;
+        let current_energy = bots[idx].energy;
+
+        if current_energy + 2000 > 0xFFFF {
+            bots[idx].flags.success = false;
+        } else {
+            let tile = tank.get_item(pos);
+            match tile {
+                Some(tile) => {
+                    match tile.item_type {
+                        ItemType::Sludge => {
+                            if tank.eat_item(pos) {
+                                bots[idx].mutate(rng);
+                            }
+                            bots[idx].flags.success = true;
+                            bots[idx].energy += 2000;
+                        }
+                        _ => bots[idx].flags.success = false
+                    }
+                },
+                None => {
+                    bots[idx].flags.success = false;
+                }
+            }
+        }
+
+        bots[idx].energy -= 1;
+        bots[idx].increment_ip();
+    }
+
+    fn op_rand(idx: usize, to: Operand, max: Operand,
+               rng: &mut Box<dyn RNGSystem>, bots: &mut Vec<Bot>
+    ) {
+        let max = bots[idx].get(&max);
+        let result = rng.rand(Some(max as u32)) as u16;
+
+        bots[idx].put(&to, result);
+
+        bots[idx].energy -= 1;
+        bots[idx].increment_ip();
+    }
+
+    fn op_release(idx: usize, amount: Operand, tank: &mut Tank, bots: &mut Vec<Bot>) {
+        let pos = bots[idx].position.clone();
+        let current_energy = bots[idx].energy;
+        let amount = bots[idx].get(&amount);
+
+        if current_energy + 1 < amount {
+            bots[idx].flags.success = false;
+        } else {
+            bots[idx].energy -= amount;
+            bots[idx].flags.success = tank.deposit(amount, &pos);
+        }
+
+        bots[idx].energy -= 1;
+        bots[idx].increment_ip();
+    }
+
+    fn op_charge(idx: usize, direction: Operand, amount: Operand, tank: &Tank, bots: &mut Vec<Bot>) {
+        let pos = bots[idx].position.clone();
+        let current_energy = bots[idx].energy;
+
+        let amount = bots[idx].get(&amount);
+
+        if current_energy + 1 < amount {
+            bots[idx].flags.success = false;
+        } else {
+            let direction = bots[idx].get(&direction);
+            let mut new_position = bots[idx].position.clone();
+
+            match direction % 4 {
+                0 => {
+                    if new_position.y == 0 {
+                        bots[idx].flags.success = false;
+                    } else {
+                        new_position.y -= 1;
+                    }
+                }
+                1 => {
+                    if new_position.y == tank.bounds.y - 1 {
+                        bots[idx].flags.success = false;
+                    } else {
+                        new_position.y += 1;
+                    }
+                }
+                2 => {
+                    if new_position.x == tank.bounds.x - 1 {
+                        bots[idx].flags.success = false;
+                    } else {
+                        new_position.x += 1;
+                    }
+                }
+                3 => {
+                    if new_position.x == 0 {
+                        bots[idx].flags.success = false;
+                    } else {
+                        new_position.x -= 1;
+                    }
+                }
+                _ => bots[idx].flags.success = false,
+            };
+
+            if pos != new_position {
+                let other_bot_idx = Bot::occupied_by(&new_position, bots) as usize;
+                if other_bot_idx != 0xFFFF {
+                    let other_bot_energy = bots[other_bot_idx].energy;
+
+                    if other_bot_energy + amount > 0xFFFF {
+                        bots[idx].flags.success = false;
+                    } else {
+                        bots[idx].energy -= amount;
+                        bots[other_bot_idx].energy += amount;
+                        bots[idx].flags.success = true;
+                    }
+                }
+            } else {
+                bots[idx].flags.success = false;
+            }
+        }
+
+        bots[idx].energy -= 1;
+        bots[idx].increment_ip();
+    }
+
+    fn op_poke(idx: usize, direction: Operand, offset: Operand, tank: &Tank, bots: &mut Vec<Bot>) {
+        todo!()
+    }
+
+    fn op_peek(idx: usize, dest: Operand, amount: Operand, tank: &Tank, bots: &mut Vec<Bot>) {
+        todo!()
+    }
+
+    // Extended Instruction Set (WIP)
+
+    fn op_getid(idx: usize, dest: Operand, bots: &mut Vec<Bot>) {
+        let id = bots[idx].id;
+        bots[idx].put(&dest, id);
     }
 }
 
@@ -641,6 +1000,14 @@ pub struct Position {
     pub x: u8,
     pub y: u8,
     pub z: u8, // depth
+}
+
+impl PartialEq<Position> for &Position {
+    fn eq(&self, other: &Position) -> bool {
+        self.x == other.x
+        && self.y == other.y
+        && self.z == other.z
+    }
 }
 
 impl From<Position> for Vec2 {
