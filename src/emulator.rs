@@ -1,10 +1,9 @@
-use std::cmp::PartialEq;
 use crate::parser::{Operand, Register, Value};
 use crate::rng::{LegacyRNG, ModernRNG, RNGSystem};
 use crate::tokenizer::InstructionType;
 use ruscii::spatial::Vec2;
+use std::cmp::PartialEq;
 use std::fmt::Formatter;
-use std::thread::current;
 
 #[derive(Debug)]
 pub enum ItemType {
@@ -85,10 +84,10 @@ impl Tank {
                         self.elements[index] = None;
                         return false; // TODO: return toxicity
                     }
-                    _ => panic!("this shouldn't happen")
+                    _ => panic!("this shouldn't happen"),
                 }
             }
-            None => false
+            None => false,
         }
     }
 
@@ -123,16 +122,14 @@ impl Tank {
 
     pub fn deposit(&mut self, amount: u16, pos: &Position) -> bool {
         match self.get_item(pos) {
-            Some(item) => {
-                match item.item_type {
-                    ItemType::Sludge => {
-                        self.score += amount as u64;
-                        return true;
-                    }
-                    _ => false
+            Some(item) => match item.item_type {
+                ItemType::Sludge => {
+                    self.score += amount as u64;
+                    return true;
                 }
-            }
-            None => false
+                _ => false,
+            },
+            None => false,
         }
     }
 }
@@ -198,7 +195,7 @@ impl std::fmt::Display for CPUFlags {
 }
 
 macro_rules! simple_math_instr {
-    ($idx:expr, $src:expr, $dest:expr, $bots: expr, $op:tt) => {
+    ($idx:expr, $dest:expr, $src:expr, $bots:expr, $op:tt) => {
         {
             let idx: usize = $idx;
             let src: Operand = $src;
@@ -353,7 +350,10 @@ impl Bot {
                 Register::SP => self.stack_pointer = value,
                 _ => self.registers[u16::from(reg.clone()) as usize] = value,
             },
-            Operand::ImmediateValue(_) => panic!("Attempt to put something into immediate value"),
+            Operand::ImmediateValue(_) => {
+                // eprintln!("{}", self.stack_pointer);
+                panic!("Attempt to put something into immediate value");
+            }
             Operand::RegisterIndexedDirect(_, _, _) => todo!(),
         };
     }
@@ -386,6 +386,10 @@ impl Bot {
 
     // TODO: this needs bounds handling, probably
     fn pop(&mut self) -> u16 {
+        if self.stack_pointer >= 3600 {
+            return 0;
+        }
+
         let result = self.program_memory[self.stack_pointer as usize];
         self.stack_pointer += 1;
 
@@ -429,6 +433,12 @@ impl Bot {
                 1 => Operand::Register(op2_value.into()),
                 2 => Operand::ImmediateValue(Value::Number(op2_value)),
                 3 => {
+                    eprintln!(
+                        "{:#?}, {:?}, {:?}",
+                        InstructionType::from(instruction_id),
+                        op1,
+                        op2_value
+                    );
                     todo!("I don't feel like doing this right now.");
                     //Operand::RegisterIndexedDirect(_, _, _)
                 }
@@ -436,6 +446,7 @@ impl Bot {
             };
 
             let instruction_type = InstructionType::from(instruction_id);
+            // eprintln!("{:#?} - {:?} {:?}", instruction_type, op1, op2);
             match instruction_type {
                 InstructionType::NOP => {
                     Bot::op_nop(idx, bots);
@@ -445,16 +456,16 @@ impl Bot {
                 }
                 InstructionType::PUSH => {
                     Bot::op_push(idx, op1, bots);
-                },
+                }
                 InstructionType::POP => {
                     Bot::op_pop(idx, op1, bots);
-                },
+                }
                 InstructionType::CALL => {
                     Bot::op_call(idx, op1, bots);
-                },
+                }
                 InstructionType::RET => {
                     Bot::op_ret(idx, bots);
-                },
+                }
                 InstructionType::JMP => {
                     Bot::op_jmp(idx, op1, bots);
                 }
@@ -493,10 +504,10 @@ impl Bot {
                 }
                 InstructionType::DIV => {
                     Bot::op_div(idx, op1, op2, bots);
-                },
+                }
                 InstructionType::MOD => {
                     Bot::op_mod(idx, op1, op2, bots);
-                },
+                }
                 InstructionType::AND => {
                     simple_math_instr!(idx, op1, op2, bots, &);
                 }
@@ -511,46 +522,46 @@ impl Bot {
                 }
                 InstructionType::TEST => {
                     Bot::op_test(idx, op1, op2, bots);
-                },
+                }
                 InstructionType::GETXY => {
                     Bot::op_getxy(idx, op1, op2, bots);
-                },
+                }
                 InstructionType::ENERGY => {
                     Bot::op_energy(idx, op1, bots);
-                },
+                }
                 InstructionType::TRAVEL => {
                     Bot::op_travel(idx, op1, tank, bots);
                 }
                 InstructionType::SHL => {
                     Bot::op_shl(idx, op1, op2, bots);
-                },
+                }
                 InstructionType::SHR => {
                     Bot::op_shl(idx, op1, op2, bots);
-                },
+                }
                 InstructionType::SENSE => {
                     Bot::op_sense(idx, op1, tank, bots);
-                },
+                }
                 InstructionType::EAT => {
                     Bot::op_eat(idx, tank, rng, bots);
-                },
+                }
                 InstructionType::RAND => {
                     Bot::op_rand(idx, op1, op2, rng, bots);
                 }
                 InstructionType::RELEASE => {
                     Bot::op_release(idx, op1, tank, bots);
-                },
+                }
                 InstructionType::CHARGE => {
                     Bot::op_charge(idx, op1, op2, tank, bots);
-                },
+                }
                 InstructionType::POKE => {
                     Bot::op_poke(idx, op1, op2, tank, bots);
-                },
+                }
                 InstructionType::PEEK => {
                     Bot::op_peek(idx, op1, op2, tank, bots);
-                },
+                }
                 // InstructionType::CKSUM => {},
                 // not an instruction, do nothing
-                _ => Bot::op_nop(idx, bots)
+                _ => Bot::op_nop(idx, bots),
             }
         } else {
             return;
@@ -612,7 +623,6 @@ impl Bot {
         } else {
             bots[idx].increment_ip();
         }
-
     }
 
     fn op_jle(idx: usize, to: Operand, bots: &mut Vec<Bot>) {
@@ -843,7 +853,7 @@ impl Bot {
             Some(tile) => {
                 bots[idx].put(&dest, tile.id);
                 bots[idx].flags.success = true;
-            },
+            }
             None => {
                 bots[idx].put(&dest, 0);
                 bots[idx].flags.success = false;
@@ -863,17 +873,15 @@ impl Bot {
         } else {
             let tile = tank.get_item(pos);
             match tile {
-                Some(tile) => {
-                    match tile.item_type {
-                        ItemType::Sludge => {
-                            if tank.eat_item(pos) {
-                                bots[idx].mutate(rng);
-                            }
-                            bots[idx].flags.success = true;
-                            bots[idx].energy += 2000;
+                Some(tile) => match tile.item_type {
+                    ItemType::Sludge => {
+                        if tank.eat_item(pos) {
+                            bots[idx].mutate(rng);
                         }
-                        _ => bots[idx].flags.success = false
+                        bots[idx].flags.success = true;
+                        bots[idx].energy += 2000;
                     }
+                    _ => bots[idx].flags.success = false,
                 },
                 None => {
                     bots[idx].flags.success = false;
@@ -885,8 +893,12 @@ impl Bot {
         bots[idx].increment_ip();
     }
 
-    fn op_rand(idx: usize, to: Operand, max: Operand,
-               rng: &mut Box<dyn RNGSystem>, bots: &mut Vec<Bot>
+    fn op_rand(
+        idx: usize,
+        to: Operand,
+        max: Operand,
+        rng: &mut Box<dyn RNGSystem>,
+        bots: &mut Vec<Bot>,
     ) {
         let max = bots[idx].get(&max);
         let result = rng.rand(Some(max as u32)) as u16;
@@ -913,7 +925,13 @@ impl Bot {
         bots[idx].increment_ip();
     }
 
-    fn op_charge(idx: usize, direction: Operand, amount: Operand, tank: &Tank, bots: &mut Vec<Bot>) {
+    fn op_charge(
+        idx: usize,
+        direction: Operand,
+        amount: Operand,
+        tank: &Tank,
+        bots: &mut Vec<Bot>,
+    ) {
         let pos = bots[idx].position.clone();
         let current_energy = bots[idx].energy;
 
@@ -1004,9 +1022,7 @@ pub struct Position {
 
 impl PartialEq<Position> for &Position {
     fn eq(&self, other: &Position) -> bool {
-        self.x == other.x
-        && self.y == other.y
-        && self.z == other.z
+        self.x == other.x && self.y == other.y && self.z == other.z
     }
 }
 
@@ -1088,7 +1104,7 @@ impl Emulator {
             };
 
             let mut bot = Bot::new(id | 0x100, pos);
-            bot.flash_drone();
+            // bot.flash_drone();
             bots.push(bot);
         }
 

@@ -16,11 +16,11 @@ use crate::emulator::{Bot, Emulator, Item, ItemType, Position, Tank};
 use byteorder::{BigEndian, WriteBytesExt};
 use clap::Parser as clapParse;
 use ruscii::app::{App, Config, State};
+use ruscii::drawing::Pencil;
+use ruscii::gui::FPSCounter;
+use ruscii::keyboard::{Key, KeyEvent};
+use ruscii::spatial::Vec2;
 use ruscii::terminal::{Color, Window};
-use ruscii::drawing::{Pencil};
-use ruscii::keyboard::{KeyEvent, Key};
-use ruscii::spatial::{Vec2};
-use ruscii::gui::{FPSCounter};
 use std::fs;
 use std::fs::File;
 use std::io::Write;
@@ -29,7 +29,15 @@ use std::time::{Instant, SystemTime};
 fn main() {
     let mut args = Arguments::parse();
 
-    if args.seed.is_none() { args.seed = Some((SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_secs() % u32::MAX as u64) as u32); }
+    if args.seed.is_none() {
+        args.seed = Some(
+            (SystemTime::now()
+                .duration_since(SystemTime::UNIX_EPOCH)
+                .unwrap()
+                .as_secs()
+                % u32::MAX as u64) as u32,
+        );
+    }
 
     let compiler = Compiler::new_from_file(&args.bot_path, args.verbose);
 
@@ -149,7 +157,7 @@ fn main() {
 
             let debug_bot_id = match args.debug_bot {
                 Some(glyph) => Bot::id_from_glyph(glyph),
-                None => 0
+                None => 0,
             };
 
             for bot in &emulator.bots {
@@ -167,8 +175,17 @@ fn main() {
             pencil.set_foreground(Color::White);
             pencil.draw_text(&format!("FPS: {}", fps_counter.count()), Vec2::xy(0, 40));
             pencil.draw_text(&format!("Seed: {}", &args.seed.unwrap()), Vec2::xy(0, 41));
-            pencil.draw_text(&format!("Bot[0] IP: {}, Flags: {}", emulator.bots[0].instruction_pointer, emulator.bots[0].flags), Vec2::xy(0, 42));
-            pencil.draw_text(&format!("Bot[0] Registers: {:?}", emulator.bots[0].registers), Vec2::xy(0, 43));
+            pencil.draw_text(
+                &format!(
+                    "Bot[0] IP: {}, Flags: {}",
+                    emulator.bots[0].instruction_pointer, emulator.bots[0].flags
+                ),
+                Vec2::xy(0, 42),
+            );
+            pencil.draw_text(
+                &format!("Bot[0] Registers: {:?}", emulator.bots[0].registers),
+                Vec2::xy(0, 43),
+            );
         });
     }
 
@@ -179,16 +196,25 @@ fn main() {
         for bot in &emulator.bots {
             match bot.id {
                 1..=50 => {
-                    if !bot.sleeping {live_bots += 1}
-                },
+                    if !bot.sleeping {
+                        live_bots += 1
+                    }
+                }
                 _ => {
-                    if !bot.sleeping {live_drones += 1}
-                },
+                    if !bot.sleeping {
+                        live_drones += 1
+                    }
+                }
             }
         }
-        
+
         println!("Bot Info: <not implemented>"); // TODO: grab info line
         println!("Final score: {}", emulator.tank.score);
-        println!("Live bots: {}, Live drones: {}, Seed: {}", live_bots, live_drones, emulator.rng.get_seed())
+        println!(
+            "Live bots: {}, Live drones: {}, Seed: {}",
+            live_bots,
+            live_drones,
+            emulator.rng.get_seed()
+        )
     }
 }
