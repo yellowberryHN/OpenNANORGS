@@ -12,10 +12,10 @@ pub mod tokenizer;
 use crate::cli::Arguments;
 use crate::compiler::Compiler;
 use crate::disassembler::Disassembler;
-use crate::emulator::{Bot, Emulator, Item, Position, Tank};
+use crate::emulator::{Bot, Emulator, Item, ItemType, Position, Tank};
 use byteorder::{BigEndian, WriteBytesExt};
 use clap::Parser as clapParse;
-use ruscii::app::{App, State};
+use ruscii::app::{App, Config, State};
 use ruscii::terminal::{Color, Window};
 use ruscii::drawing::{Pencil};
 use ruscii::keyboard::{KeyEvent, Key};
@@ -24,7 +24,7 @@ use ruscii::gui::{FPSCounter};
 use std::fs;
 use std::fs::File;
 use std::io::Write;
-use std::time::SystemTime;
+use std::time::{Instant, SystemTime};
 
 fn main() {
     let mut args = Arguments::parse();
@@ -101,50 +101,94 @@ fn main() {
 
     let mut emulator = Emulator::new(&compiler.output, args.iterations, args.seed.unwrap(), false);
 
-    let mut fps_counter = FPSCounter::default();
-    let mut app = App::default();
-
-    app.run(|app_state: &mut State, window: &mut Window| {
-        // TODO: this is moderately annoying, figure out how to allow Ctrl+C
-        for key_event in app_state.keyboard().last_key_events() {
-            match key_event {
-                KeyEvent::Pressed(Key::Esc) => app_state.stop(),
-                KeyEvent::Pressed(Key::Q) => app_state.stop(),
-                _ => (),
-            }
+    if args.quiet_mode {
+        let now = Instant::now();
+        while emulator.current_tick < emulator.iterations {
+            emulator.tick()
         }
+        println!("done in {}ms", now.elapsed().as_millis())
+    } else {
+        let mut fps_counter = FPSCounter::default();
+        let mut app = App::config(Config::fps(Config::new(), 60));
 
-        fps_counter.update();
-        emulator.tick();
-
-        let mut pencil = Pencil::new(window.canvas_mut());
-
-        for element in &emulator.tank.elements {
-            let element = element.as_ref();
-            match element {
-                Some(element) => {
-                    pencil.draw_char(element.get_glyph(), element.position.into());
+        app.run(|app_state: &mut State, window: &mut Window| {
+            // TODO: this is moderately annoying, figure out how to allow Ctrl+C
+            for key_event in app_state.keyboard().last_key_events() {
+                match key_event {
+                    KeyEvent::Pressed(Key::Esc) => app_state.stop(),
+                    KeyEvent::Pressed(Key::Q) => app_state.stop(),
+                    _ => (),
                 }
-                None => {}
             }
-        }
 
-        let debug_bot_id = match args.debug_bot {
-            Some(glyph) => Bot::id_from_glyph(glyph),
-            None => 0
-        };
+            fps_counter.update();
+
+            if emulator.current_tick < emulator.iterations {
+                emulator.tick();
+            } else {
+                app_state.stop()
+            }
+
+            let mut pencil = Pencil::new(window.canvas_mut());
+
+            for element in &emulator.tank.elements {
+                let element = element.as_ref();
+                match element {
+                    Some(element) => {
+                        match element.item_type {
+                            ItemType::Sludge => pencil.set_foreground(Color::Grey),
+                            ItemType::CollectionPoint => pencil.set_foreground(Color::Xterm(6)),
+                            ItemType::Ramp => pencil.set_foreground(Color::DarkGrey),
+                        };
+
+                        pencil.draw_char(element.get_glyph(), element.position.into());
+                    }
+                    None => {}
+                }
+            }
+
+            let debug_bot_id = match args.debug_bot {
+                Some(glyph) => Bot::id_from_glyph(glyph),
+                None => 0
+            };
+
+            for bot in &emulator.bots {
+                if debug_bot_id > 0 && bot.id == debug_bot_id {
+                    pencil.set_foreground(Color::Xterm(172));
+                } else if bot.id > 50 {
+                    pencil.set_foreground(Color::Xterm(1));
+                } else {
+                    pencil.set_foreground(Color::White);
+                }
+
+                pencil.draw_char(bot.get_glyph(), bot.position.into());
+            }
+
+            pencil.set_foreground(Color::White);
+            pencil.draw_text(&format!("FPS: {}", fps_counter.count()), Vec2::xy(0, 40));
+            pencil.draw_text(&format!("Seed: {}", &args.seed.unwrap()), Vec2::xy(0, 41));
+            pencil.draw_text(&format!("Bot[0] IP: {}, Flags: {}", emulator.bots[0].instruction_pointer, emulator.bots[0].flags), Vec2::xy(0, 42));
+            pencil.draw_text(&format!("Bot[0] Registers: {:?}", emulator.bots[0].registers), Vec2::xy(0, 43));
+        });
+    }
+
+    if emulator.current_tick == emulator.iterations {
+        let mut live_bots = 0;
+        let mut live_drones = 0;
 
         for bot in &emulator.bots {
-            if debug_bot_id > 0 && bot.id == debug_bot_id {
-                pencil.set_foreground(Color::Red);
-            } else {
-                pencil.set_foreground(Color::White);
+            match bot.id {
+                1..=50 => {
+                    if !bot.sleeping {live_bots += 1}
+                },
+                _ => {
+                    if !bot.sleeping {live_drones += 1}
+                },
             }
-            pencil.draw_char(bot.get_glyph(), bot.position.into());
         }
-
-        pencil.draw_text(&format!("FPS: {}", fps_counter.count()), Vec2::xy(0, 40));
-        pencil.draw_text(&format!("Seed: {}", &args.seed.unwrap()), Vec2::xy(0, 41));
-        pencil.draw_text(&format!("Bot[0] IP: {}", emulator.bots[0].instruction_pointer), Vec2::xy(0, 42));
-    });
+        
+        println!("Bot Info: <not implemented>"); // TODO: grab info line
+        println!("Final score: {}", emulator.tank.score);
+        println!("Live bots: {}, Live drones: {}, Seed: {}", live_bots, live_drones, emulator.rng.get_seed())
+    }
 }

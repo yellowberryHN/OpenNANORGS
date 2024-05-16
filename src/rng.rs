@@ -6,6 +6,8 @@ use rand_chacha::rand_core::RngCore;
 
 pub trait RNGSystem: Debug {
     fn rand(&mut self, max: Option<u32>) -> u32;
+
+    fn get_seed(&self) -> u32;
 }
 
 #[derive(Debug)]
@@ -28,6 +30,10 @@ impl RNGSystem for LegacyRNG {
             Some(_) => {self.state % (max.unwrap()+1)}
         }
     }
+
+    fn get_seed(&self) -> u32 {
+        self.initial_seed
+    }
 }
 
 #[derive(Debug)]
@@ -48,5 +54,9 @@ impl RNGSystem for ModernRNG {
             None => {self.rng.next_u32()}
             Some(max) => {self.rng.gen_range(0..=max)}
         }
+    }
+
+    fn get_seed(&self) -> u32 {
+        self.initial_seed
     }
 }

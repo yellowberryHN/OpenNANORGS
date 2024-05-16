@@ -1,11 +1,11 @@
-use std::cmp::min;
+use std::fmt::Formatter;
 use ruscii::spatial::Vec2;
-use crate::disassembler::Disassembler;
+use crate::parser::{Operand, Register, Value};
 use crate::rng::{LegacyRNG, ModernRNG, RNGSystem};
 use crate::tokenizer::InstructionType;
 
 #[derive(Debug)]
-enum ItemType {
+pub enum ItemType {
     Sludge,
     CollectionPoint,
     Ramp,
@@ -31,7 +31,7 @@ impl Item {
 #[derive(Debug)]
 pub struct Tank {
     bounds: Position,
-    score: u64,
+    pub score: u64,
     sludge_types: u8,
     toxic_sludge: Vec<u8>,
     pub elements: Vec<Option<Item>>,
@@ -115,18 +115,51 @@ impl Tank {
     }*/
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Bot {
     pub id: u16,
     pub position: Position,
     pub energy: u16,
-    sleeping: bool,
+    pub sleeping: bool,
 
     // CPU related
-    pub(crate) instruction_pointer: u16,
+    pub instruction_pointer: u16,
     stack_pointer: u16,
-    registers: [u16; 14],
+    pub registers: [u16; 14],
     program_memory: [u16; 3600],
+    pub flags: CPUFlags
+}
+#[derive(Debug)]
+pub struct CPUFlags {
+    pub success: bool,
+    pub less: bool,
+    pub equal: bool,
+    pub greater: bool
+}
+
+impl CPUFlags {
+    fn new() -> CPUFlags {
+        CPUFlags {
+            success: false,
+            less: false,
+            equal: false,
+            greater: false,
+        }
+    }
+}
+
+impl std::fmt::Display for CPUFlags {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        let mut result = String::new();
+
+        if self.equal { result += "e" }
+        else if self.less { result += "l" }
+        else if self.greater { result += "g" }
+
+        if self.success { result += "s" }
+
+        write!(f, "{}", result)
+    }
 }
 
 // Bot Helpers
@@ -142,6 +175,7 @@ impl Bot {
             stack_pointer: 3600,
             registers: [0u16; 14],
             program_memory: [0u16; 3600],
+            flags: CPUFlags::new()
         }
     }
 
@@ -195,7 +229,7 @@ impl Bot {
     }
 
     pub fn get_glyph(&self) -> char {
-        if self.energy > 0 {
+        if !self.sleeping {
             match self.id {
                 0..=26 => ((self.id+64) as u8).into(),
                 27..=50 => ((self.id+70) as u8).into(),
@@ -252,30 +286,166 @@ impl Bot {
         <[u16; 3]>::try_from(slice).expect("Instruction should have exactly 3 words")
     }
 
+    fn get(&mut self, src: &Operand) -> u16 {
+        match src {
+            Operand::None => panic!("Cannot get from invalid operand"),
+            Operand::Direct(value) => {
+                match value {
+                    Value::Number(value) => {
+                        if *value < 3600 {
+                            self.program_memory[*value as usize]
+                        } else { 0 }
+                    }
+                    _ => panic!("Direct address was not Number")
+                }
+            }
+            Operand::Register(reg) => {
+                match reg {
+                    Register::SP => {
+                        self.stack_pointer
+                    }
+                    _ => {
+                        self.registers[u16::from(reg.clone()) as usize]
+                    }
+                }
+            }
+            Operand::ImmediateValue(value) => {
+                match value {
+                    Value::Number(value) => { *value }
+                    _ => panic!("Immediate value was not Number")
+                }
+            }
+            Operand::RegisterIndexedDirect(_, _, _) => todo!()
+        }
+    }
+
+    fn put(&mut self, dest: &Operand, value: u16) {
+        match dest {
+            Operand::None => {},
+            Operand::Direct(vl) => {
+                match vl {
+                    Value::Number(vl) => {
+                        if *vl < 3600 {
+                            self.program_memory[*vl as usize] = value
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            Operand::Register(reg) => {
+                match reg {
+                    Register::SP => {
+                        self.stack_pointer = value
+                    }
+                    _ => {
+                        self.registers[u16::from(reg.clone()) as usize] = value
+                    }
+                }
+            }
+            Operand::ImmediateValue(_) => panic!("Attempt to put something into immediate value"),
+            Operand::RegisterIndexedDirect(_, _, _) => todo!()
+        };
+    }
+
+    fn jump_to(&mut self, to: Operand) {
+        let location = self.get(&to);
+
+        match to {
+            Operand::ImmediateValue(vl) => {
+                match vl {
+                    Value::Number(_) => self.set_instruction_pointer(self.instruction_pointer.wrapping_add(location)),
+                    _ => panic!("Immediate value was not Number")
+                }
+            }
+            _ => self.set_instruction_pointer(location)
+        }
+    }
+
     pub fn tick(idx: usize, tank: &mut Tank, bots: &mut Vec<Bot>, rng: &mut Box<dyn RNGSystem>) {
+
+        // i'm tired
+        if bots[idx].energy < 1 {
+            bots[idx].sleeping = true;
+            return;
+        } else {
+            bots[idx].sleeping = false;
+        }
+
         // TODO: this is where instructions will be ran
         let instruction = bots[idx].get_instruction();
         let instruction_id = instruction[0] & 0xFF;
 
         //println!("{}", Disassembler::parse(instruction, bots[idx].instruction_pointer, false));
         if instruction_id <= InstructionType::CKSUM as u16 {
+            let op1_value = instruction[1];
+            let op2_value = instruction[2];
+
+            let op1_type = instruction[0] >> 14 & 0x3;
+            let op2_type = instruction[0] >> 12 & 0x3;
+
+            let op1 = match op1_type {
+                0 => Operand::Direct(Value::Number(op1_value)),
+                1 => Operand::Register(op1_value.into()),
+                2 => Operand::ImmediateValue(Value::Number(op1_value)),
+                3 => {
+                    todo!("I don't feel like doing this right now.");
+                    //Operand::RegisterIndexedDirect(_, _, _)
+                },
+                _ => panic!("Unknown addressing mode")
+            };
+
+            let op2 = match op2_type {
+                0 => Operand::Direct(Value::Number(op2_value)),
+                1 => Operand::Register(op2_value.into()),
+                2 => Operand::ImmediateValue(Value::Number(op2_value)),
+                3 => {
+                    todo!("I don't feel like doing this right now.");
+                    //Operand::RegisterIndexedDirect(_, _, _)
+                },
+                _ => panic!("Unknown addressing mode")
+            };
+
             let instruction_type = InstructionType::from(instruction_id);
             match instruction_type {
-                InstructionType::NOP => { bots[idx].increment_ip(); },
-                // InstructionType::MOV => {},
+                InstructionType::NOP => {
+                    bots[idx].energy -= 1;
+                    bots[idx].increment_ip();
+                },
+                InstructionType::MOV => {
+                    Bot::mov(idx, op1, op2, bots);
+                    bots[idx].increment_ip();
+                },
                 // InstructionType::PUSH => {},
                 // InstructionType::POP => {},
                 // InstructionType::CALL => {},
                 // InstructionType::RET => {},
-                // InstructionType::JMP => {},
-                // InstructionType::JL => {},
-                // InstructionType::JLE => {},
-                // InstructionType::JG => {},
-                // InstructionType::JGE => {},
-                // InstructionType::JE => {},
-                // InstructionType::JNE => {},
-                // InstructionType::JS => {},
-                // InstructionType::JNS => {},
+                InstructionType::JMP => {
+                    Bot::jmp(idx, op1, bots);
+                },
+                InstructionType::JL => {
+                    Bot::jl(idx, op1, bots);
+                },
+                InstructionType::JLE => {
+                    Bot::jle(idx, op1, bots);
+                },
+                InstructionType::JG => {
+                    Bot::jg(idx, op1, bots);
+                },
+                InstructionType::JGE => {
+                    Bot::jge(idx, op1, bots);
+                },
+                InstructionType::JE => {
+                    Bot::je(idx, op1, bots);
+                },
+                InstructionType::JNE => {
+                    Bot::jne(idx, op1, bots);
+                },
+                InstructionType::JS => {
+                    Bot::js(idx, op1, bots);
+                },
+                InstructionType::JNS => {
+                    Bot::jns(idx, op1, bots);
+                },
                 // InstructionType::ADD => {},
                 // InstructionType::SUB => {},
                 // InstructionType::MULT => {},
@@ -288,14 +458,16 @@ impl Bot {
                 // InstructionType::TEST => {},
                 // InstructionType::GETXY => {},
                 // InstructionType::ENERGY => {},
-                // InstructionType::TRAVEL => {},
+                InstructionType::TRAVEL => {
+                    Bot::travel(idx, op1, tank, bots);
+                    bots[idx].increment_ip();
+                },
                 // InstructionType::SHL => {},
                 // InstructionType::SHR => {},
                 // InstructionType::SENSE => {},
                 // InstructionType::EAT => {},
                 InstructionType::RAND => {
-                    // TODO: actually set things
-                    rng.rand(None);
+                    Bot::rand(idx, op1, op2, rng, bots);
                     bots[idx].increment_ip();
                 },
                 // InstructionType::RELEASE => {},
@@ -303,8 +475,8 @@ impl Bot {
                 // InstructionType::POKE => {},
                 // InstructionType::PEEK => {},
                 // InstructionType::CKSUM => {},
-                _ => { // TODO: placeholder, do nothing
-                    // Bot::travel(idx, rng.rand(3.into()) as u16, tank, bots);
+                _ => { // not an instruction, do nothing
+                    bots[idx].energy -= 1;
                     bots[idx].increment_ip();
                 }
             }
@@ -321,10 +493,103 @@ impl Bot {
         bots[idx].id
     }
 
-    // TODO: should each instruction change flags?
-    fn travel(idx: usize, direction: u16, tank: &Tank, bots: &mut Vec<Bot>) -> bool {
+    fn mov(idx: usize, to: Operand, from: Operand, bots: &mut Vec<Bot>) {
+        let data = bots[idx].get(&from);
+        bots[idx].put(&to, data);
+        bots[idx].energy -= 1;
+    }
+
+    fn jmp(idx: usize, to: Operand, bots: &mut Vec<Bot>) {
+        bots[idx].jump_to(to);
+        bots[idx].energy -= 1;
+    }
+
+    fn jl(idx: usize, to: Operand, bots: &mut Vec<Bot>) {
+        if bots[idx].flags.less {
+            bots[idx].jump_to(to);
+        } else {
+            bots[idx].increment_ip();
+        }
+        bots[idx].energy -= 1;
+    }
+
+    fn jle(idx: usize, to: Operand, bots: &mut Vec<Bot>) {
+        if bots[idx].flags.less || bots[idx].flags.equal {
+            bots[idx].jump_to(to);
+        } else {
+            bots[idx].increment_ip();
+        }
+        bots[idx].energy -= 1;
+    }
+
+    fn jg(idx: usize, to: Operand, bots: &mut Vec<Bot>) {
+        if bots[idx].flags.greater {
+            bots[idx].jump_to(to);
+        } else {
+            bots[idx].increment_ip();
+        }
+        bots[idx].energy -= 1;
+    }
+
+    fn jge(idx: usize, to: Operand, bots: &mut Vec<Bot>) {
+        if bots[idx].flags.greater || bots[idx].flags.equal {
+            bots[idx].jump_to(to);
+        } else {
+            bots[idx].increment_ip();
+        }
+        bots[idx].energy -= 1;
+    }
+
+    fn je(idx: usize, to: Operand, bots: &mut Vec<Bot>) {
+        if bots[idx].flags.equal {
+            bots[idx].jump_to(to);
+        } else {
+            bots[idx].increment_ip();
+        }
+        bots[idx].energy -= 1;
+    }
+
+    fn jne(idx: usize, to: Operand, bots: &mut Vec<Bot>) {
+        if !bots[idx].flags.equal {
+            bots[idx].jump_to(to);
+        } else {
+            bots[idx].increment_ip();
+        }
+        bots[idx].energy -= 1;
+    }
+
+    fn js(idx: usize, to: Operand, bots: &mut Vec<Bot>) {
+        if bots[idx].flags.success {
+            bots[idx].jump_to(to);
+        } else {
+            bots[idx].increment_ip();
+        }
+        bots[idx].energy -= 1;
+    }
+
+    fn jns(idx: usize, to: Operand, bots: &mut Vec<Bot>) {
+        if !bots[idx].flags.success {
+            bots[idx].jump_to(to);
+        } else {
+            bots[idx].increment_ip();
+        }
+        bots[idx].energy -= 1;
+    }
+
+    fn rand(idx: usize, to: Operand, max: Operand, rng: &mut Box<dyn RNGSystem>, bots: &mut Vec<Bot>) {
+        let max = bots[idx].get(&max);
+        let result = rng.rand(Some(max as u32)) as u16;
+
+        bots[idx].put(&to, result);
+
+        bots[idx].energy -= 1;
+    }
+
+    fn travel(idx: usize, direction: Operand, tank: &Tank, bots: &mut Vec<Bot>) {
         let mut new_position = bots[idx].position.clone();
         let mut failed: bool = false;
+
+        let direction = bots[idx].get(&direction);
 
         match direction % 4 {
             0 => {
@@ -335,14 +600,14 @@ impl Bot {
                 }
             },
             1 => {
-                if new_position.y == 39 {
+                if new_position.y == tank.bounds.y - 1 {
                     failed = true;
                 } else {
                     new_position.y += 1;
                 }
             },
             2 => {
-                if new_position.x == 69 {
+                if new_position.x == tank.bounds.x - 1 {
                     failed = true;
                 } else {
                     new_position.x += 1;
@@ -368,7 +633,7 @@ impl Bot {
             failed = true;
         }
 
-        failed == false
+        bots[idx].flags.success = !failed;
     }
 }
 
@@ -468,5 +733,6 @@ impl Emulator {
         for bot_idx in 0..self.bots.len() {
             Bot::tick(bot_idx, &mut self.tank, &mut self.bots, &mut self.rng);
         }
+        self.current_tick += 1;
     }
 }

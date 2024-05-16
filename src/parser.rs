@@ -73,6 +73,30 @@ pub enum Register {
     SP = 15,
 }
 
+
+impl From<Register> for u16 {
+    fn from(value: Register) -> Self {
+        return match value {
+            Register::R0 => 0,
+            Register::R1 => 1,
+            Register::R2 => 2,
+            Register::R3 => 3,
+            Register::R4 => 4,
+            Register::R5 => 5,
+            Register::R6 => 6,
+            Register::R7 => 7,
+            Register::R8 => 8,
+            Register::R9 => 9,
+            Register::R10 => 10,
+            Register::R11 => 11,
+            Register::R12 => 12,
+            Register::R13 => 13,
+            Register::SP => 15,
+        };
+    }
+}
+
+
 impl From<u16> for Register {
     fn from(reg: u16) -> Self {
         return match reg {
