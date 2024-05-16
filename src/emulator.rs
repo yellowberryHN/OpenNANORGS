@@ -1,8 +1,8 @@
-use std::fmt::Formatter;
-use ruscii::spatial::Vec2;
 use crate::parser::{Operand, Register, Value};
 use crate::rng::{LegacyRNG, ModernRNG, RNGSystem};
 use crate::tokenizer::InstructionType;
+use ruscii::spatial::Vec2;
+use std::fmt::Formatter;
 
 #[derive(Debug)]
 pub enum ItemType {
@@ -127,14 +127,14 @@ pub struct Bot {
     stack_pointer: u16,
     pub registers: [u16; 14],
     program_memory: [u16; 3600],
-    pub flags: CPUFlags
+    pub flags: CPUFlags,
 }
 #[derive(Debug)]
 pub struct CPUFlags {
     pub success: bool,
     pub less: bool,
     pub equal: bool,
-    pub greater: bool
+    pub greater: bool,
 }
 
 impl CPUFlags {
@@ -152,11 +152,17 @@ impl std::fmt::Display for CPUFlags {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         let mut result = String::new();
 
-        if self.equal { result += "e" }
-        else if self.less { result += "l" }
-        else if self.greater { result += "g" }
+        if self.equal {
+            result += "e"
+        } else if self.less {
+            result += "l"
+        } else if self.greater {
+            result += "g"
+        }
 
-        if self.success { result += "s" }
+        if self.success {
+            result += "s"
+        }
 
         write!(f, "{}", result)
     }
@@ -175,7 +181,7 @@ impl Bot {
             stack_pointer: 3600,
             registers: [0u16; 14],
             program_memory: [0u16; 3600],
-            flags: CPUFlags::new()
+            flags: CPUFlags::new(),
         }
     }
 
@@ -189,40 +195,16 @@ impl Bot {
 
     pub fn flash_drone(&mut self) {
         let malicious: Vec<u16> = vec![
-            0x8004, 0x000F, 0x0000,
-            0x8004, 0x0018, 0x0000,
-            0x8004, 0x002A, 0x0000,
-            0x8004, 0x0045, 0x0000,
-            0x8006, 0xFFF7, 0x0000,
-            0x2020, 0x0DFB, 0x0004,
-            0x2020, 0x0DFC, 0x000A,
-            0x200F, 0x0DFC, 0x0001,
-            0x0005, 0x0000, 0x0000,
-            0x401E, 0x0002, 0x0000,
-            0x800E, 0x000F, 0x0000,
-            0x401A, 0x0002, 0x0000,
-            0x6017, 0x0002, 0x2710,
-            0x8009, 0x0006, 0x0000,
-            0x001F, 0x0000, 0x0000,
-            0x0005, 0x0000, 0x0000,
-            0x4001, 0x0000, 0x0DFB,
-            0x6020, 0x0001, 0x0DF8,
-            0x5024, 0x0000, 0x0001,
-            0x800E, 0x0012, 0x0000,
-            0x7017, 0x0000, 0x1000,
-            0x800B, 0x000C, 0x0000,
-            0x6020, 0x0001, 0x0E10,
-            0x7001, 0x0000, 0x1000,
-            0x1023, 0x0DFB, 0x0001,
-            0x0005, 0x0000, 0x0000,
-            0x2017, 0x0DFC, 0x0000,
-            0x800B, 0x000F, 0x0000,
-            0x001B, 0x0DFB, 0x0000,
-            0x800E, 0x0009, 0x0000,
-            0x2010, 0x0DFC, 0x0001,
-            0x0005, 0x0000, 0x0000,
-            0x8004, 0xFFAF, 0x0000,
-            0x8006, 0xFFEB, 0x0000
+            0x8004, 0x000F, 0x0000, 0x8004, 0x0018, 0x0000, 0x8004, 0x002A, 0x0000, 0x8004, 0x0045,
+            0x0000, 0x8006, 0xFFF7, 0x0000, 0x2020, 0x0DFB, 0x0004, 0x2020, 0x0DFC, 0x000A, 0x200F,
+            0x0DFC, 0x0001, 0x0005, 0x0000, 0x0000, 0x401E, 0x0002, 0x0000, 0x800E, 0x000F, 0x0000,
+            0x401A, 0x0002, 0x0000, 0x6017, 0x0002, 0x2710, 0x8009, 0x0006, 0x0000, 0x001F, 0x0000,
+            0x0000, 0x0005, 0x0000, 0x0000, 0x4001, 0x0000, 0x0DFB, 0x6020, 0x0001, 0x0DF8, 0x5024,
+            0x0000, 0x0001, 0x800E, 0x0012, 0x0000, 0x7017, 0x0000, 0x1000, 0x800B, 0x000C, 0x0000,
+            0x6020, 0x0001, 0x0E10, 0x7001, 0x0000, 0x1000, 0x1023, 0x0DFB, 0x0001, 0x0005, 0x0000,
+            0x0000, 0x2017, 0x0DFC, 0x0000, 0x800B, 0x000F, 0x0000, 0x001B, 0x0DFB, 0x0000, 0x800E,
+            0x0009, 0x0000, 0x2010, 0x0DFC, 0x0001, 0x0005, 0x0000, 0x0000, 0x8004, 0xFFAF, 0x0000,
+            0x8006, 0xFFEB, 0x0000,
         ];
 
         self.flash(malicious);
@@ -231,23 +213,23 @@ impl Bot {
     pub fn get_glyph(&self) -> char {
         if !self.sleeping {
             match self.id {
-                0..=26 => ((self.id+64) as u8).into(),
-                27..=50 => ((self.id+70) as u8).into(),
-                _ => '@'
+                0..=26 => ((self.id + 64) as u8).into(),
+                27..=50 => ((self.id + 70) as u8).into(),
+                _ => '@',
             }
         } else {
             match self.id {
                 0..=50 => '.',
-                _ => ','
+                _ => ',',
             }
         }
     }
 
     pub fn id_from_glyph(glyph: char) -> u16 {
         match glyph as u8 {
-            64..=90 => (glyph as u8-64).into(),
-            97..=120 => (glyph as u8-70).into(),
-            _ => 0u16
+            64..=90 => (glyph as u8 - 64).into(),
+            97..=120 => (glyph as u8 - 70).into(),
+            _ => 0u16,
         }
     }
 
@@ -286,64 +268,48 @@ impl Bot {
         <[u16; 3]>::try_from(slice).expect("Instruction should have exactly 3 words")
     }
 
-    fn get(&mut self, src: &Operand) -> u16 {
+    fn get(&self, src: &Operand) -> u16 {
         match src {
             Operand::None => panic!("Cannot get from invalid operand"),
-            Operand::Direct(value) => {
-                match value {
-                    Value::Number(value) => {
-                        if *value < 3600 {
-                            self.program_memory[*value as usize]
-                        } else { 0 }
-                    }
-                    _ => panic!("Direct address was not Number")
-                }
-            }
-            Operand::Register(reg) => {
-                match reg {
-                    Register::SP => {
-                        self.stack_pointer
-                    }
-                    _ => {
-                        self.registers[u16::from(reg.clone()) as usize]
+            Operand::Direct(value) => match value {
+                Value::Number(value) => {
+                    if *value < 3600 {
+                        self.program_memory[*value as usize]
+                    } else {
+                        0
                     }
                 }
-            }
-            Operand::ImmediateValue(value) => {
-                match value {
-                    Value::Number(value) => { *value }
-                    _ => panic!("Immediate value was not Number")
-                }
-            }
-            Operand::RegisterIndexedDirect(_, _, _) => todo!()
+                _ => panic!("Direct address was not Number"),
+            },
+            Operand::Register(reg) => match reg {
+                Register::SP => self.stack_pointer,
+                _ => self.registers[u16::from(reg.clone()) as usize],
+            },
+            Operand::ImmediateValue(value) => match value {
+                Value::Number(value) => *value,
+                _ => panic!("Immediate value was not Number"),
+            },
+            Operand::RegisterIndexedDirect(_, _, _) => todo!(),
         }
     }
 
     fn put(&mut self, dest: &Operand, value: u16) {
         match dest {
-            Operand::None => {},
-            Operand::Direct(vl) => {
-                match vl {
-                    Value::Number(vl) => {
-                        if *vl < 3600 {
-                            self.program_memory[*vl as usize] = value
-                        }
-                    }
-                    _ => {}
-                }
-            }
-            Operand::Register(reg) => {
-                match reg {
-                    Register::SP => {
-                        self.stack_pointer = value
-                    }
-                    _ => {
-                        self.registers[u16::from(reg.clone()) as usize] = value
+            Operand::None => {}
+            Operand::Direct(vl) => match vl {
+                Value::Number(vl) => {
+                    if *vl < 3600 {
+                        self.program_memory[*vl as usize] = value
                     }
                 }
-            }
+                _ => {}
+            },
+            Operand::Register(reg) => match reg {
+                Register::SP => self.stack_pointer = value,
+                _ => self.registers[u16::from(reg.clone()) as usize] = value,
+            },
             Operand::ImmediateValue(_) => panic!("Attempt to put something into immediate value"),
-            Operand::RegisterIndexedDirect(_, _, _) => todo!()
+            Operand::RegisterIndexedDirect(_, _, _) => todo!(),
         };
     }
 
@@ -351,18 +317,17 @@ impl Bot {
         let location = self.get(&to);
 
         match to {
-            Operand::ImmediateValue(vl) => {
-                match vl {
-                    Value::Number(_) => self.set_instruction_pointer(self.instruction_pointer.wrapping_add(location)),
-                    _ => panic!("Immediate value was not Number")
+            Operand::ImmediateValue(vl) => match vl {
+                Value::Number(_) => {
+                    self.set_instruction_pointer(self.instruction_pointer.wrapping_add(location))
                 }
-            }
-            _ => self.set_instruction_pointer(location)
+                _ => panic!("Immediate value was not Number"),
+            },
+            _ => self.set_instruction_pointer(location),
         }
     }
 
     pub fn tick(idx: usize, tank: &mut Tank, bots: &mut Vec<Bot>, rng: &mut Box<dyn RNGSystem>) {
-
         // i'm tired
         if bots[idx].energy < 1 {
             bots[idx].sleeping = true;
@@ -390,8 +355,8 @@ impl Bot {
                 3 => {
                     todo!("I don't feel like doing this right now.");
                     //Operand::RegisterIndexedDirect(_, _, _)
-                },
-                _ => panic!("Unknown addressing mode")
+                }
+                _ => panic!("Unknown addressing mode"),
             };
 
             let op2 = match op2_type {
@@ -401,8 +366,8 @@ impl Bot {
                 3 => {
                     todo!("I don't feel like doing this right now.");
                     //Operand::RegisterIndexedDirect(_, _, _)
-                },
-                _ => panic!("Unknown addressing mode")
+                }
+                _ => panic!("Unknown addressing mode"),
             };
 
             let instruction_type = InstructionType::from(instruction_id);
@@ -410,50 +375,62 @@ impl Bot {
                 InstructionType::NOP => {
                     bots[idx].energy -= 1;
                     bots[idx].increment_ip();
-                },
+                }
                 InstructionType::MOV => {
                     Bot::mov(idx, op1, op2, bots);
                     bots[idx].increment_ip();
-                },
+                }
                 // InstructionType::PUSH => {},
                 // InstructionType::POP => {},
                 // InstructionType::CALL => {},
                 // InstructionType::RET => {},
                 InstructionType::JMP => {
                     Bot::jmp(idx, op1, bots);
-                },
+                }
                 InstructionType::JL => {
                     Bot::jl(idx, op1, bots);
-                },
+                }
                 InstructionType::JLE => {
                     Bot::jle(idx, op1, bots);
-                },
+                }
                 InstructionType::JG => {
                     Bot::jg(idx, op1, bots);
-                },
+                }
                 InstructionType::JGE => {
                     Bot::jge(idx, op1, bots);
-                },
+                }
                 InstructionType::JE => {
                     Bot::je(idx, op1, bots);
-                },
+                }
                 InstructionType::JNE => {
                     Bot::jne(idx, op1, bots);
-                },
+                }
                 InstructionType::JS => {
                     Bot::js(idx, op1, bots);
-                },
+                }
                 InstructionType::JNS => {
                     Bot::jns(idx, op1, bots);
-                },
-                // InstructionType::ADD => {},
-                // InstructionType::SUB => {},
-                // InstructionType::MULT => {},
+                }
+                InstructionType::ADD => {
+                    Bot::add(idx, op1, op2, bots);
+                }
+                InstructionType::SUB => {
+                    Bot::sub(idx, op1, op2, bots);
+                }
+                InstructionType::MULT => {
+                    Bot::mult(idx, op1, op2, bots);
+                }
                 // InstructionType::DIV => {},
                 // InstructionType::MOD => {},
-                // InstructionType::AND => {},
-                // InstructionType::OR => {},
-                // InstructionType::XOR => {},
+                InstructionType::AND => {
+                    Bot::and(idx, op1, op2, bots);
+                }
+                InstructionType::OR => {
+                    Bot::or(idx, op1, op2, bots);
+                }
+                InstructionType::XOR => {
+                    Bot::xor(idx, op1, op2, bots);
+                }
                 // InstructionType::CMP => {},
                 // InstructionType::TEST => {},
                 // InstructionType::GETXY => {},
@@ -461,7 +438,7 @@ impl Bot {
                 InstructionType::TRAVEL => {
                     Bot::travel(idx, op1, tank, bots);
                     bots[idx].increment_ip();
-                },
+                }
                 // InstructionType::SHL => {},
                 // InstructionType::SHR => {},
                 // InstructionType::SENSE => {},
@@ -469,19 +446,19 @@ impl Bot {
                 InstructionType::RAND => {
                     Bot::rand(idx, op1, op2, rng, bots);
                     bots[idx].increment_ip();
-                },
+                }
                 // InstructionType::RELEASE => {},
                 // InstructionType::CHARGE => {},
                 // InstructionType::POKE => {},
                 // InstructionType::PEEK => {},
                 // InstructionType::CKSUM => {},
-                _ => { // not an instruction, do nothing
+                _ => {
+                    // not an instruction, do nothing
                     bots[idx].energy -= 1;
                     bots[idx].increment_ip();
                 }
             }
-        }
-        else {
+        } else {
             return;
         }
     }
@@ -576,7 +553,13 @@ impl Bot {
         bots[idx].energy -= 1;
     }
 
-    fn rand(idx: usize, to: Operand, max: Operand, rng: &mut Box<dyn RNGSystem>, bots: &mut Vec<Bot>) {
+    fn rand(
+        idx: usize,
+        to: Operand,
+        max: Operand,
+        rng: &mut Box<dyn RNGSystem>,
+        bots: &mut Vec<Bot>,
+    ) {
         let max = bots[idx].get(&max);
         let result = rng.rand(Some(max as u32)) as u16;
 
@@ -598,29 +581,29 @@ impl Bot {
                 } else {
                     new_position.y -= 1;
                 }
-            },
+            }
             1 => {
                 if new_position.y == tank.bounds.y - 1 {
                     failed = true;
                 } else {
                     new_position.y += 1;
                 }
-            },
+            }
             2 => {
                 if new_position.x == tank.bounds.x - 1 {
                     failed = true;
                 } else {
                     new_position.x += 1;
                 }
-            },
+            }
             3 => {
                 if new_position.x == 0 {
                     failed = true;
                 } else {
                     new_position.x -= 1;
                 }
-            },
-            _ => panic!("Travel direction exceeded range ({direction})")
+            }
+            _ => panic!("Travel direction exceeded range ({direction})"),
         };
 
         if !Bot::is_occupied(&new_position, bots) && !failed && bots[idx].has_energy(10) {
@@ -634,6 +617,56 @@ impl Bot {
         }
 
         bots[idx].flags.success = !failed;
+    }
+
+    fn add(idx: usize, dest: Operand, src: Operand, bots: &mut Vec<Bot>) {
+        let value = bots[idx].get(&dest) + bots[idx].get(&src);
+        bots[idx].put(&dest, value);
+        bots[idx].energy -= 1;
+        bots[idx].increment_ip();
+    }
+
+    fn sub(idx: usize, dest: Operand, src: Operand, bots: &mut Vec<Bot>) {
+        let value = bots[idx].get(&dest) - bots[idx].get(&src);
+        bots[idx].put(&dest, value);
+        bots[idx].energy -= 1;
+        bots[idx].increment_ip();
+    }
+
+    fn mult(idx: usize, dest: Operand, src: Operand, bots: &mut Vec<Bot>) {
+        let value = bots[idx].get(&dest) * bots[idx].get(&src);
+        bots[idx].put(&dest, value);
+        bots[idx].energy -= 1;
+        bots[idx].increment_ip();
+    }
+
+    // fn div(idx: usize, dest: Operand, src: Operand, bots: &mut Vec<Bot>) {
+    //     let value = bots[idx].get(&dest) / bots[idx].get(&src);
+    //     bots[idx].put(&dest, value);
+    //     bots[idx].energy -= 1;
+    //     bots[idx].increment_ip();
+    // }
+    //
+
+    fn and(idx: usize, dest: Operand, src: Operand, bots: &mut Vec<Bot>) {
+        let value = bots[idx].get(&dest) & bots[idx].get(&src);
+        bots[idx].put(&dest, value);
+        bots[idx].energy -= 1;
+        bots[idx].increment_ip();
+    }
+
+    fn or(idx: usize, dest: Operand, src: Operand, bots: &mut Vec<Bot>) {
+        let value = bots[idx].get(&dest) | bots[idx].get(&src);
+        bots[idx].put(&dest, value);
+        bots[idx].energy -= 1;
+        bots[idx].increment_ip();
+    }
+
+    fn xor(idx: usize, dest: Operand, src: Operand, bots: &mut Vec<Bot>) {
+        let value = bots[idx].get(&dest) ^ bots[idx].get(&src);
+        bots[idx].put(&dest, value);
+        bots[idx].energy -= 1;
+        bots[idx].increment_ip();
     }
 }
 
@@ -664,7 +697,7 @@ pub struct Emulator {
     pub tank: Tank,
     pub bots: Vec<Bot>,
     pub iterations: u32,
-    pub current_tick: u32
+    pub current_tick: u32,
 }
 
 impl Emulator {
@@ -674,10 +707,10 @@ impl Emulator {
                 true => Box::new(ModernRNG::new(seed)),
                 false => Box::new(LegacyRNG::new(seed)),
             },
-            tank: Tank::new(Position::new(70,40,1)),
+            tank: Tank::new(Position::new(70, 40, 1)),
             bots: vec![],
             iterations,
-            current_tick: 0
+            current_tick: 0,
         };
 
         emulator.tank.initial_fill(200, &mut emulator.rng);
