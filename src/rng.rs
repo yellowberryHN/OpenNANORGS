@@ -27,7 +27,7 @@ impl RNGSystem for LegacyRNG {
         self.state = self.state.wrapping_mul(16807) % 0x7fffffff;
         match max {
             None => {self.state}
-            Some(_) => {self.state % (max.unwrap()+1)}
+            Some(_) => {self.state % max.unwrap()}
         }
     }
 
@@ -52,7 +52,7 @@ impl RNGSystem for ModernRNG {
     fn rand(&mut self, max: Option<u32>) -> u32 {
         match max {
             None => {self.rng.next_u32()}
-            Some(max) => {self.rng.gen_range(0..=max)}
+            Some(max) => {self.rng.random_range(0..max)}
         }
     }
 

@@ -36,6 +36,10 @@ pub struct Arguments {
     #[arg(short = 'z', long = None, default_value_t = false)]
     pub show_disassembly: bool,
 
+    /// Use modern RNG engine
+    #[arg(short = 'r', long = None, default_value_t = false)]
+    pub modern_rng: bool,
+
     /// Dump bytecode into firmware file
     #[arg(short = 'f', long = None, default_value_t = false)]
     pub dump_bytecode: bool,
@@ -43,6 +47,10 @@ pub struct Arguments {
     /// Dump bytecode into firmware file as text
     #[arg(long = "dump-bytecode-text", default_value_t = false, hide = true)]
     pub dump_bytecode_text: bool,
+
+    /// Parse given organism file as bytecode
+    #[arg(short = 'b', long = None, default_value_t = false)]
+    pub as_bytecode: bool,
 
     /// Display additional logs for troubleshooting (internal)
     #[arg(short = 'v', hide = true)]
