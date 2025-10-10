@@ -132,10 +132,12 @@ fn main() {
 
     let mut emulator = Emulator::new(&bytecode, args.iterations, args.seed.unwrap(), args.modern_rng);
 
+    //println!("seed is {}", args.seed.unwrap());
+
     if args.quiet_mode {
         let now = Instant::now();
         while emulator.current_tick < emulator.iterations {
-            emulator.tick()
+            if !emulator.tick() { break; }
         }
         println!("done in {}ms", now.elapsed().as_millis())
     } else {
@@ -152,113 +154,133 @@ fn main() {
                 }
             }
 
-            let mut skip_draw: bool = false;
-
-            for key in app_state.keyboard().get_keys_down() {
-                match key {
-                    Key::Space => {
-                        skip_draw = true;
-                    }
-                    _ => ()
-                }
-            }
-
             if emulator.current_tick < emulator.iterations {
-                emulator.tick();
+                if !emulator.tick() { app_state.stop() }
             } else {
                 app_state.stop()
             }
 
-            if !skip_draw {
-                fps_counter.update();
+            fps_counter.update();
 
-                let mut pencil = Pencil::new(window.canvas_mut());
+            let mut pencil = Pencil::new(window.canvas_mut());
 
-                for element in &emulator.tank.elements {
-                    let element = element.as_ref();
-                    match element {
-                        Some(element) => {
-                            match element.item_type {
-                                ItemType::Sludge => pencil.set_foreground(Color::Grey),
-                                ItemType::CollectionPoint => pencil.set_foreground(Color::Xterm(6)),
-                                ItemType::Ramp => pencil.set_foreground(Color::DarkGrey),
-                            };
+            for element in &emulator.tank.elements {
+                let element = element.as_ref();
+                match element {
+                    Some(element) => {
+                        match element.item_type {
+                            ItemType::Sludge => {
+                                if emulator.tank.toxic_sludge.contains(&(element.id as u8)) {
+                                    pencil.set_foreground(Color::Xterm(28))
+                                } else { pencil.set_foreground(Color::Grey) }
+                            },
+                            ItemType::CollectionPoint => pencil.set_foreground(Color::Xterm(6)),
+                            ItemType::Ramp => pencil.set_foreground(Color::DarkGrey),
+                        };
 
-                            pencil.draw_char(element.get_glyph(), element.position.into());
-                        }
-                        None => {}
+                        pencil.draw_char(element.get_glyph(), element.position.into());
                     }
+                    None => {}
+                }
+            }
+
+            let debug_bot_id = match args.debug_bot {
+                Some(glyph) => Bot::id_from_glyph(glyph),
+                None => 0xFFFF,
+            };
+
+            for bot in &emulator.bots {
+                if debug_bot_id != 0xFFFF && bot.id == debug_bot_id {
+                    pencil.set_foreground(Color::Xterm(208));
+                } else if bot.id > 50 {
+                    pencil.set_foreground(Color::Xterm(9));
+                } else {
+                    pencil.set_foreground(Color::White);
                 }
 
-                let debug_bot_id = match args.debug_bot {
-                    Some(glyph) => Bot::id_from_glyph(glyph),
-                    None => 0,
-                };
+                pencil.draw_char(bot.get_glyph(true), bot.position.into());
+            }
 
-                for bot in &emulator.bots {
-                    if debug_bot_id > 0 && bot.id == debug_bot_id {
-                        pencil.set_foreground(Color::Xterm(172));
-                    } else if bot.id > 50 {
-                        pencil.set_foreground(Color::Xterm(1));
-                    } else {
-                        pencil.set_foreground(Color::White);
-                    }
+            pencil.set_foreground(Color::White);
+            pencil.draw_text(&format!("FPS: {}", fps_counter.count()), Vec2::xy(0, 40));
 
-                    pencil.draw_char(bot.get_glyph(), bot.position.into());
-                }
+            let tick_len = emulator.iterations.to_string().len();
+            pencil.draw_text(
+                &format!(
+                    "Score: {}, Ticks: {:tick_len$} of {}   (Seed: {})",
+                    emulator.tank.score,
+                    emulator.current_tick,
+                    emulator.iterations,
+                    &args.seed.unwrap()
+                ),
+                Vec2::xy(0, 42)
+            );
 
-                pencil.set_foreground(Color::White);
-                pencil.draw_text(&format!("FPS: {}", fps_counter.count()), Vec2::xy(0, 40));
-                pencil.draw_text(&format!("Seed: {}", &args.seed.unwrap()), Vec2::xy(0, 41));
+            if args.debug_bot.is_some() {
+                let bot: &Bot = &emulator.bot_from_id(debug_bot_id).unwrap();
+
+                // basic info
                 pencil.draw_text(
                     &format!(
-                        "Bot[0] IP: {}, SP: {}, Energy: {}, Flags: {}",
-                        emulator.bots[0].instruction_pointer, emulator.bots[0].stack_pointer, emulator.bots[0].energy, emulator.bots[0].flags
+                        "[{:>5} {}] ({:2},{:2}), Energy={:5}, IP={:04}, SP={:04}, Flags={}",
+                        bot.name, bot.get_glyph(false), bot.position.x, bot.position.y, bot.energy, bot.instruction_pointer, bot.stack_pointer, bot.flags
                     ),
-                    Vec2::xy(0, 42),
-                );
-                pencil.draw_text(
-                    &format!("Bot[0] Registers: {:?}", emulator.bots[0].registers),
-                    Vec2::xy(0, 43),
-                );
-                pencil.draw_text(
-                    &format!("Toxic Sludge: {:?} of {}", emulator.tank.toxic_sludge, emulator.tank.sludge_types),
                     Vec2::xy(0, 44)
                 );
+
+                // registers
                 pencil.draw_text(
-                    &format!("Ticks: {} of {}", emulator.current_tick, emulator.iterations),
+                    &format!("R00={:5} R01={:5} R02={:5} R03={:5} R04={:5} R05={:5} R06={:5}",
+                             bot.registers[0], bot.registers[1],
+                             bot.registers[2], bot.registers[3],
+                             bot.registers[4], bot.registers[5], bot.registers[6]),
                     Vec2::xy(0, 45)
                 );
+                pencil.draw_text(
+                    &format!("R07={:5} R08={:5} R09={:5} R10={:5} R11={:5} R12={:5} R13={:5}",
+                             bot.registers[7], bot.registers[8],
+                             bot.registers[9], bot.registers[10],
+                             bot.registers[11], bot.registers[12], bot.registers[13]),
+                    Vec2::xy(0, 46)
+                );
+
+                // next instruction
+                pencil.draw_text(
+                    &format!("{:04}  {}", bot.instruction_pointer, Disassembler::parse(bot.get_instruction(), bot.instruction_pointer, true)),
+                    Vec2::xy(0, 47)
+                );
+
+                pencil.draw_text(
+                    "(u)nasm,(g)o,(s)ilentGo,(d)mp,(e)dt,(r)eg,(i)p,(q)uit,##, or [Enter]: <WIP>",
+                    Vec2::xy(0, 48)
+                );
+
+
+                pencil.draw_text(
+                    &format!("Toxic Sludge: {:?} of {}", emulator.tank.toxic_sludge, emulator.tank.sludge_types),
+                    Vec2::xy(0, 50)
+                );
             }
+
+
+
+            pencil.draw_text(
+                &format!("", ),
+                Vec2::xy(0, 48)
+            );
         });
     }
 
-    // TODO: change this condition to be after all ticks processed, regardless of amount
-    if emulator.current_tick == emulator.iterations {
-        let mut live_bots = 0;
-        let mut live_drones = 0;
-
-        for bot in &emulator.bots {
-            match bot.id {
-                1..=50 => {
-                    if !bot.sleeping {
-                        live_bots += 1
-                    }
-                }
-                _ => {
-                    if !bot.sleeping {
-                        live_drones += 1
-                    }
-                }
-            }
-        }
+    if emulator.finished {
+        let (active_bots, active_drones) = emulator.active_bot_count();
 
         println!("Bot Info: <not implemented>"); // TODO: grab info line
-        println!("Final score: {}", emulator.tank.score);
+        println!("Score: {}", emulator.tank.score);
         println!(
-            "Live bots: {}, Live drones: {}, Seed: {}",
-            live_bots,
-            live_drones,
+            "Active bots: {}, Active drones: {}, Final tick: {}, Seed: {}",
+            active_bots,
+            active_drones,
+            emulator.current_tick,
             emulator.rng.get_seed()
         )
     }

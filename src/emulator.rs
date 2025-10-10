@@ -208,10 +208,10 @@ impl Tank {
 
 #[derive(Debug)]
 pub struct Bot {
+    pub name: String,
     pub id: u16,
     pub position: Position,
     pub energy: u16,
-    pub sleeping: bool,
 
     // CPU related
     pub instruction_pointer: u16,
@@ -277,6 +277,7 @@ macro_rules! simple_math_instr {
             let value: u16 = match stringify!($op) {
                 "+" => bots[idx].get(&dest).wrapping_add(bots[idx].get(&src)),
                 "-" => bots[idx].get(&dest).wrapping_sub(bots[idx].get(&src)),
+                "*" => bots[idx].get(&dest).wrapping_mul(bots[idx].get(&src)),
                 _ => bots[idx].get(&dest) $op bots[idx].get(&src)
             };
 
@@ -290,10 +291,10 @@ macro_rules! simple_math_instr {
 impl Bot {
     pub fn new(id: u16, position: Position) -> Bot {
         Bot {
+            name: "temp".to_string().to_uppercase(),
             id,
             position,
             energy: 10000,
-            sleeping: false,
 
             instruction_pointer: 0,
             stack_pointer: 3600,
@@ -302,6 +303,8 @@ impl Bot {
             flags: CPUFlags::new(),
         }
     }
+
+    pub fn is_active(&self) -> bool { self.energy > 0 }
 
     pub fn flash(&mut self, bytecode: Vec<u16>) {
         self.program_memory = [0u16; 3600];
@@ -328,8 +331,8 @@ impl Bot {
         self.flash(malicious);
     }
 
-    pub fn get_glyph(&self) -> char {
-        if !self.sleeping {
+    pub fn get_glyph(&self, inactive: bool) -> char {
+        if self.is_active() || !inactive {
             match self.id {
                 0..=26 => ((self.id + 64) as u8).into(),
                 27..=50 => ((self.id + 70) as u8).into(),
@@ -394,7 +397,7 @@ impl Bot {
         self.set_instruction_pointer(self.instruction_pointer + 3)
     }
 
-    fn get_instruction(&self) -> [u16; 3] {
+    pub fn get_instruction(&self) -> [u16; 3] {
         let end = (self.instruction_pointer as usize) + 3;
         let slice = &self.program_memory[(self.instruction_pointer as usize)..end];
         <[u16; 3]>::try_from(slice).expect("Instruction should have exactly 3 words")
@@ -495,7 +498,7 @@ impl Bot {
     }
 
     fn push(&mut self, value: u16) {
-        self.stack_pointer -= 1;
+        self.stack_pointer = self.stack_pointer.wrapping_sub(1);
         if self.stack_pointer > 3599 {
             self.stack_pointer = 3599;
         }
@@ -511,20 +514,12 @@ impl Bot {
             0 // nothing on stack returns 0 always
         };
 
-        self.stack_pointer += 1;
+        self.stack_pointer = self.stack_pointer.wrapping_add(1);
 
         result
     }
 
     pub fn tick(idx: usize, tank: &mut Tank, bots: &mut Vec<Bot>, rng: &mut Box<dyn RNGSystem>) {
-        // i'm tired
-        if bots[idx].energy < 1 {
-            bots[idx].sleeping = true;
-            return;
-        } else {
-            bots[idx].sleeping = false;
-        }
-
         let mut increment_ip: bool = true;
 
         let instruction = bots[idx].get_instruction();
@@ -1006,7 +1001,7 @@ impl Bot {
         let start_idx = bots[idx].get(&start) as usize;
         let end_idx = bots[idx].get(&end) as usize;
 
-        if start_idx < 3600 && end_idx < 3601 {
+        if start_idx < 3600 && end_idx < 3601 && start_idx < end_idx {
             let cksum: u16 = bots[idx].program_memory[start_idx..end_idx].iter().fold(0u16, |acc, &m| acc.wrapping_add(m));
             bots[idx].put(&start, cksum);
         }
@@ -1054,6 +1049,8 @@ pub struct Emulator {
     pub bots: Vec<Bot>,
     pub iterations: u32,
     pub current_tick: u32,
+
+    pub finished: bool,
 }
 
 impl Emulator {
@@ -1067,6 +1064,7 @@ impl Emulator {
             bots: vec![],
             iterations,
             current_tick: 0,
+            finished: false
         };
 
         emulator.tank.initial_fill(200, &mut emulator.rng);
@@ -1118,10 +1116,45 @@ impl Emulator {
         bots
     }
 
-    pub fn tick(&mut self) {
+    pub fn tick(&mut self) -> bool {
+        let mut active = 0;
+
         for bot_idx in 0..self.bots.len() {
-            Bot::tick(bot_idx, &mut self.tank, &mut self.bots, &mut self.rng);
+            if self.bots[bot_idx].is_active() {
+                Bot::tick(bot_idx, &mut self.tank, &mut self.bots, &mut self.rng);
+                active += 1;
+            }
         }
+
         self.current_tick += 1;
+        self.finished = active == 0 || self.current_tick >= self.iterations;
+
+        !self.finished
+    }
+
+    pub fn active_bot_count(&self) -> (u32, u32) {
+        let mut bots = 0;
+        let mut drones = 0;
+
+        for bot in &self.bots {
+            match bot.id {
+                1..=50 => {
+                    if bot.is_active() {
+                        bots += 1
+                    }
+                }
+                _ => {
+                    if bot.is_active() {
+                        drones += 1
+                    }
+                }
+            }
+        }
+
+        (bots, drones)
+    }
+
+    pub fn bot_from_id(&self, bot_id: u16) -> Option<&Bot> {
+        self.bots.iter().find(|&b| b.id == bot_id)
     }
 }
