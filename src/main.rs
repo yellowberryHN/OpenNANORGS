@@ -12,7 +12,7 @@ pub mod tokenizer;
 use crate::cli::Arguments;
 use crate::compiler::Compiler;
 use crate::disassembler::Disassembler;
-use crate::emulator::{Bot, Emulator, ItemType};
+use crate::emulator::{Bot, Emulator, FeatureLevel, ItemType};
 use byteorder::{LittleEndian, WriteBytesExt};
 use clap::Parser as clapParse;
 use ruscii::app::{App, Config, State};
@@ -130,7 +130,7 @@ fn main() {
         }
     }
 
-    let mut emulator = Emulator::new(&bytecode, args.iterations, args.seed.unwrap(), args.modern_rng);
+    let mut emulator = Emulator::new(&bytecode, args.iterations, args.seed.unwrap(), FeatureLevel::Classic, args.modern_rng);
 
     //println!("seed is {}", args.seed.unwrap());
 
@@ -217,7 +217,7 @@ fn main() {
             );
 
             if args.debug_bot.is_some() {
-                let bot: &Bot = &emulator.bot_from_id(debug_bot_id).unwrap();
+                let bot: &Bot = &emulator.bots[debug_bot_id as usize];
 
                 // basic info
                 pencil.draw_text(
@@ -255,14 +255,12 @@ fn main() {
                     Vec2::xy(0, 48)
                 );
 
-
                 pencil.draw_text(
                     &format!("Toxic Sludge: {:?} of {}", emulator.tank.toxic_sludge, emulator.tank.sludge_types),
                     Vec2::xy(0, 50)
                 );
+
             }
-
-
 
             pencil.draw_text(
                 &format!("", ),

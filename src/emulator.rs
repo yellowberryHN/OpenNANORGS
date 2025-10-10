@@ -34,32 +34,42 @@ impl Item {
 pub struct Tank {
     bounds: Position,
     pub score: u64,
+
+    /// percentage of sludge density
+    pub sludge_density: u8,
+
     pub sludge_types: u8,
     pub toxic_sludge: Vec<u8>,
     pub elements: Vec<Option<Item>>,
+
+    pub feature_level: FeatureLevel
 }
 
 impl Tank {
-    pub fn new(bounds: Position) -> Tank {
+    pub fn new(bounds: Position, density: u8, feature_level: FeatureLevel) -> Tank {
         let mut tank = Tank {
             score: 0,
             sludge_types: 0,
             toxic_sludge: vec![],
             elements: vec![],
             bounds,
+            sludge_density: density,
+            feature_level
         };
+
         tank.elements.resize_with(
             usize::from(tank.bounds.x) * usize::from(tank.bounds.y) * usize::from(tank.bounds.z),
             Default::default,
         );
+
         tank
     }
 
     fn get_index(&self, pos: &Position) -> usize {
         //println!("checking index of {:?}", pos);
         usize::from(pos.x)
-            + usize::from(pos.y) * usize::from(self.bounds.x)
-            + usize::from(pos.z) * usize::from(self.bounds.x) * usize::from(self.bounds.y)
+            + (usize::from(pos.y) * usize::from(self.bounds.x))
+            + (usize::from(pos.z) * usize::from(self.bounds.x) * usize::from(self.bounds.y))
     }
 
     pub fn has_item(&self, pos: &Position) -> bool {
@@ -67,11 +77,11 @@ impl Tank {
         self.elements[index].is_some()
     }
 
-    fn add_item(&mut self, item_type: ItemType, id: u16, pos: Position) {
-        let index = self.get_index(&pos);
+    fn add_item(&mut self, item_type: ItemType, id: u16, pos: &Position) {
+        let index = self.get_index(pos);
         self.elements[index] = Some(Item {
             id,
-            position: pos,
+            position: *pos,
             item_type,
         });
     }
@@ -83,7 +93,7 @@ impl Tank {
                 match item.item_type {
                     ItemType::Sludge => {
                         let sludge_id = item.id as u8;
-                        if self.toxic_sludge.contains(&sludge_id) && bots[idx].id <= 50 {
+                        if self.toxic_sludge.contains(&sludge_id) && bots[idx].id < 50 {
                             bots[idx].mutate(rng);
                         }
 
@@ -101,7 +111,7 @@ impl Tank {
     fn place_random_sludge(&mut self, id: u8, rng: &mut Box<dyn RNGSystem>) {
         let new_pos = self.get_random_position(rng);
 
-        self.add_item(ItemType::Sludge, id as u16, new_pos);
+        self.add_item(ItemType::Sludge, id as u16, &new_pos);
     }
 
     pub fn get_random_position(&self, rng: &mut Box<dyn RNGSystem>) -> Position {
@@ -109,7 +119,10 @@ impl Tank {
             let pos = Position {
                 x: rng.rand(Some(self.bounds.x as u32)) as u8,
                 y: rng.rand(Some(self.bounds.y as u32)) as u8,
-                z: rng.rand(Some(self.bounds.z as u32)) as u8,
+                z: match self.feature_level {
+                    FeatureLevel::Classic => 0,
+                    FeatureLevel::Extended => rng.rand(Some(self.bounds.z as u32)) as u8
+                },
             };
 
             if !self.has_item(&pos) {
@@ -118,35 +131,44 @@ impl Tank {
         }
     }
 
-    // TODO: rework this method to work the same way as NANORGS
     fn calculate_toxic(amount: u8, rng: &mut Box<dyn RNGSystem>) -> Vec<u8> {
-        let toxic_count = (amount / 5) as usize;
+        // 20 percent of sludge is toxic
+        let toxic_count = ((amount as u32 * 20) / 100) as usize;
 
         let mut toxic = HashSet::new();
 
         while toxic.len() < toxic_count {
-            let num = rng.rand(Some((amount + 1) as u32)) as u8;
+            // has a chance to roll zero, which means there will technically be one less toxic type
+            // this is done to match the behavior in the original
+            let num = rng.rand(Some(amount as u32)) as u8;
             toxic.insert(num);
         }
 
         toxic.into_iter().collect()
     }
 
-    // TODO: rework this method to work the same way as NANORGS
-    pub fn initial_fill(&mut self, num_items: usize, rng: &mut Box<dyn RNGSystem>) {
+    pub fn initial_fill(&mut self, rng: &mut Box<dyn RNGSystem>) {
         self.sludge_types = rng.rand(Some(32)) as u8;
-        self.toxic_sludge = Tank::calculate_toxic(self.sludge_types, rng);
-
-        for _ in 0..num_items {
-            let pos = self.get_random_position(rng);
-            let rand_id = rng.rand(Some(self.sludge_types as u32)) as u16;
-            self.add_item(ItemType::Sludge, rand_id, pos);
-        }
+        if self.sludge_types < 5 { self.sludge_types = 5 }
 
         for _ in 0..10 {
             let pos = self.get_random_position(rng);
-            self.add_item(ItemType::CollectionPoint, 0xFFFF, pos);
+            self.add_item(ItemType::CollectionPoint, 0xFFFF, &pos);
         }
+
+        for z in 0..self.bounds.z {
+            for y in 0..self.bounds.y {
+                for x in 0..self.bounds.x {
+                    let pos = Position::new(x,y,z);
+                    if rng.rand(Some(100)) < self.sludge_density as u32 && self.get_item(&pos).is_none()  {
+                        let rand_id = rng.rand(Some(self.sludge_types as u32)) as u16;
+                        self.add_item(ItemType::Sludge, rand_id + 1, &pos);
+                    }
+                }
+            }
+        }
+
+        self.toxic_sludge = Tank::calculate_toxic(self.sludge_types, rng);
     }
 
     fn get_item(&self, pos: &Position) -> Option<&Item> {
@@ -334,8 +356,8 @@ impl Bot {
     pub fn get_glyph(&self, inactive: bool) -> char {
         if self.is_active() || !inactive {
             match self.id {
-                0..=26 => ((self.id + 64) as u8).into(),
-                27..=50 => ((self.id + 70) as u8).into(),
+                0..=26 => ((self.id + 65) as u8).into(),
+                27..=50 => ((self.id + 71) as u8).into(),
                 _ => '@',
             }
         } else {
@@ -348,9 +370,9 @@ impl Bot {
 
     pub fn id_from_glyph(glyph: char) -> u16 {
         match glyph as u8 {
-            64..=90 => (glyph as u8 - 64).into(),
-            97..=120 => (glyph as u8 - 70).into(),
-            _ => 0u16,
+            65..=90 => (glyph as u8 - 65).into(),
+            97..=120 => (glyph as u8 - 71).into(),
+            _ => 0xFFFFu16,
         }
     }
 
@@ -1051,69 +1073,82 @@ pub struct Emulator {
     pub current_tick: u32,
 
     pub finished: bool,
+
+    pub feature_level: FeatureLevel
+}
+
+#[derive(Copy, Clone, Debug)]
+pub enum FeatureLevel {
+    Classic,
+    Extended
 }
 
 impl Emulator {
-    pub fn new(bytecode: &Vec<u16>, iterations: u32, seed: u32, modern_rng: bool) -> Emulator {
+    pub fn new(bytecode: &Vec<u16>, iterations: u32, seed: u32, feature_level: FeatureLevel, modern_rng: bool) -> Emulator {
         let mut emulator = Emulator {
             rng: match modern_rng {
                 true => Box::new(ModernRNG::new(seed)),
                 false => Box::new(LegacyRNG::new(seed)),
             },
-            tank: Tank::new(Position::new(70, 40, 1)),
+            tank: Tank::new(Position::new(70, 40, 1), 10, feature_level),
             bots: vec![],
             iterations,
             current_tick: 0,
-            finished: false
+            finished: false,
+            feature_level,
         };
 
-        emulator.tank.initial_fill(200, &mut emulator.rng);
+        emulator.tank.initial_fill(&mut emulator.rng);
 
-        emulator.bots = Self::create_bots(bytecode, &emulator.tank, &mut emulator.rng);
+        emulator.create_bots(bytecode);
 
         emulator
     }
 
-    pub fn create_bots(bytecode: &Vec<u16>, tank: &Tank, rng: &mut Box<dyn RNGSystem>) -> Vec<Bot> {
-        let mut bots: Vec<Bot> = vec![];
+    fn create_bots(&mut self, bytecode: &Vec<u16>) {
+        self.bots = vec![];
 
-        for id in 1..=50 {
+        for id in 0..50 {
             let pos: Position = loop {
                 let pos = Position {
-                    x: rng.rand(Some(tank.bounds.x as u32)) as u8,
-                    y: rng.rand(Some(tank.bounds.y as u32)) as u8,
-                    z: rng.rand(Some(tank.bounds.z as u32)) as u8,
+                    x: self.rng.rand(Some(self.tank.bounds.x as u32)) as u8,
+                    y: self.rng.rand(Some(self.tank.bounds.y as u32)) as u8,
+                    z: match self.feature_level {
+                        FeatureLevel::Classic => 0,
+                        FeatureLevel::Extended => self.rng.rand(Some(self.tank.bounds.z as u32)) as u8
+                    },
                 };
 
-                if !Bot::is_occupied(&pos, &bots) {
+                if !Bot::is_occupied(&pos, &self.bots) {
                     break pos;
                 }
             };
 
             let mut bot = Bot::new(id, pos);
             bot.flash(bytecode.clone());
-            bots.push(bot);
+            self.bots.push(bot);
         }
 
-        for id in 1..=20 {
+        for id in 0..20 {
             let pos: Position = loop {
                 let pos = Position {
-                    x: rng.rand(Some(tank.bounds.x as u32)) as u8,
-                    y: rng.rand(Some(tank.bounds.y as u32)) as u8,
-                    z: rng.rand(Some(tank.bounds.z as u32)) as u8,
+                    x: self.rng.rand(Some(self.tank.bounds.x as u32)) as u8,
+                    y: self.rng.rand(Some(self.tank.bounds.y as u32)) as u8,
+                    z: match self.feature_level {
+                        FeatureLevel::Classic => 0,
+                        FeatureLevel::Extended => self.rng.rand(Some(self.tank.bounds.z as u32)) as u8
+                    },
                 };
 
-                if !Bot::is_occupied(&pos, &bots) {
+                if !Bot::is_occupied(&pos, &self.bots) {
                     break pos;
                 }
             };
 
             let mut bot = Bot::new(id + 50, pos);
             bot.flash_drone();
-            bots.push(bot);
+            self.bots.push(bot);
         }
-
-        bots
     }
 
     pub fn tick(&mut self) -> bool {
@@ -1152,9 +1187,5 @@ impl Emulator {
         }
 
         (bots, drones)
-    }
-
-    pub fn bot_from_id(&self, bot_id: u16) -> Option<&Bot> {
-        self.bots.iter().find(|&b| b.id == bot_id)
     }
 }

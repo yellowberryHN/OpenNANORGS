@@ -18,7 +18,13 @@ pub struct LegacyRNG {
 
 impl LegacyRNG {
     pub fn new(seed: u32) -> LegacyRNG {
-        LegacyRNG { state: seed, initial_seed: seed }
+        let mut rng = LegacyRNG { state: seed, initial_seed: seed };
+
+        // initial call to start engine
+        // this is done to match the behavior in the original
+        rng.rand(None);
+
+        rng
     }
 }
 
