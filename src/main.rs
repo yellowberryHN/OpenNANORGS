@@ -134,30 +134,43 @@ fn main() {
 
     //println!("seed is {}", args.seed.unwrap());
 
-    if args.quiet_mode {
-        let now = Instant::now();
-        while emulator.current_tick < emulator.iterations {
-            if !emulator.tick() { break; }
-        }
-        println!("done in {}ms", now.elapsed().as_millis())
-    } else {
+    if !args.quiet_mode {
         let mut fps_counter = FPSCounter::default();
         let mut app = App::config(Config::fps(Config::new(), 120));
+
+        // TODO: clean this up, so hacky
+        let mut debug_steps: u32 = 0;
 
         app.run(|app_state: &mut State, window: &mut Window| {
             // TODO: this is moderately annoying, figure out how to allow Ctrl+C
             for key_event in app_state.keyboard().last_key_events() {
-                match key_event {
-                    KeyEvent::Pressed(Key::Esc) => app_state.stop(),
-                    KeyEvent::Pressed(Key::Q) => app_state.stop(),
-                    _ => (),
+                if args.debug_bot.is_some() {
+                    match key_event {
+                        KeyEvent::Pressed(Key::Esc) => app_state.stop(),
+                        KeyEvent::Pressed(Key::Q) => app_state.stop(),
+                        KeyEvent::Pressed(Key::Enter) => debug_steps += 1,
+                        KeyEvent::Pressed(Key::G) => args.debug_bot = None,
+                        KeyEvent::Pressed(Key::S) => {
+                            args.quiet_mode = true;
+                            app_state.stop();
+                        },
+                        _ => (),
+                    }
+                } else {
+                    match key_event {
+                        KeyEvent::Pressed(Key::Esc) => app_state.stop(),
+                        KeyEvent::Pressed(Key::Q) => app_state.stop(),
+                        _ => (),
+                    }
                 }
             }
 
-            if emulator.current_tick < emulator.iterations {
-                if !emulator.tick() { app_state.stop() }
-            } else {
-                app_state.stop()
+            if args.debug_bot.is_none() || (args.debug_bot.is_some() && debug_steps > 0) {
+                if emulator.current_tick < emulator.iterations {
+                    if !emulator.tick() { app_state.stop() }
+                } else {
+                    app_state.stop()
+                }
             }
 
             fps_counter.update();
@@ -217,6 +230,8 @@ fn main() {
             );
 
             if args.debug_bot.is_some() {
+                debug_steps = debug_steps.saturating_sub(1);
+
                 let bot: &Bot = &emulator.bots[debug_bot_id as usize];
 
                 // basic info
@@ -250,23 +265,27 @@ fn main() {
                     Vec2::xy(0, 47)
                 );
 
+                // TODO: figure out how to do text input
                 pencil.draw_text(
-                    "(u)nasm,(g)o,(s)ilentGo,(d)mp,(e)dt,(r)eg,(i)p,(q)uit,##, or [Enter]: <WIP>",
+                    //"(u)nasm,(g)o,(s)ilentGo,(d)mp,(e)dt,(r)eg,(i)p,(q)uit,##, or [Enter]: ",
+                    "(u)nasm,(g)o,(s)ilentGo,(d)mp,(q)uit, or [Enter]: ",
                     Vec2::xy(0, 48)
                 );
 
-                pencil.draw_text(
-                    &format!("Toxic Sludge: {:?} of {}", emulator.tank.toxic_sludge, emulator.tank.sludge_types),
-                    Vec2::xy(0, 50)
-                );
-
+                // pencil.draw_text(
+                //     &format!("Toxic Sludge: {:?} of {}", emulator.tank.toxic_sludge, emulator.tank.sludge_types),
+                //     Vec2::xy(0, 50)
+                // );
             }
-
-            pencil.draw_text(
-                &format!("", ),
-                Vec2::xy(0, 48)
-            );
         });
+    }
+
+    if args.quiet_mode {
+        let now = Instant::now();
+        while emulator.current_tick < emulator.iterations {
+            if !emulator.tick() { break; }
+        }
+        println!("done in {}ms", now.elapsed().as_millis())
     }
 
     if emulator.finished {

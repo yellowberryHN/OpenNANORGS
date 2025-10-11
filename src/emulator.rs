@@ -356,8 +356,8 @@ impl Bot {
     pub fn get_glyph(&self, inactive: bool) -> char {
         if self.is_active() || !inactive {
             match self.id {
-                0..=26 => ((self.id + 65) as u8).into(),
-                27..=50 => ((self.id + 71) as u8).into(),
+                0..=25 => ((self.id + 65) as u8).into(),
+                26..=50 => ((self.id + 71) as u8).into(),
                 _ => '@',
             }
         } else {
@@ -410,7 +410,7 @@ impl Bot {
 // Bot CPU
 impl Bot {
     fn set_instruction_pointer(&mut self, ip: u16) {
-        self.instruction_pointer = ip % self.program_memory.len() as u16;
+        self.instruction_pointer = ip % (self.program_memory.len() as u16 - 3);
         self.instruction_pointer -= self.instruction_pointer % 3;
         //eprintln!("IP: {:?}", self.instruction_pointer);
     }
@@ -521,7 +521,7 @@ impl Bot {
 
     fn push(&mut self, value: u16) {
         self.stack_pointer = self.stack_pointer.wrapping_sub(1);
-        if self.stack_pointer > 3599 {
+        if self.stack_pointer >= 3600 {
             self.stack_pointer = 3599;
         }
 
