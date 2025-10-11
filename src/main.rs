@@ -26,7 +26,7 @@ use std::fs::File;
 use std::io::Write;
 use std::time::{Instant, SystemTime};
 
-fn key_to_char(key: Key) -> Option<char> {
+fn key_to_char(key: &Key) -> Option<char> {
     return Some(match key {
         Key::Space => ' ',
         Key::A => 'a',
@@ -67,6 +67,50 @@ fn key_to_char(key: Key) -> Option<char> {
         Key::Num9 => '9',
         _ => return None,
     });
+}
+
+fn parse_debug_args(text_buffer: &str, num_args: usize) -> Option<Vec<u32>> {
+    let mut index = 0;
+    let mut text_buffer: Vec<char> = text_buffer.chars().collect();
+
+    loop {
+        let current_char = text_buffer.get(index);
+
+        match current_char {
+            Some(current_char) => {
+                if current_char.is_digit(10) {
+                    break;
+                }
+            }
+            None => return None,
+        }
+
+        index += 1;
+    }
+
+    let arg_buffer: String = text_buffer.split_off(index).into_iter().collect();
+    let args: Vec<&str> = arg_buffer.split(' ').collect();
+
+    let mut parsed_args = vec![];
+
+    for arg in args {
+        let _ = arg.replace(" ", "");
+
+        if arg.is_empty() {
+            continue;
+        }
+
+        match arg.parse::<u32>() {
+            Ok(value) => parsed_args.push(value),
+            Err(_) => return None,
+        }
+    }
+
+    if parsed_args.len() != num_args {
+        return None;
+    }
+
+    return Some(parsed_args);
 }
 
 fn main() {
@@ -291,6 +335,49 @@ fn main() {
                 debug_steps = debug_steps.saturating_sub(1);
 
                 let bot: &Bot = &emulator.bots[debug_bot_id as usize];
+                text_buffer.clear();
+
+                for key in key_presses.iter() {
+                    if let Some(key_val) = key_to_char(key) {
+                        text_buffer.push(key_val);
+                        continue;
+                    }
+
+                    if *key == Key::Backspace {
+                        text_buffer.pop();
+                    }
+                }
+
+                if submit_line {
+                    if let Some(key) = text_buffer.chars().nth(0) {
+                        match key {
+                            'u' => {
+                                todo!()
+                            }
+                            'g' => {
+                                args.debug_bot = None;
+                            }
+                            's' => {
+                                args.quiet_mode = true;
+                                app_state.stop();
+                            }
+                            'd' => {
+                                todo!()
+                            }
+                            'e' => {
+                                let args = parse_debug_args(&text_buffer, 2);
+                                eprintln!("{:#?}", args);
+                            }
+                            'r' => {}
+                            'i' => {}
+                            'q' => app_state.stop(),
+                            _ => {}
+                        }
+                    }
+
+                    key_presses.clear();
+                    submit_line = false;
+                }
 
                 // basic info
                 pencil.draw_text(
@@ -349,7 +436,10 @@ fn main() {
                 // TODO: figure out how to do text input
                 pencil.draw_text(
                     //"(u)nasm,(g)o,(s)ilentGo,(d)mp,(e)dt,(r)eg,(i)p,(q)uit,##, or [Enter]: ",
-                    "(u)nasm,(g)o,(s)ilentGo,(d)mp,(q)uit, or [Enter]: ",
+                    &format!(
+                        "(u)nasm,(g)o,(s)ilentGo,(d)mp,(q)uit, or [Enter]: {}",
+                        text_buffer.as_str()
+                    ),
                     Vec2::xy(0, 48),
                 );
 
