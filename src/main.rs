@@ -135,16 +135,11 @@ fn main() {
             }
         };
 
-        let mut pairs: Vec<u16> = code_file
-            .chunks_exact(2)
-            .map(|chunk| u16::from_le_bytes(chunk.try_into().unwrap()))
-            .collect();
+        let mut pairs: Vec<u16> = code_file.chunks_exact(2)
+            .map(|chunk| u16::from_le_bytes(chunk.try_into().unwrap())).collect();
 
         if pairs.len() > 3600 {
-            println!(
-                "error: bytecode too large! {} words long, should be 3600",
-                pairs.len()
-            );
+            println!("error: bytecode too large! {} words long, should be 3600", pairs.len());
             return;
         }
         pairs.resize(3600, 0);
@@ -221,13 +216,7 @@ fn main() {
         }
     }
 
-    let mut emulator = Emulator::new(
-        &bytecode,
-        args.iterations,
-        args.seed.unwrap(),
-        FeatureLevel::Classic,
-        args.modern_rng,
-    );
+    let mut emulator = Emulator::new(&bytecode, args.iterations, args.seed.unwrap(), FeatureLevel::Classic, args.modern_rng);
 
     //println!("seed is {}", args.seed.unwrap());
 
@@ -245,7 +234,7 @@ fn main() {
         app.run(|app_state: &mut State, window: &mut Window| {
             // TODO: this is moderately annoying, figure out how to allow Ctrl+C
             for key_event in app_state.keyboard().last_key_events() {
-                if let Some(debug_bot) = args.debug_bot {
+                if args.debug_bot.is_some() {
                     match key_event {
                         KeyEvent::Pressed(Key::Esc) => app_state.stop(),
                         KeyEvent::Pressed(Key::Enter) => submit_line = true,
@@ -328,13 +317,13 @@ fn main() {
                     emulator.iterations,
                     &args.seed.unwrap()
                 ),
-                Vec2::xy(0, 42),
+                Vec2::xy(0, 42)
             );
 
             if args.debug_bot.is_some() {
                 debug_steps = debug_steps.saturating_sub(1);
 
-                let bot: &Bot = &emulator.bots[debug_bot_id as usize];
+                let bot: &Bot = &emulator.bots[debug_bot_id as usize - 1];
                 text_buffer.clear();
 
                 for key in key_presses.iter() {
@@ -392,7 +381,7 @@ fn main() {
                         bot.stack_pointer,
                         bot.flags
                     ),
-                    Vec2::xy(0, 44),
+                    Vec2::xy(0, 44)
                 );
 
                 // registers
@@ -407,7 +396,7 @@ fn main() {
                         bot.registers[5],
                         bot.registers[6]
                     ),
-                    Vec2::xy(0, 45),
+                    Vec2::xy(0, 45)
                 );
                 pencil.draw_text(
                     &format!(
@@ -420,7 +409,7 @@ fn main() {
                         bot.registers[12],
                         bot.registers[13]
                     ),
-                    Vec2::xy(0, 46),
+                    Vec2::xy(0, 46)
                 );
 
                 // next instruction
@@ -430,7 +419,7 @@ fn main() {
                         bot.instruction_pointer,
                         Disassembler::parse(bot.get_instruction(), bot.instruction_pointer, true)
                     ),
-                    Vec2::xy(0, 47),
+                    Vec2::xy(0, 47)
                 );
 
                 // TODO: figure out how to do text input
@@ -440,7 +429,7 @@ fn main() {
                         "(u)nasm,(g)o,(s)ilentGo,(d)mp,(q)uit, or [Enter]: {}",
                         text_buffer.as_str()
                     ),
-                    Vec2::xy(0, 48),
+                    Vec2::xy(0, 48)
                 );
 
                 // pencil.draw_text(

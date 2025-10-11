@@ -42,7 +42,7 @@ pub struct Tank {
     pub toxic_sludge: Vec<u8>,
     pub elements: Vec<Option<Item>>,
 
-    pub feature_level: FeatureLevel,
+    pub feature_level: FeatureLevel
 }
 
 impl Tank {
@@ -54,7 +54,7 @@ impl Tank {
             elements: vec![],
             bounds,
             sludge_density: density,
-            feature_level,
+            feature_level
         };
 
         tank.elements.resize_with(
@@ -86,19 +86,13 @@ impl Tank {
         });
     }
 
-    fn eat_item(
-        &mut self,
-        idx: usize,
-        pos: &Position,
-        rng: &mut Box<dyn RNGSystem>,
-        bots: &mut Vec<Bot>,
-    ) -> bool {
+    fn eat_item(&mut self, idx: usize, pos: &Position, rng: &mut Box<dyn RNGSystem>, bots: &mut Vec<Bot>) -> bool {
         let index = self.get_index(pos);
         match &self.elements[index] {
             Some(item) => match item.item_type {
                 ItemType::Sludge => {
                     let sludge_id = item.id as u8;
-                    if self.toxic_sludge.contains(&sludge_id) && bots[idx].id < 50 {
+                    if self.toxic_sludge.contains(&sludge_id) && bots[idx].id <= 50 {
                         bots[idx].mutate(rng);
                     }
 
@@ -108,7 +102,7 @@ impl Tank {
                 }
                 _ => false,
             },
-            None => false,
+            None => false
         }
     }
 
@@ -125,7 +119,7 @@ impl Tank {
                 y: rng.rand(Some(self.bounds.y as u32)) as u8,
                 z: match self.feature_level {
                     FeatureLevel::Classic => 0,
-                    FeatureLevel::Extended => rng.rand(Some(self.bounds.z as u32)) as u8,
+                    FeatureLevel::Extended => rng.rand(Some(self.bounds.z as u32)) as u8
                 },
             };
 
@@ -366,13 +360,13 @@ impl Bot {
     pub fn get_glyph(&self, inactive: bool) -> char {
         if self.is_active() || !inactive {
             match self.id {
-                0..=25 => ((self.id + 65) as u8).into(),
-                26..=50 => ((self.id + 71) as u8).into(),
+                1..=26 => ((self.id + 64) as u8).into(),
+                27..=50 => ((self.id + 70) as u8).into(),
                 _ => '@',
             }
         } else {
             match self.id {
-                0..=50 => '.',
+                1..=50 => '.',
                 _ => ',',
             }
         }
@@ -380,8 +374,8 @@ impl Bot {
 
     pub fn id_from_glyph(glyph: char) -> u16 {
         match glyph as u8 {
-            65..=90 => (glyph as u8 - 65).into(),
-            97..=120 => (glyph as u8 - 71).into(),
+            65..=90 => (glyph as u8 - 64).into(),
+            97..=120 => (glyph as u8 - 70).into(),
             _ => 0xFFFFu16,
         }
     }
@@ -721,7 +715,7 @@ impl Bot {
                     Bot::op_cksum(idx, op1, op2, bots);
                 }
                 // not an instruction, do nothing
-                _ => Bot::op_nop(),
+                _ => Bot::op_nop()
             };
         }
 
@@ -775,72 +769,56 @@ impl Bot {
         if bots[idx].flags.less {
             bots[idx].jump_to(to);
             false
-        } else {
-            true
-        }
+        } else { true }
     }
 
     fn op_jle(idx: usize, to: Operand, bots: &mut Vec<Bot>) -> bool {
         if bots[idx].flags.less || bots[idx].flags.equal {
             bots[idx].jump_to(to);
             false
-        } else {
-            true
-        }
+        } else { true }
     }
 
     fn op_jg(idx: usize, to: Operand, bots: &mut Vec<Bot>) -> bool {
         if bots[idx].flags.greater {
             bots[idx].jump_to(to);
             false
-        } else {
-            true
-        }
+        } else { true }
     }
 
     fn op_jge(idx: usize, to: Operand, bots: &mut Vec<Bot>) -> bool {
         if bots[idx].flags.greater || bots[idx].flags.equal {
             bots[idx].jump_to(to);
             false
-        } else {
-            true
-        }
+        } else { true }
     }
 
     fn op_je(idx: usize, to: Operand, bots: &mut Vec<Bot>) -> bool {
         if bots[idx].flags.equal {
             bots[idx].jump_to(to);
             false
-        } else {
-            true
-        }
+        } else { true }
     }
 
     fn op_jne(idx: usize, to: Operand, bots: &mut Vec<Bot>) -> bool {
         if !bots[idx].flags.equal {
             bots[idx].jump_to(to);
             false
-        } else {
-            true
-        }
+        } else { true }
     }
 
     fn op_js(idx: usize, to: Operand, bots: &mut Vec<Bot>) -> bool {
         if bots[idx].flags.success {
             bots[idx].jump_to(to);
             false
-        } else {
-            true
-        }
+        } else { true }
     }
 
     fn op_jns(idx: usize, to: Operand, bots: &mut Vec<Bot>) -> bool {
         if !bots[idx].flags.success {
             bots[idx].jump_to(to);
             false
-        } else {
-            true
-        }
+        } else { true }
     }
 
     fn op_div(idx: usize, dest: Operand, src: Operand, bots: &mut Vec<Bot>) {
@@ -952,13 +930,7 @@ impl Bot {
         }
     }
 
-    fn op_rand(
-        idx: usize,
-        to: Operand,
-        max: Operand,
-        rng: &mut Box<dyn RNGSystem>,
-        bots: &mut Vec<Bot>,
-    ) {
+    fn op_rand(idx: usize, to: Operand, max: Operand, rng: &mut Box<dyn RNGSystem>, bots: &mut Vec<Bot>) {
         let max = bots[idx].get(&max);
         if max != 0 {
             let result = rng.rand(Some(max as u32)) as u16;
@@ -978,13 +950,7 @@ impl Bot {
         }
     }
 
-    fn op_charge(
-        idx: usize,
-        direction: Operand,
-        amount: Operand,
-        tank: &Tank,
-        bots: &mut Vec<Bot>,
-    ) {
+    fn op_charge(idx: usize, direction: Operand, amount: Operand, tank: &Tank, bots: &mut Vec<Bot>) {
         let amount = bots[idx].get(&amount);
         let pos = bots[idx].position;
 
@@ -1070,8 +1036,7 @@ impl Bot {
 
         if start_idx < 3600 && end_idx < 3601 && start_idx < end_idx {
             let cksum: u16 = bots[idx].program_memory[start_idx..end_idx]
-                .iter()
-                .fold(0u16, |acc, &m| acc.wrapping_add(m));
+                .iter().fold(0u16, |acc, &m| acc.wrapping_add(m));
             bots[idx].put(&start, cksum);
         }
     }
@@ -1121,23 +1086,17 @@ pub struct Emulator {
 
     pub finished: bool,
 
-    pub feature_level: FeatureLevel,
+    pub feature_level: FeatureLevel
 }
 
 #[derive(Copy, Clone, Debug)]
 pub enum FeatureLevel {
     Classic,
-    Extended,
+    Extended
 }
 
 impl Emulator {
-    pub fn new(
-        bytecode: &Vec<u16>,
-        iterations: u32,
-        seed: u32,
-        feature_level: FeatureLevel,
-        modern_rng: bool,
-    ) -> Emulator {
+    pub fn new(bytecode: &Vec<u16>, iterations: u32, seed: u32, feature_level: FeatureLevel, modern_rng: bool) -> Emulator {
         let mut emulator = Emulator {
             rng: match modern_rng {
                 true => Box::new(ModernRNG::new(seed)),
@@ -1161,16 +1120,14 @@ impl Emulator {
     fn create_bots(&mut self, bytecode: &Vec<u16>) {
         self.bots = vec![];
 
-        for id in 0..50 {
+        for id in 1..=50 {
             let pos: Position = loop {
                 let pos = Position {
                     x: self.rng.rand(Some(self.tank.bounds.x as u32)) as u8,
                     y: self.rng.rand(Some(self.tank.bounds.y as u32)) as u8,
                     z: match self.feature_level {
                         FeatureLevel::Classic => 0,
-                        FeatureLevel::Extended => {
-                            self.rng.rand(Some(self.tank.bounds.z as u32)) as u8
-                        }
+                        FeatureLevel::Extended => self.rng.rand(Some(self.tank.bounds.z as u32)) as u8
                     },
                 };
 
@@ -1184,16 +1141,14 @@ impl Emulator {
             self.bots.push(bot);
         }
 
-        for id in 0..20 {
+        for id in 1..=20 {
             let pos: Position = loop {
                 let pos = Position {
                     x: self.rng.rand(Some(self.tank.bounds.x as u32)) as u8,
                     y: self.rng.rand(Some(self.tank.bounds.y as u32)) as u8,
                     z: match self.feature_level {
                         FeatureLevel::Classic => 0,
-                        FeatureLevel::Extended => {
-                            self.rng.rand(Some(self.tank.bounds.z as u32)) as u8
-                        }
+                        FeatureLevel::Extended => self.rng.rand(Some(self.tank.bounds.z as u32)) as u8
                     },
                 };
 
