@@ -26,6 +26,49 @@ use std::fs::File;
 use std::io::Write;
 use std::time::{Instant, SystemTime};
 
+fn key_to_char(key: Key) -> Option<char> {
+    return Some(match key {
+        Key::Space => ' ',
+        Key::A => 'a',
+        Key::B => 'b',
+        Key::C => 'c',
+        Key::D => 'd',
+        Key::E => 'e',
+        Key::F => 'f',
+        Key::G => 'g',
+        Key::H => 'h',
+        Key::I => 'i',
+        Key::J => 'j',
+        Key::K => 'k',
+        Key::L => 'l',
+        Key::M => 'm',
+        Key::N => 'n',
+        Key::O => 'o',
+        Key::P => 'p',
+        Key::Q => 'q',
+        Key::R => 'r',
+        Key::S => 's',
+        Key::T => 't',
+        Key::U => 'u',
+        Key::V => 'v',
+        Key::W => 'w',
+        Key::X => 'x',
+        Key::Y => 'y',
+        Key::Z => 'z',
+        Key::Num0 => '0',
+        Key::Num1 => '1',
+        Key::Num2 => '2',
+        Key::Num3 => '3',
+        Key::Num4 => '4',
+        Key::Num5 => '5',
+        Key::Num6 => '6',
+        Key::Num7 => '7',
+        Key::Num8 => '8',
+        Key::Num9 => '9',
+        _ => return None,
+    });
+}
+
 fn main() {
     let mut args = Arguments::parse();
 
@@ -39,8 +82,6 @@ fn main() {
         );
     }
 
-
-
     let bytecode: Vec<u16> = if args.as_bytecode {
         let code_file = match fs::read(&args.bot_path) {
             Ok(data) => data,
@@ -50,10 +91,16 @@ fn main() {
             }
         };
 
-        let mut pairs: Vec<u16> = code_file.chunks_exact(2).map(|chunk| u16::from_le_bytes(chunk.try_into().unwrap())).collect();
+        let mut pairs: Vec<u16> = code_file
+            .chunks_exact(2)
+            .map(|chunk| u16::from_le_bytes(chunk.try_into().unwrap()))
+            .collect();
 
         if pairs.len() > 3600 {
-            println!("error: bytecode too large! {} words long, should be 3600", pairs.len());
+            println!(
+                "error: bytecode too large! {} words long, should be 3600",
+                pairs.len()
+            );
             return;
         }
         pairs.resize(3600, 0);
@@ -130,7 +177,13 @@ fn main() {
         }
     }
 
-    let mut emulator = Emulator::new(&bytecode, args.iterations, args.seed.unwrap(), FeatureLevel::Classic, args.modern_rng);
+    let mut emulator = Emulator::new(
+        &bytecode,
+        args.iterations,
+        args.seed.unwrap(),
+        FeatureLevel::Classic,
+        args.modern_rng,
+    );
 
     //println!("seed is {}", args.seed.unwrap());
 
@@ -141,19 +194,20 @@ fn main() {
         // TODO: clean this up, so hacky
         let mut debug_steps: u32 = 0;
 
+        let mut text_buffer = String::new();
+        let mut key_presses = vec![];
+        let mut submit_line = false;
+
         app.run(|app_state: &mut State, window: &mut Window| {
             // TODO: this is moderately annoying, figure out how to allow Ctrl+C
             for key_event in app_state.keyboard().last_key_events() {
-                if args.debug_bot.is_some() {
+                if let Some(debug_bot) = args.debug_bot {
                     match key_event {
                         KeyEvent::Pressed(Key::Esc) => app_state.stop(),
-                        KeyEvent::Pressed(Key::Q) => app_state.stop(),
-                        KeyEvent::Pressed(Key::Enter) => debug_steps += 1,
-                        KeyEvent::Pressed(Key::G) => args.debug_bot = None,
-                        KeyEvent::Pressed(Key::S) => {
-                            args.quiet_mode = true;
-                            app_state.stop();
-                        },
+                        KeyEvent::Pressed(Key::Enter) => submit_line = true,
+                        KeyEvent::Pressed(key) => {
+                            key_presses.push(*key);
+                        }
                         _ => (),
                     }
                 } else {
@@ -167,7 +221,9 @@ fn main() {
 
             if args.debug_bot.is_none() || (args.debug_bot.is_some() && debug_steps > 0) {
                 if emulator.current_tick < emulator.iterations {
-                    if !emulator.tick() { app_state.stop() }
+                    if !emulator.tick() {
+                        app_state.stop()
+                    }
                 } else {
                     app_state.stop()
                 }
@@ -185,8 +241,10 @@ fn main() {
                             ItemType::Sludge => {
                                 if emulator.tank.toxic_sludge.contains(&(element.id as u8)) {
                                     pencil.set_foreground(Color::Xterm(28))
-                                } else { pencil.set_foreground(Color::Grey) }
-                            },
+                                } else {
+                                    pencil.set_foreground(Color::Grey)
+                                }
+                            }
                             ItemType::CollectionPoint => pencil.set_foreground(Color::Xterm(6)),
                             ItemType::Ramp => pencil.set_foreground(Color::DarkGrey),
                         };
@@ -226,7 +284,7 @@ fn main() {
                     emulator.iterations,
                     &args.seed.unwrap()
                 ),
-                Vec2::xy(0, 42)
+                Vec2::xy(0, 42),
             );
 
             if args.debug_bot.is_some() {
@@ -238,38 +296,61 @@ fn main() {
                 pencil.draw_text(
                     &format!(
                         "[{:>5} {}] ({:2},{:2}), Energy={:5}, IP={:04}, SP={:04}, Flags={}",
-                        bot.name, bot.get_glyph(false), bot.position.x, bot.position.y, bot.energy, bot.instruction_pointer, bot.stack_pointer, bot.flags
+                        bot.name,
+                        bot.get_glyph(false),
+                        bot.position.x,
+                        bot.position.y,
+                        bot.energy,
+                        bot.instruction_pointer,
+                        bot.stack_pointer,
+                        bot.flags
                     ),
-                    Vec2::xy(0, 44)
+                    Vec2::xy(0, 44),
                 );
 
                 // registers
                 pencil.draw_text(
-                    &format!("R00={:5} R01={:5} R02={:5} R03={:5} R04={:5} R05={:5} R06={:5}",
-                             bot.registers[0], bot.registers[1],
-                             bot.registers[2], bot.registers[3],
-                             bot.registers[4], bot.registers[5], bot.registers[6]),
-                    Vec2::xy(0, 45)
+                    &format!(
+                        "R00={:5} R01={:5} R02={:5} R03={:5} R04={:5} R05={:5} R06={:5}",
+                        bot.registers[0],
+                        bot.registers[1],
+                        bot.registers[2],
+                        bot.registers[3],
+                        bot.registers[4],
+                        bot.registers[5],
+                        bot.registers[6]
+                    ),
+                    Vec2::xy(0, 45),
                 );
                 pencil.draw_text(
-                    &format!("R07={:5} R08={:5} R09={:5} R10={:5} R11={:5} R12={:5} R13={:5}",
-                             bot.registers[7], bot.registers[8],
-                             bot.registers[9], bot.registers[10],
-                             bot.registers[11], bot.registers[12], bot.registers[13]),
-                    Vec2::xy(0, 46)
+                    &format!(
+                        "R07={:5} R08={:5} R09={:5} R10={:5} R11={:5} R12={:5} R13={:5}",
+                        bot.registers[7],
+                        bot.registers[8],
+                        bot.registers[9],
+                        bot.registers[10],
+                        bot.registers[11],
+                        bot.registers[12],
+                        bot.registers[13]
+                    ),
+                    Vec2::xy(0, 46),
                 );
 
                 // next instruction
                 pencil.draw_text(
-                    &format!("{:04}  {}", bot.instruction_pointer, Disassembler::parse(bot.get_instruction(), bot.instruction_pointer, true)),
-                    Vec2::xy(0, 47)
+                    &format!(
+                        "{:04}  {}",
+                        bot.instruction_pointer,
+                        Disassembler::parse(bot.get_instruction(), bot.instruction_pointer, true)
+                    ),
+                    Vec2::xy(0, 47),
                 );
 
                 // TODO: figure out how to do text input
                 pencil.draw_text(
                     //"(u)nasm,(g)o,(s)ilentGo,(d)mp,(e)dt,(r)eg,(i)p,(q)uit,##, or [Enter]: ",
                     "(u)nasm,(g)o,(s)ilentGo,(d)mp,(q)uit, or [Enter]: ",
-                    Vec2::xy(0, 48)
+                    Vec2::xy(0, 48),
                 );
 
                 // pencil.draw_text(
@@ -283,7 +364,9 @@ fn main() {
     if args.quiet_mode {
         let now = Instant::now();
         while emulator.current_tick < emulator.iterations {
-            if !emulator.tick() { break; }
+            if !emulator.tick() {
+                break;
+            }
         }
         println!("done in {}ms", now.elapsed().as_millis())
     }
