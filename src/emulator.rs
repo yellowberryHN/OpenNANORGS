@@ -391,7 +391,7 @@ impl Bot {
     pub fn occupied_by(pos: &Position, bots: &Vec<Bot>) -> u16 {
         for bot in bots {
             if bot.position == *pos {
-                return bot.id;
+                return bot.id - 1;
             }
         }
         0xFFFFu16
@@ -444,7 +444,14 @@ impl Bot {
             },
             Operand::Register(reg) => match reg {
                 Register::SP => self.stack_pointer,
-                _ => self.registers[u16::from(reg.clone()) as usize],
+                _ => {
+                    let reg_num = u16::from(reg.clone());
+                    if reg_num < 14 {
+                        self.registers[reg_num as usize]
+                    } else {
+                        0
+                    }
+                }
             },
             Operand::ImmediateValue(value) => match value {
                 Value::Number(value) => *value,
@@ -479,8 +486,7 @@ impl Bot {
                 _ => self.registers[u16::from(reg.clone()) as usize] = value,
             },
             Operand::ImmediateValue(_) => {
-                // eprintln!("{}", self.stack_pointer);
-                panic!("Attempt to put something into immediate value");
+                // nop
             }
             Operand::RegisterIndexedDirect(base, operator, offset) => {
                 let register_value = self.get(base.as_ref());
@@ -539,6 +545,34 @@ impl Bot {
         result
     }
 
+    fn parse_operand(raw: [u16; 3], idx: u32) -> Operand {
+        let op_value = raw[idx as usize];
+        let op_type = raw[0] >> (16 - (2 * idx)) & 0x3;
+
+        match op_type {
+            0 => Operand::Direct(Value::Number(op_value)),
+            1 => Operand::Register(op_value.into()),
+            2 => Operand::ImmediateValue(Value::Number(op_value)),
+            3 => {
+                let op_reg = op_value >> 12;
+                let op_reg_offset = op_value & 0xFFF;
+
+                let op_reg_sub = raw[0] >> (12 - idx) & 0x1 == 1;
+
+                Operand::RegisterIndexedDirect(
+                    Box::new(Operand::Register(op_reg.into())),
+                    if op_reg_sub {
+                        PlusMinus::Minus
+                    } else {
+                        PlusMinus::Plus
+                    },
+                    Box::new(Operand::ImmediateValue(Value::Number(op_reg_offset))),
+                )
+            }
+            _ => panic!("Unknown addressing mode"),
+        }
+    }
+
     pub fn tick(idx: usize, tank: &mut Tank, bots: &mut Vec<Bot>, rng: &mut Box<dyn RNGSystem>) {
         let mut increment_ip: bool = true;
 
@@ -547,57 +581,8 @@ impl Bot {
 
         //println!("{}", Disassembler::parse(instruction, bots[idx].instruction_pointer, false));
         if instruction_id <= InstructionType::CKSUM as u16 {
-            let op1_value = instruction[1];
-            let op2_value = instruction[2];
-
-            let op1_type = instruction[0] >> 14 & 0x3;
-            let op2_type = instruction[0] >> 12 & 0x3;
-
-            let op1 = match op1_type {
-                0 => Operand::Direct(Value::Number(op1_value)),
-                1 => Operand::Register(op1_value.into()),
-                2 => Operand::ImmediateValue(Value::Number(op1_value)),
-                3 => {
-                    let op1_reg = op1_value >> 12;
-                    let op1_reg_offset = op1_value & 0xFFF;
-
-                    let op1_reg_sub = instruction[0] >> 11 & 0x1 == 1;
-
-                    Operand::RegisterIndexedDirect(
-                        Box::new(Operand::Register(op1_reg.into())),
-                        if op1_reg_sub {
-                            PlusMinus::Minus
-                        } else {
-                            PlusMinus::Plus
-                        },
-                        Box::new(Operand::ImmediateValue(Value::Number(op1_reg_offset))),
-                    )
-                }
-                _ => panic!("Unknown addressing mode"),
-            };
-
-            let op2 = match op2_type {
-                0 => Operand::Direct(Value::Number(op2_value)),
-                1 => Operand::Register(op2_value.into()),
-                2 => Operand::ImmediateValue(Value::Number(op2_value)),
-                3 => {
-                    let op2_reg = op2_value >> 12;
-                    let op2_reg_offset = op2_value & 0xFFF;
-
-                    let op2_reg_sub = instruction[0] >> 10 & 0x1 == 1;
-
-                    Operand::RegisterIndexedDirect(
-                        Box::new(Operand::Register(op2_reg.into())),
-                        if op2_reg_sub {
-                            PlusMinus::Minus
-                        } else {
-                            PlusMinus::Plus
-                        },
-                        Box::new(Operand::ImmediateValue(Value::Number(op2_reg_offset))),
-                    )
-                }
-                _ => panic!("Unknown addressing mode"),
-            };
+            let op1 = Self::parse_operand(instruction, 1);
+            let op2 = Self::parse_operand(instruction, 2);
 
             let instruction_type = InstructionType::from(instruction_id);
             // eprintln!("{:#?} - {:?} {:?}", instruction_type, op1, op2);
